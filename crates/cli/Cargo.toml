@@ -1,0 +1,11 @@
+[package]
+name = "cli"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+base.workspace = true
+anyhow.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
