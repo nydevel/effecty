@@ -121,6 +121,51 @@
   outline: none;
 }
 
+/* Context menu */
+.context-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+}
+
+.context-menu {
+  position: fixed;
+  background: white;
+  border: 1px solid #d0d0d4;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 4px 0;
+  min-width: 140px;
+  z-index: 101;
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 14px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+}
+
+.context-menu-item:hover {
+  background: #eaeaee;
+}
+
+.context-menu-item.danger {
+  color: #e53935;
+}
+
+.context-menu-item.danger:hover {
+  background: #fde8e8;
+}
+
 /* Main content */
 .main-content {
   flex: 1;

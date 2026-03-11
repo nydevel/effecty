@@ -1,4 +1,5 @@
-import { Tree, type NodeRendererProps } from 'react-arborist';
+import { type MouseEvent, useCallback, useRef, useState } from 'react';
+import { Tree, type TreeApi, type NodeRendererProps } from 'react-arborist';
 import type { Note } from '../api/notes';
 
 export interface TreeNode {
@@ -17,6 +18,12 @@ interface Props {
   onMove: (id: string, parentId: string | null, index: number) => void;
   onRename: (id: string, name: string) => void;
   onDelete: (id: string) => void;
+}
+
+interface ContextMenu {
+  x: number;
+  y: number;
+  nodeId: string;
 }
 
 function buildTree(notes: Note[]): TreeNode[] {
@@ -44,36 +51,6 @@ function buildTree(notes: Note[]): TreeNode[] {
   return roots;
 }
 
-function Node({ node, style, dragHandle }: NodeRendererProps<TreeNode>) {
-  const isFolder = node.data.nodeType === 'folder';
-  return (
-    <div
-      className={`tree-node ${node.isSelected ? 'selected' : ''}`}
-      style={style}
-      ref={dragHandle}
-      onClick={() => node.select()}
-    >
-      <span className="tree-node-icon">{isFolder ? (node.isOpen ? '📂' : '📁') : '📄'}</span>
-      {node.isEditing ? (
-        <input
-          className="tree-node-input"
-          type="text"
-          defaultValue={node.data.name}
-          onFocus={(e) => e.currentTarget.select()}
-          onBlur={() => node.reset()}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') node.submit(e.currentTarget.value);
-            if (e.key === 'Escape') node.reset();
-          }}
-          autoFocus
-        />
-      ) : (
-        <span className="tree-node-name">{node.data.name}</span>
-      )}
-    </div>
-  );
-}
-
 export default function Sidebar({
   notes,
   selectedId,
@@ -85,9 +62,68 @@ export default function Sidebar({
   onDelete,
 }: Props) {
   const treeData = buildTree(notes);
+  const treeRef = useRef<TreeApi<TreeNode>>(null);
+  const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
+
+  const closeMenu = useCallback(() => setContextMenu(null), []);
+
+  const handleContextMenu = useCallback((e: MouseEvent, nodeId: string) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, nodeId });
+  }, []);
+
+  const handleRenameClick = useCallback(() => {
+    if (!contextMenu) return;
+    const nodeId = contextMenu.nodeId;
+    closeMenu();
+    requestAnimationFrame(() => {
+      treeRef.current?.edit(nodeId);
+    });
+  }, [contextMenu, closeMenu]);
+
+  const handleDeleteClick = useCallback(() => {
+    if (!contextMenu) return;
+    onDelete(contextMenu.nodeId);
+    closeMenu();
+  }, [contextMenu, onDelete, closeMenu]);
+
+  function Node({ node, style, dragHandle }: NodeRendererProps<TreeNode>) {
+    const isFolder = node.data.nodeType === 'folder';
+    return (
+      <div
+        className={`tree-node ${node.isSelected ? 'selected' : ''}`}
+        style={style}
+        ref={dragHandle}
+        onClick={() => node.select()}
+        onDoubleClick={() => node.edit()}
+        onContextMenu={(e) => {
+          node.select();
+          handleContextMenu(e, node.id);
+        }}
+      >
+        <span className="tree-node-icon">{isFolder ? (node.isOpen ? '📂' : '📁') : '📄'}</span>
+        {node.isEditing ? (
+          <input
+            className="tree-node-input"
+            type="text"
+            defaultValue={node.data.name}
+            onFocus={(e) => e.currentTarget.select()}
+            onBlur={() => node.reset()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') node.submit(e.currentTarget.value);
+              if (e.key === 'Escape') node.reset();
+            }}
+            autoFocus
+          />
+        ) : (
+          <span className="tree-node-name">{node.data.name}</span>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div className="sidebar">
+    <div className="sidebar" onClick={closeMenu}>
       <div className="sidebar-header">
         <button className="sidebar-btn" onClick={onCreateFolder} title="New folder">
           📁+
@@ -98,6 +134,7 @@ export default function Sidebar({
       </div>
       <div className="sidebar-tree">
         <Tree<TreeNode>
+          ref={treeRef}
           data={treeData}
           width="100%"
           indent={20}
@@ -123,6 +160,27 @@ export default function Sidebar({
           {Node}
         </Tree>
       </div>
+
+      {contextMenu && (
+        <div
+          className="context-menu-overlay"
+          onClick={closeMenu}
+          onContextMenu={(e) => { e.preventDefault(); closeMenu(); }}
+        >
+          <div
+            className="context-menu"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="context-menu-item" onClick={handleRenameClick}>
+              Rename
+            </button>
+            <button className="context-menu-item danger" onClick={handleDeleteClick}>
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
