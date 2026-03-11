@@ -1,4 +1,5 @@
-import { type FormEvent, useState } from 'react';
+import { useState } from 'react';
+import { Button, Form, Input, Alert, Typography } from 'antd';
 import { login } from '../api/auth';
 
 interface Props {
@@ -6,28 +7,14 @@ interface Props {
 }
 
 export default function LoginPage({ onLogin }: Props) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleFinish = async (values: { email: string; password: string }) => {
     setError('');
-
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail || !trimmedEmail.includes('@')) {
-      setError('Please enter a valid email');
-      return;
-    }
-    if (password.length < 1) {
-      setError('Please enter a password');
-      return;
-    }
-
     setLoading(true);
     try {
-      await login(trimmedEmail, password);
+      await login(values.email.trim(), values.password);
       onLogin();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -38,28 +25,34 @@ export default function LoginPage({ onLogin }: Props) {
 
   return (
     <div className="login-page">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <h1>effecty</h1>
-        {error && <div className="login-error">{error}</div>}
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoFocus
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? 'Signing in...' : 'Sign in'}
-        </button>
-      </form>
+      <div className="login-card">
+        <Typography.Title level={2} style={{ textAlign: 'center', marginBottom: 24 }}>
+          effecty
+        </Typography.Title>
+        {error && <Alert message={error} type="error" showIcon style={{ marginBottom: 16 }} />}
+        <Form layout="vertical" onFinish={handleFinish} autoComplete="off">
+          <Form.Item
+            name="email"
+            rules={[
+              { required: true, message: 'Please enter your email' },
+              { type: 'email', message: 'Please enter a valid email' },
+            ]}
+          >
+            <Input placeholder="Email" size="large" autoFocus />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: 'Please enter your password' }]}
+          >
+            <Input.Password placeholder="Password" size="large" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading} block size="large">
+              Sign in
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
     </div>
   );
 }

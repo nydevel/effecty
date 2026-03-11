@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { Input } from 'antd';
 import { useCreateBlockNote } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
@@ -20,7 +21,6 @@ export default function NoteEditor({ title, content, onTitleChange, onChange }: 
           const blocks = JSON.parse(content);
           editor.replaceBlocks(editor.document, blocks);
         } catch {
-          // Content is not JSON — treat as markdown
           const blocks = await editor.tryParseMarkdownToBlocks(content);
           editor.replaceBlocks(editor.document, blocks);
         }
@@ -41,18 +41,16 @@ export default function NoteEditor({ title, content, onTitleChange, onChange }: 
 
   return (
     <div className="note-editor">
-      <input
-        className="note-title"
-        type="text"
+      <Input
+        variant="borderless"
         defaultValue={title}
         placeholder="Untitled"
+        style={{ fontSize: 28, fontWeight: 700, padding: '8px 0 12px' }}
         onBlur={(e) => {
           const val = e.currentTarget.value.trim();
           if (val && val !== title) onTitleChange(val);
         }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') e.currentTarget.blur();
-        }}
+        onPressEnter={(e) => e.currentTarget.blur()}
       />
       <BlockNoteView editor={editor} onChange={handleChange} theme="light" />
     </div>

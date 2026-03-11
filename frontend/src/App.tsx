@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { isAuthenticated, clearToken } from './api/client';
 import IconBar from './components/IconBar';
 import NotesFeature from './features/NotesFeature';
+import CalendarFeature from './features/CalendarFeature';
 import LoginPage from './pages/LoginPage';
 import './App.css';
 
-type Feature = 'notes';
+type Feature = 'notes' | 'calendar';
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(isAuthenticated());
@@ -29,6 +30,7 @@ export default function App() {
       />
       <div className="feature-content">
         {activeFeature === 'notes' && <NotesFeature />}
+        {activeFeature === 'calendar' && <CalendarFeature />}
       </div>
     </div>
   );
