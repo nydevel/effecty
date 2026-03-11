@@ -113,7 +113,9 @@ export default function App() {
         {activeNote ? (
           <NoteEditor
             key={activeNote.id}
+            title={activeNote.title}
             content={activeNote.content}
+            onTitleChange={(title) => handleRename(activeNote.id, title)}
             onChange={handleContentChange}
           />
         ) : (

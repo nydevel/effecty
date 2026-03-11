@@ -178,6 +178,23 @@
   padding: 16px 24px;
 }
 
+.note-title {
+  display: block;
+  width: 100%;
+  font-size: 28px;
+  font-weight: 700;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0 0 12px;
+  color: #1a1a2e;
+  background: transparent;
+  position: relative;
+  z-index: 1;
+  line-height: 1.2;
+  min-height: 36px;
+}
+
 .empty-state {
   display: flex;
   align-items: center;

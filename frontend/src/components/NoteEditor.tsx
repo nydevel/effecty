@@ -4,11 +4,13 @@ import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 
 interface Props {
+  title: string;
   content: string;
+  onTitleChange: (title: string) => void;
   onChange: (content: string) => void;
 }
 
-export default function NoteEditor({ content, onChange }: Props) {
+export default function NoteEditor({ title, content, onTitleChange, onChange }: Props) {
   const editor = useCreateBlockNote();
 
   useEffect(() => {
@@ -39,6 +41,19 @@ export default function NoteEditor({ content, onChange }: Props) {
 
   return (
     <div className="note-editor">
+      <input
+        className="note-title"
+        type="text"
+        defaultValue={title}
+        placeholder="Untitled"
+        onBlur={(e) => {
+          const val = e.currentTarget.value.trim();
+          if (val && val !== title) onTitleChange(val);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+        }}
+      />
       <BlockNoteView editor={editor} onChange={handleChange} theme="light" />
     </div>
   );
