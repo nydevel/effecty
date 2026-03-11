@@ -21,6 +21,7 @@ async fn main() -> Result<()> {
     match command {
         Some("migrate") => migrate().await,
         Some("seed") => seed().await,
+        Some("dev") => dev(),
         Some(cmd) => bail!("unknown command: {cmd}"),
         None => {
             print_usage();
@@ -33,8 +34,36 @@ fn print_usage() {
     eprintln!("Usage: cli <command>");
     eprintln!();
     eprintln!("Commands:");
+    eprintln!("  dev      Build frontend and start server");
     eprintln!("  migrate  Run database migrations");
     eprintln!("  seed     Create dev user (dev@effecty.org / dev123). Only in dev environment.");
+}
+
+fn dev() -> Result<()> {
+    use std::process::Command;
+
+    tracing::info!("building frontend...");
+    let npm = if cfg!(windows) { "npm.cmd" } else { "npm" };
+
+    let status = Command::new(npm)
+        .args(["run", "build"])
+        .current_dir("frontend")
+        .status()?;
+
+    if !status.success() {
+        bail!("frontend build failed");
+    }
+
+    tracing::info!("starting server...");
+    let status = Command::new("cargo")
+        .args(["run", "-p", "server"])
+        .status()?;
+
+    if !status.success() {
+        bail!("server exited with error");
+    }
+
+    Ok(())
 }
 
 async fn migrate() -> Result<()> {
