@@ -14,9 +14,6 @@ pub enum AppError {
     #[error("forbidden: {0}")]
     Forbidden(String),
 
-    #[error("bad request: {0}")]
-    BadRequest(String),
-
     #[error("internal: {0}")]
     Internal(String),
 
@@ -33,7 +30,6 @@ impl IntoResponse for AppError {
             Self::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized".into()),
             Self::NotFound => (StatusCode::NOT_FOUND, "not found".into()),
             Self::Forbidden(msg) => (StatusCode::FORBIDDEN, msg),
-            Self::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             Self::Internal(msg) => {
                 tracing::error!("internal error: {msg}");
                 (StatusCode::INTERNAL_SERVER_ERROR, "internal error".into())

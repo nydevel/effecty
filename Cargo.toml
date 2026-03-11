@@ -6,6 +6,7 @@ members = [
     "crates/cli",
     "crates/server",
     "crates/migration",
+    "crates/notes",
 ]
 
 [workspace.package]
@@ -18,6 +19,7 @@ repository = "https://gitlab.com/shifu.corp/effecty/effecty.org"
 effecty-core = { path = "crates/core", package = "core" }
 db = { path = "crates/db" }
 migration = { path = "crates/migration" }
+notes = { path = "crates/notes" }
 sea-orm-migration = { version = "1", features = ["sqlx-postgres", "runtime-tokio-rustls"] }
 anyhow = "1"
 tokio = { version = "1", features = ["full"] }

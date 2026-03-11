@@ -1,9 +1,8 @@
 mod health;
-pub mod notes;
 mod spa;
 
 use axum::middleware;
-use axum::routing::{delete, get, patch, post, put};
+use axum::routing::{get, post};
 use axum::Router;
 
 use crate::app_state::AppState;
@@ -15,14 +14,12 @@ pub fn create_router(state: AppState) -> Router {
         .route("/api/auth/login", post(auth::handlers::login))
         .route("/api/auth/register", post(auth::handlers::register));
 
+    let notes_routes = notes::router()
+        .with_state(state.pool.clone());
+
     let protected_routes = Router::new()
         .route("/api/auth/me", get(auth::handlers::me))
-        .route("/api/notes", get(notes::get_tree))
-        .route("/api/notes", post(notes::create_note))
-        .route("/api/notes/{id}", get(notes::get_note))
-        .route("/api/notes/{id}", put(notes::update_note))
-        .route("/api/notes/{id}/move", patch(notes::move_note))
-        .route("/api/notes/{id}", delete(notes::delete_note))
+        .merge(notes_routes)
         // Clone is cheap: PgPool is Arc-based, config is Arc<Config>
         .layer(middleware::from_fn_with_state(
             state.clone(),
