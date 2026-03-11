@@ -1,0 +1,16 @@
+[package]
+name = "db"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+effecty-core.workspace = true
+anyhow.workspace = true
+sqlx.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+tracing.workspace = true
+serde.workspace = true
+argon2.workspace = true
+migration.workspace = true
+sea-orm-migration.workspace = true

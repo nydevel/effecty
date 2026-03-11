@@ -3,3 +3,7 @@
 *.pdb
 .env
 configuration.toml
+
+# Frontend
+frontend/node_modules/
+frontend/dist/

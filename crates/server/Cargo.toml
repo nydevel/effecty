@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-base.workspace = true
+effecty-core.workspace = true
 anyhow.workspace = true
 tokio.workspace = true
 tracing.workspace = true
@@ -13,3 +13,26 @@ serde.workspace = true
 serde_json.workspace = true
 axum.workspace = true
 tower-http.workspace = true
+db.workspace = true
+sqlx.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+argon2.workspace = true
+jsonwebtoken.workspace = true
+thiserror.workspace = true
+
+[features]
+default = []
+openapi = ["dep:utoipa", "dep:utoipa-axum", "dep:utoipa-swagger-ui"]
+
+[dependencies.utoipa]
+workspace = true
+optional = true
+
+[dependencies.utoipa-axum]
+workspace = true
+optional = true
+
+[dependencies.utoipa-swagger-ui]
+workspace = true
+optional = true

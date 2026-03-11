@@ -2,15 +2,20 @@
 
 ## Project overview
 
-Rust workspace project. Monorepo with multiple crates under `crates/`.
+Personal productivity tools. Rust workspace monorepo + React SPA frontend.
 
 ## Structure
 
 ```
 crates/
-  base/      — shared library (domain logic, types, utilities)
-  cli/       — CLI binary
-  server/    — server binary
+  core/      — config, types, domain logic (no IO/async)
+  db/        — sqlx PgPool, migrations, repositories
+  server/    — axum HTTP server, routes, auth, middleware
+  cli/       — CLI utilities
+migrations/  — SQL migrations (sqlx)
+frontend/    — React/Vite/TypeScript SPA
+infra/       — Docker files
+docs/        — documentation (Russian)
 ```
 
 ## Build & test commands
@@ -18,21 +23,34 @@ crates/
 ```bash
 cargo build                        # build all crates
 cargo test                         # run all tests
-cargo run -p cli                   # run CLI
 cargo run -p server                # run server
+cargo run -p server --features openapi  # run with swagger
 cargo clippy --workspace           # lint
 cargo fmt --all -- --check         # check formatting
+SQLX_OFFLINE=true cargo build      # build without DB connection
+cd frontend && npm run build       # build frontend
+cd frontend && npm run dev         # frontend dev server
 ```
+
+## Key tech
+
+- **Backend**: Axum, sqlx (PostgreSQL), JWT (jsonwebtoken), argon2
+- **Frontend**: React 18, TypeScript, Vite, BlockNote (editor), react-arborist (tree)
+- **Config**: `configuration.toml` (not committed), see `configuration.example.toml`
+- **DB**: PostgreSQL 16, migrations in `migrations/`
+- **Swagger**: utoipa behind `openapi` feature flag
 
 ## Conventions
 
 - Rust 2021 edition
 - Workspace dependencies: define shared deps in root `Cargo.toml` `[workspace.dependencies]`, reference via `.workspace = true`
-- Error handling: use `anyhow::Result` for binaries, `thiserror` for library errors in core
+- Error handling: `anyhow::Result` for binaries, `thiserror` for typed errors in server
 - Async runtime: tokio
 - Logging: `tracing` + `tracing-subscriber`
 - Serialization: `serde` + `serde_json`
-- Keep `base` free of IO and async — pure domain logic
+- DB queries: sqlx with raw SQL (no ORM), repos in `crates/db/src/repo/`
+- Keep `core` free of IO and async — pure domain logic
+- Frontend: `type` imports for TypeScript types (`import type { ... }`)
 - Tests go in `#[cfg(test)] mod tests` inside source files; integration tests in `tests/` dirs
 - Run `cargo fmt --all` before committing
 - Run `cargo clippy --workspace` and fix warnings before committing

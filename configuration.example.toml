@@ -1,3 +1,15 @@
 [server]
 host = "127.0.0.1"
 port = 3000
+
+[database]
+url = "postgres://effecty:effecty@localhost:5432/effecty"
+max_connections = 10
+
+[auth]
+registration_enabled = false
+jwt_secret = "change-me-in-production"
+jwt_expiration_hours = 24
+
+[app]
+environment = "dev"

@@ -1,9 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/base",
+    "crates/core",
+    "crates/db",
     "crates/cli",
     "crates/server",
+    "crates/migration",
 ]
 
 [workspace.package]
@@ -13,7 +15,10 @@ license = "MIT"
 repository = "https://gitlab.com/shifu.corp/effecty/effecty.org"
 
 [workspace.dependencies]
-base = { path = "crates/base" }
+effecty-core = { path = "crates/core", package = "core" }
+db = { path = "crates/db" }
+migration = { path = "crates/migration" }
+sea-orm-migration = { version = "1", features = ["sqlx-postgres", "runtime-tokio-rustls"] }
 anyhow = "1"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
@@ -22,4 +27,13 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "0.8"
 axum = "0.8"
-tower-http = { version = "0.6", features = ["trace", "cors"] }
+tower-http = { version = "0.6", features = ["trace", "cors", "fs"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "tls-rustls", "postgres", "chrono", "uuid"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+argon2 = "0.5"
+jsonwebtoken = "9"
+thiserror = "2"
+utoipa = { version = "5", features = ["axum_extras", "chrono", "uuid"] }
+utoipa-axum = "0.2"
+utoipa-swagger-ui = { version = "9", features = ["axum"] }

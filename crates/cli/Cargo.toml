@@ -4,7 +4,8 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-base.workspace = true
+effecty-core.workspace = true
+db.workspace = true
 anyhow.workspace = true
 tokio.workspace = true
 tracing.workspace = true
