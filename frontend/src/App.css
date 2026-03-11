@@ -6,6 +6,19 @@
   overflow: hidden;
 }
 
+/* Feature content area */
+.feature-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.feature-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
 /* Icon Bar */
 .icon-bar {
   width: 48px;
