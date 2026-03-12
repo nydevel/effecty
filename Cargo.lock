@@ -1639,6 +1639,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "profile"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "core",
+ "db",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2106,6 +2121,7 @@ dependencies = [
  "db",
  "jsonwebtoken",
  "notes",
+ "profile",
  "serde",
  "serde_json",
  "sqlx",

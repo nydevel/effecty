@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Modal, Form, Input, Select, DatePicker, TimePicker, Button, Space } from 'antd';
+import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import type { Task } from '../api/tasks';
 
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export default function TaskModal({ task, defaultDate, onSave, onDelete, onClose }: Props) {
+  const { t } = useTranslation();
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -53,51 +55,51 @@ export default function TaskModal({ task, defaultDate, onSave, onDelete, onClose
   return (
     <Modal
       open
-      title={task ? 'Edit Task' : 'New Task'}
+      title={task ? t('tasks.editTask') : t('tasks.newTask')}
       onCancel={onClose}
       footer={
         <Space>
           {task && onDelete && (
             <Button danger onClick={onDelete}>
-              Delete
+              {t('tasks.delete')}
             </Button>
           )}
           <div style={{ flex: 1 }} />
-          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={onClose}>{t('tasks.cancel')}</Button>
           <Button type="primary" onClick={() => form.submit()}>
-            Save
+            {t('tasks.save')}
           </Button>
         </Space>
       }
       width={440}
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
-        <Form.Item name="title" label="Title" rules={[{ required: true, message: 'Enter a title' }]}>
+        <Form.Item name="title" label={t('tasks.title')} rules={[{ required: true, message: t('tasks.titleRequired') }]}>
           <Input autoFocus />
         </Form.Item>
-        <Form.Item name="content" label="Notes">
+        <Form.Item name="content" label={t('tasks.notes')}>
           <Input.TextArea rows={3} />
         </Form.Item>
         <Space size="middle" style={{ display: 'flex' }}>
-          <Form.Item name="priority" label="Priority" style={{ flex: 1 }}>
+          <Form.Item name="priority" label={t('tasks.priority')} style={{ flex: 1 }}>
             <Select
               options={[
-                { value: 0, label: 'None' },
-                { value: 1, label: 'Low' },
-                { value: 2, label: 'Medium' },
-                { value: 3, label: 'High' },
+                { value: 0, label: t('tasks.priorityNone') },
+                { value: 1, label: t('tasks.priorityLow') },
+                { value: 2, label: t('tasks.priorityMedium') },
+                { value: 3, label: t('tasks.priorityHigh') },
               ]}
             />
           </Form.Item>
-          <Form.Item name="task_date" label="Date" rules={[{ required: true }]} style={{ flex: 1 }}>
+          <Form.Item name="task_date" label={t('tasks.date')} rules={[{ required: true }]} style={{ flex: 1 }}>
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
         </Space>
         <Space size="middle" style={{ display: 'flex' }}>
-          <Form.Item name="time_start" label="Start" style={{ flex: 1 }}>
+          <Form.Item name="time_start" label={t('tasks.start')} style={{ flex: 1 }}>
             <TimePicker format="HH:mm" style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="time_end" label="End" style={{ flex: 1 }}>
+          <Form.Item name="time_end" label={t('tasks.end')} style={{ flex: 1 }}>
             <TimePicker format="HH:mm" style={{ width: '100%' }} />
           </Form.Item>
         </Space>

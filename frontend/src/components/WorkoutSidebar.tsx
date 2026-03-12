@@ -1,5 +1,6 @@
 import { Button, Dropdown } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import type { Workout } from '../api/workouts';
 
 interface Props {
@@ -10,9 +11,10 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
-function formatWorkoutDate(dateStr: string): string {
+function formatWorkoutDate(dateStr: string, locale: string): string {
   const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('ru-RU', {
+  const jsLocale = locale === 'ru' ? 'ru-RU' : 'en-US';
+  return d.toLocaleDateString(jsLocale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -26,13 +28,14 @@ export default function WorkoutSidebar({
   onCreate,
   onDelete,
 }: Props) {
+  const { t, i18n } = useTranslation();
   const sorted = [...workouts].sort((a, b) => b.workout_date.localeCompare(a.workout_date));
 
   return (
     <div className="sidebar">
       <div className="sidebar-header">
         <Button size="small" icon={<PlusOutlined />} onClick={onCreate}>
-          Workout
+          {t('workouts.newWorkout')}
         </Button>
       </div>
       <div
@@ -48,7 +51,7 @@ export default function WorkoutSidebar({
               items: [
                 {
                   key: 'delete',
-                  label: 'Delete',
+                  label: t('workouts.delete'),
                   icon: <DeleteOutlined />,
                   danger: true,
                   onClick: () => onDelete(workout.id),
@@ -61,7 +64,7 @@ export default function WorkoutSidebar({
               className={`workout-list-item ${selectedId === workout.id ? 'selected' : ''}`}
               onClick={() => onSelect(workout.id)}
             >
-              {formatWorkoutDate(workout.workout_date)}
+              {formatWorkoutDate(workout.workout_date, i18n.language)}
             </div>
           </Dropdown>
         ))}

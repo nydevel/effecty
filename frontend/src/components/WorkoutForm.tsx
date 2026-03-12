@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { DatePicker, Input, Button, Typography } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import type { WorkoutExercise } from '../api/workouts';
 
@@ -21,6 +22,7 @@ export default function WorkoutForm({
   onRemoveExercise,
   onDropExercise,
 }: Props) {
+  const { t } = useTranslation();
   const [dragOver, setDragOver] = useState(false);
 
   return (
@@ -41,7 +43,7 @@ export default function WorkoutForm({
       }}
     >
       <div style={{ marginBottom: 16 }}>
-        <Typography.Text strong>Date</Typography.Text>
+        <Typography.Text strong>{t('workouts.date')}</Typography.Text>
         <DatePicker
           value={dayjs(workoutDate)}
           onChange={(d) => { if (d) onDateChange(d.format('YYYY-MM-DD')); }}
@@ -50,15 +52,15 @@ export default function WorkoutForm({
       </div>
 
       <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
-        Exercises
+        {t('workouts.exercises')}
       </Typography.Text>
 
       {exercises.length > 0 && (
         <div className="workout-exercise-header-row">
-          <span className="workout-exercise-name">Name</span>
-          <span className="workout-exercise-stat-label">Sets</span>
-          <span className="workout-exercise-stat-label">Reps</span>
-          <span className="workout-exercise-stat-label">Weight</span>
+          <span className="workout-exercise-name">{t('workouts.name')}</span>
+          <span className="workout-exercise-stat-label">{t('workouts.sets')}</span>
+          <span className="workout-exercise-stat-label">{t('workouts.reps')}</span>
+          <span className="workout-exercise-stat-label">{t('workouts.weight')}</span>
           <span style={{ width: 32 }} />
         </div>
       )}
@@ -73,7 +75,7 @@ export default function WorkoutForm({
       ))}
 
       <div className={`workout-drop-zone ${dragOver ? 'active' : ''}`}>
-        Drag an exercise here to add
+        {t('workouts.dragHint')}
       </div>
     </div>
   );

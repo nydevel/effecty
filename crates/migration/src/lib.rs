@@ -6,6 +6,7 @@ mod m20260311_000001_create_users;
 mod m20260311_000002_create_notes;
 mod m20260311_000003_create_tasks;
 mod m20260312_000004_create_workouts;
+mod m20260312_000005_create_user_profiles;
 
 pub struct Migrator;
 
@@ -17,6 +18,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260311_000002_create_notes::Migration),
             Box::new(m20260311_000003_create_tasks::Migration),
             Box::new(m20260312_000004_create_workouts::Migration),
+            Box::new(m20260312_000005_create_user_profiles::Migration),
         ]
     }
 }

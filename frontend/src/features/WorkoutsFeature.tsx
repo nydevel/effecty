@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as workoutsApi from '../api/workouts';
 import type { Workout, Exercise, WorkoutExercise } from '../api/workouts';
 import WorkoutSidebar from '../components/WorkoutSidebar';
@@ -6,6 +7,7 @@ import WorkoutForm from '../components/WorkoutForm';
 import ExerciseCatalog from '../components/ExerciseCatalog';
 
 export default function WorkoutsFeature() {
+  const { t } = useTranslation();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -121,7 +123,7 @@ export default function WorkoutsFeature() {
             onDropExercise={handleDropExercise}
           />
         ) : (
-          <div className="empty-state">Select a workout or create a new one</div>
+          <div className="empty-state">{t('workouts.emptyState')}</div>
         )}
       </main>
       <ExerciseCatalog

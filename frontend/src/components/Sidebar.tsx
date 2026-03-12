@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Dropdown } from 'antd';
 import { FolderAddOutlined, FileAddOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Tree, type TreeApi, type NodeRendererProps } from 'react-arborist';
+import { useTranslation } from 'react-i18next';
 import type { Note } from '../api/notes';
 
 export interface TreeNode {
@@ -57,6 +58,7 @@ export default function Sidebar({
   onRename,
   onDelete,
 }: Props) {
+  const { t } = useTranslation();
   const treeData = buildTree(notes);
   const treeRef = useRef<TreeApi<TreeNode>>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,7 +79,7 @@ export default function Sidebar({
       items: [
         {
           key: 'rename',
-          label: 'Rename',
+          label: t('notes.rename'),
           icon: <EditOutlined />,
           onClick: () => {
             requestAnimationFrame(() => {
@@ -87,7 +89,7 @@ export default function Sidebar({
         },
         {
           key: 'delete',
-          label: 'Delete',
+          label: t('notes.delete'),
           icon: <DeleteOutlined />,
           danger: true,
           onClick: () => onDelete(nodeId),
@@ -137,13 +139,13 @@ export default function Sidebar({
           size="small"
           icon={<FolderAddOutlined />}
           onClick={onCreateFolder}
-          title="New folder"
+          title={t('notes.newFolder')}
         />
         <Button
           size="small"
           icon={<FileAddOutlined />}
           onClick={onCreateFile}
-          title="New file"
+          title={t('notes.newFile')}
         />
       </div>
       <div

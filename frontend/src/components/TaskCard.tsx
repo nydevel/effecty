@@ -1,10 +1,17 @@
 import { Tag } from 'antd';
+import { useTranslation } from 'react-i18next';
 import type { Task } from '../api/tasks';
 
-const PRIORITY_CONFIG: Record<number, { color: string; label: string }> = {
-  1: { color: 'green', label: 'Low' },
-  2: { color: 'orange', label: 'Med' },
-  3: { color: 'red', label: 'High' },
+const PRIORITY_COLORS: Record<number, string> = {
+  1: 'green',
+  2: 'orange',
+  3: 'red',
+};
+
+const PRIORITY_KEYS: Record<number, string> = {
+  1: 'tasks.low',
+  2: 'tasks.med',
+  3: 'tasks.high',
 };
 
 interface Props {
@@ -13,7 +20,9 @@ interface Props {
 }
 
 export default function TaskCard({ task, onClick }: Props) {
-  const priority = PRIORITY_CONFIG[task.priority];
+  const { t } = useTranslation();
+  const color = PRIORITY_COLORS[task.priority];
+  const labelKey = PRIORITY_KEYS[task.priority];
 
   return (
     <div
@@ -26,8 +35,8 @@ export default function TaskCard({ task, onClick }: Props) {
       onClick={(e) => { e.stopPropagation(); onClick(); }}
     >
       <div className="task-card-header">
-        <span className="task-card-title">{task.title || 'Untitled'}</span>
-        {priority && <Tag color={priority.color} style={{ marginLeft: 'auto', marginRight: 0 }}>{priority.label}</Tag>}
+        <span className="task-card-title">{task.title || t('tasks.untitled')}</span>
+        {color && labelKey && <Tag color={color} style={{ marginLeft: 'auto', marginRight: 0 }}>{t(labelKey)}</Tag>}
       </div>
       {task.time_start && (
         <div className="task-card-time">

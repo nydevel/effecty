@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { Task } from '../api/tasks';
 import TaskCard from './TaskCard';
 
@@ -14,7 +15,6 @@ function formatDate(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MAX_VISIBLE = 3;
 
 export default function CalendarMonthView({
@@ -25,6 +25,9 @@ export default function CalendarMonthView({
   onDayClick,
   onDropTask,
 }: Props) {
+  const { t } = useTranslation();
+  const dayNames = t('calendar.daysShort', { returnObjects: true }) as string[];
+
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
 
@@ -61,8 +64,8 @@ export default function CalendarMonthView({
   return (
     <div className="calendar-month-grid">
       <div className="calendar-month-header">
-        {DAY_NAMES.map((name) => (
-          <div key={name} className="calendar-month-header-cell">{name}</div>
+        {dayNames.map((name, i) => (
+          <div key={i} className="calendar-month-header-cell">{name}</div>
         ))}
       </div>
       {weeks.map((week, wi) => (
@@ -96,7 +99,7 @@ export default function CalendarMonthView({
                   ))}
                   {dayTasks.length > MAX_VISIBLE && (
                     <div className="calendar-month-more">
-                      +{dayTasks.length - MAX_VISIBLE} more
+                      {t('tasks.more', { count: dayTasks.length - MAX_VISIBLE })}
                     </div>
                   )}
                 </div>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Segmented, Space, Typography } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import * as tasksApi from '../api/tasks';
 import type { Task } from '../api/tasks';
 import CalendarWeekView from '../components/CalendarWeekView';
@@ -41,32 +42,36 @@ function getDateRange(viewMode: ViewMode, currentDate: Date): { from: string; to
   };
 }
 
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-
-function getPeriodLabel(viewMode: ViewMode, currentDate: Date): string {
+function getPeriodLabel(
+  viewMode: ViewMode,
+  currentDate: Date,
+  monthsFull: string[],
+  monthsShort: string[],
+): string {
   if (viewMode === 'Year') {
     return String(currentDate.getFullYear());
   }
   if (viewMode === 'Month') {
-    return `${MONTH_NAMES[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+    return `${monthsFull[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
   }
   const monday = getMonday(currentDate);
   const sunday = new Date(monday);
   sunday.setDate(sunday.getDate() + 6);
-  const from = `${monday.getDate()} ${MONTH_NAMES[monday.getMonth()].slice(0, 3)}`;
-  const to = `${sunday.getDate()} ${MONTH_NAMES[sunday.getMonth()].slice(0, 3)} ${sunday.getFullYear()}`;
+  const from = `${monday.getDate()} ${monthsShort[monday.getMonth()]}`;
+  const to = `${sunday.getDate()} ${monthsShort[sunday.getMonth()]} ${sunday.getFullYear()}`;
   return `${from} – ${to}`;
 }
 
 export default function CalendarFeature() {
+  const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<ViewMode>('Week');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [modalDate, setModalDate] = useState<string | null>(null);
+
+  const monthsFull = t('calendar.monthsFull', { returnObjects: true }) as string[];
+  const monthsShort = t('calendar.monthsShort', { returnObjects: true }) as string[];
 
   const loadTasks = useCallback(async () => {
     const { from, to } = getDateRange(viewMode, currentDate);
@@ -145,16 +150,20 @@ export default function CalendarFeature() {
     <div className="calendar-feature">
       <div className="calendar-toolbar">
         <Space>
-          <Button onClick={goToday}>Today</Button>
+          <Button onClick={goToday}>{t('calendar.today')}</Button>
           <Button icon={<LeftOutlined />} onClick={() => navigate(-1)} />
           <Button icon={<RightOutlined />} onClick={() => navigate(1)} />
           <Typography.Text strong style={{ fontSize: 15 }}>
-            {getPeriodLabel(viewMode, currentDate)}
+            {getPeriodLabel(viewMode, currentDate, monthsFull, monthsShort)}
           </Typography.Text>
         </Space>
         <div style={{ flex: 1 }} />
         <Segmented
-          options={['Week', 'Month', 'Year']}
+          options={[
+            { label: t('calendar.week'), value: 'Week' },
+            { label: t('calendar.month'), value: 'Month' },
+            { label: t('calendar.year'), value: 'Year' },
+          ]}
           value={viewMode}
           onChange={(val) => setViewMode(val as ViewMode)}
         />

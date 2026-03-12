@@ -1,0 +1,82 @@
+{
+  "login": {
+    "title": "effecty",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "loginFailed": "Login failed",
+    "emailRequired": "Please enter your email",
+    "emailInvalid": "Please enter a valid email",
+    "passwordRequired": "Please enter your password"
+  },
+  "iconBar": {
+    "notes": "Notes",
+    "calendar": "Calendar",
+    "workouts": "Workouts",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "notes": {
+    "newFolder": "New Folder",
+    "newFile": "New file",
+    "newNote": "New Note",
+    "emptyState": "Select a note to start editing",
+    "rename": "Rename",
+    "delete": "Delete",
+    "untitled": "Untitled"
+  },
+  "tasks": {
+    "editTask": "Edit Task",
+    "newTask": "New Task",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "title": "Title",
+    "titleRequired": "Enter a title",
+    "notes": "Notes",
+    "priority": "Priority",
+    "priorityNone": "None",
+    "priorityLow": "Low",
+    "priorityMedium": "Medium",
+    "priorityHigh": "High",
+    "date": "Date",
+    "start": "Start",
+    "end": "End",
+    "low": "Low",
+    "med": "Med",
+    "high": "High",
+    "untitled": "Untitled",
+    "more": "+{{count}} more"
+  },
+  "calendar": {
+    "today": "Today",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "daysShort": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "dayLetters": ["M", "T", "W", "T", "F", "S", "S"],
+    "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "monthsFull": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+  },
+  "workouts": {
+    "newWorkout": "Workout",
+    "delete": "Delete",
+    "emptyState": "Select a workout or create a new one",
+    "exercises": "Exercises",
+    "newExercise": "New exercise...",
+    "date": "Date",
+    "name": "Name",
+    "sets": "Sets",
+    "reps": "Reps",
+    "weight": "Weight",
+    "dragHint": "Drag an exercise here to add"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "english": "English",
+    "russian": "Russian",
+    "save": "Save",
+    "saved": "Settings saved"
+  }
+}

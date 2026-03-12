@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Input } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useCreateBlockNote } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function NoteEditor({ title, content, onTitleChange, onChange }: Props) {
+  const { t } = useTranslation();
   const editor = useCreateBlockNote();
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export default function NoteEditor({ title, content, onTitleChange, onChange }: 
       <Input
         variant="borderless"
         defaultValue={title}
-        placeholder="Untitled"
+        placeholder={t('notes.untitled')}
         style={{ fontSize: 28, fontWeight: 700, padding: '8px 0 12px' }}
         onBlur={(e) => {
           const val = e.currentTarget.value.trim();

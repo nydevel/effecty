@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Input, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import type { Exercise } from '../api/workouts';
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function ExerciseCatalog({ exercises, onCreateExercise }: Props) {
+  const { t } = useTranslation();
   const [newName, setNewName] = useState('');
 
   const handleAdd = () => {
@@ -21,7 +23,7 @@ export default function ExerciseCatalog({ exercises, onCreateExercise }: Props) 
   return (
     <div className="exercise-catalog">
       <div className="exercise-catalog-header">
-        <Typography.Text strong>Exercises</Typography.Text>
+        <Typography.Text strong>{t('workouts.exercises')}</Typography.Text>
       </div>
       <div className="exercise-catalog-list">
         {exercises.map((ex) => (
@@ -41,7 +43,7 @@ export default function ExerciseCatalog({ exercises, onCreateExercise }: Props) 
       <div className="exercise-catalog-footer">
         <Input
           size="small"
-          placeholder="New exercise..."
+          placeholder={t('workouts.newExercise')}
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           onPressEnter={handleAdd}

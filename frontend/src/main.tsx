@@ -1,20 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ConfigProvider } from 'antd'
+import './i18n/i18n'
 import './index.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: '#1a1a2e',
-          borderRadius: 8,
-        },
-      }}
-    >
-      <App />
-    </ConfigProvider>
+    <App />
   </StrictMode>,
 )

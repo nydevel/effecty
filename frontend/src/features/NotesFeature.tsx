@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as notesApi from '../api/notes';
 import type { Note } from '../api/notes';
 import Sidebar from '../components/Sidebar';
 import NoteEditor from '../components/NoteEditor';
 
 export default function NotesFeature() {
+  const { t } = useTranslation();
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeNote, setActiveNote] = useState<Note | null>(null);
@@ -40,7 +42,7 @@ export default function NotesFeature() {
   const handleCreateFolder = async () => {
     await notesApi.createNote({
       parent_id: selectedId,
-      title: 'New Folder',
+      title: t('notes.newFolder'),
       node_type: 'folder',
     });
     await loadTree();
@@ -49,7 +51,7 @@ export default function NotesFeature() {
   const handleCreateFile = async () => {
     await notesApi.createNote({
       parent_id: selectedId,
-      title: 'New Note',
+      title: t('notes.newNote'),
       node_type: 'file',
     });
     await loadTree();
@@ -102,7 +104,7 @@ export default function NotesFeature() {
             onChange={handleContentChange}
           />
         ) : (
-          <div className="empty-state">Select a note to start editing</div>
+          <div className="empty-state">{t('notes.emptyState')}</div>
         )}
       </main>
     </div>

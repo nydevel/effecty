@@ -1,7 +1,14 @@
 import { Button, Tooltip } from 'antd';
-import { FileTextOutlined, CalendarOutlined, TrophyOutlined, LogoutOutlined } from '@ant-design/icons';
+import {
+  FileTextOutlined,
+  CalendarOutlined,
+  TrophyOutlined,
+  SettingOutlined,
+  LogoutOutlined,
+} from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
-type Feature = 'notes' | 'calendar' | 'workouts';
+type Feature = 'notes' | 'calendar' | 'workouts' | 'settings';
 
 interface Props {
   activeFeature: Feature;
@@ -10,9 +17,11 @@ interface Props {
 }
 
 export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Props) {
+  const { t } = useTranslation();
+
   return (
     <div className="icon-bar">
-      <Tooltip title="Notes" placement="right">
+      <Tooltip title={t('iconBar.notes')} placement="right">
         <Button
           type="text"
           icon={<FileTextOutlined />}
@@ -20,7 +29,7 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
           onClick={() => onSelectFeature('notes')}
         />
       </Tooltip>
-      <Tooltip title="Calendar" placement="right">
+      <Tooltip title={t('iconBar.calendar')} placement="right">
         <Button
           type="text"
           icon={<CalendarOutlined />}
@@ -28,7 +37,7 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
           onClick={() => onSelectFeature('calendar')}
         />
       </Tooltip>
-      <Tooltip title="Workouts" placement="right">
+      <Tooltip title={t('iconBar.workouts')} placement="right">
         <Button
           type="text"
           icon={<TrophyOutlined />}
@@ -37,7 +46,15 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
         />
       </Tooltip>
       <div className="icon-bar-spacer" />
-      <Tooltip title="Logout" placement="right">
+      <Tooltip title={t('iconBar.settings')} placement="right">
+        <Button
+          type="text"
+          icon={<SettingOutlined />}
+          className={`icon-btn ${activeFeature === 'settings' ? 'active' : ''}`}
+          onClick={() => onSelectFeature('settings')}
+        />
+      </Tooltip>
+      <Tooltip title={t('iconBar.logout')} placement="right">
         <Button
           type="text"
           icon={<LogoutOutlined />}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { Task } from '../api/tasks';
 
 interface Props {
@@ -6,24 +7,21 @@ interface Props {
   onMonthClick: (month: number) => void;
 }
 
-const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
-
-const DAY_NAMES = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
 function formatDate(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
 export default function CalendarYearView({ year, tasks, onMonthClick }: Props) {
-  const taskDates = new Set(tasks.map((t) => t.task_date));
+  const { t } = useTranslation();
+  const monthNames = t('calendar.monthsShort', { returnObjects: true }) as string[];
+  const dayLetters = t('calendar.dayLetters', { returnObjects: true }) as string[];
+
+  const taskDates = new Set(tasks.map((task) => task.task_date));
   const today = formatDate(new Date());
 
   return (
     <div className="calendar-year-grid">
-      {MONTH_NAMES.map((name, month) => {
+      {monthNames.map((name, month) => {
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         let startOffset = firstDay.getDay() - 1;
@@ -41,7 +39,7 @@ export default function CalendarYearView({ year, tasks, onMonthClick }: Props) {
           >
             <div className="calendar-year-month-title">{name}</div>
             <div className="calendar-year-mini-grid">
-              {DAY_NAMES.map((d, i) => (
+              {dayLetters.map((d, i) => (
                 <div key={i} className="calendar-year-mini-header">{d}</div>
               ))}
               {cells.map((day, i) => {

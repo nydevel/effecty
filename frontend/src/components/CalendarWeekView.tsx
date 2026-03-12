@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { Task } from '../api/tasks';
 import TaskCard from './TaskCard';
 
@@ -13,8 +14,6 @@ function formatDate(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
 export default function CalendarWeekView({
   weekStart,
   tasks,
@@ -22,6 +21,9 @@ export default function CalendarWeekView({
   onDayClick,
   onDropTask,
 }: Props) {
+  const { t } = useTranslation();
+  const dayNames = t('calendar.daysShort', { returnObjects: true }) as string[];
+
   const days: Date[] = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(weekStart);
@@ -58,7 +60,7 @@ export default function CalendarWeekView({
             onClick={() => onDayClick(dateStr)}
           >
             <div className="calendar-day-header">
-              <span className="calendar-day-name">{DAY_NAMES[i]}</span>
+              <span className="calendar-day-name">{dayNames[i]}</span>
               <span className={`calendar-day-number ${isToday ? 'today' : ''}`}>
                 {day.getDate()}
               </span>
