@@ -18,6 +18,7 @@ notes.workspace = true
 tasks.workspace = true
 workouts.workspace = true
 profile.workspace = true
+thoughts.workspace = true
 sqlx.workspace = true
 uuid.workspace = true
 chrono.workspace = true

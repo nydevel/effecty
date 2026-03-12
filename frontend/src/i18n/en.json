@@ -13,6 +13,7 @@
     "notes": "Notes",
     "calendar": "Calendar",
     "workouts": "Workouts",
+    "thoughts": "Thoughts",
     "settings": "Settings",
     "logout": "Logout"
   },
@@ -70,6 +71,19 @@
     "reps": "Reps",
     "weight": "Weight",
     "dragHint": "Drag an exercise here to add"
+  },
+  "thoughts": {
+    "newThought": "New thought",
+    "delete": "Delete",
+    "untitled": "Untitled",
+    "emptyState": "Select or create a thought",
+    "tags": "Tags",
+    "newTag": "New tag...",
+    "dragTagHint": "Drop tags here",
+    "contentPlaceholder": "Write your thoughts...",
+    "comments": "Comments",
+    "addComment": "Add comment",
+    "commentPlaceholder": "Write a comment..."
   },
   "settings": {
     "title": "Settings",

@@ -13,6 +13,7 @@
     "notes": "Заметки",
     "calendar": "Календарь",
     "workouts": "Тренировки",
+    "thoughts": "Мысли",
     "settings": "Настройки",
     "logout": "Выйти"
   },
@@ -70,6 +71,19 @@
     "reps": "Повторения",
     "weight": "Вес",
     "dragHint": "Перетащите упражнение сюда"
+  },
+  "thoughts": {
+    "newThought": "Новая мысль",
+    "delete": "Удалить",
+    "untitled": "Без названия",
+    "emptyState": "Выберите или создайте мысль",
+    "tags": "Теги",
+    "newTag": "Новый тег...",
+    "dragTagHint": "Перетащите теги сюда",
+    "contentPlaceholder": "Запишите свои мысли...",
+    "comments": "Комментарии",
+    "addComment": "Добавить комментарий",
+    "commentPlaceholder": "Напишите комментарий..."
   },
   "settings": {
     "title": "Настройки",

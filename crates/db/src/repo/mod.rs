@@ -1,6 +1,10 @@
 pub mod exercises;
 pub mod notes;
 pub mod profiles;
+pub mod tags;
 pub mod tasks;
+pub mod thought_comments;
+pub mod thought_tags;
+pub mod thoughts;
 pub mod users;
 pub mod workouts;
