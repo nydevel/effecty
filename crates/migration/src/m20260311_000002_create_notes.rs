@@ -28,12 +28,7 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default("Untitled"),
                     )
-                    .col(
-                        ColumnDef::new(Notes::Content)
-                            .text()
-                            .not_null()
-                            .default(""),
-                    )
+                    .col(ColumnDef::new(Notes::Content).text().not_null().default(""))
                     .col(
                         ColumnDef::new(Notes::NodeType)
                             .text()

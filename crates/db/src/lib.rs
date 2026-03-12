@@ -14,7 +14,10 @@ pub async fn create_pool(config: &DatabaseConfig) -> Result<PgPool> {
         .connect(&config.url)
         .await?;
 
-    tracing::info!("database pool created (max_connections={})", config.max_connections);
+    tracing::info!(
+        "database pool created (max_connections={})",
+        config.max_connections
+    );
 
     Ok(pool)
 }

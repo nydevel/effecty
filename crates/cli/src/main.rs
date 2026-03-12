@@ -10,8 +10,7 @@ use tracing_subscriber::EnvFilter;
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
-            EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new("info,sqlx=warn")),
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,sqlx=warn")),
         )
         .init();
 
@@ -77,7 +76,10 @@ async fn seed() -> Result<()> {
     let config = Config::load(Path::new("configuration.toml"))?;
 
     if config.app.environment != Environment::Dev {
-        bail!("seed is only allowed in dev environment (current: {})", config.app.environment);
+        bail!(
+            "seed is only allowed in dev environment (current: {})",
+            config.app.environment
+        );
     }
 
     db::run_migrations(&config.database.url).await?;

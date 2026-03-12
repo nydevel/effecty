@@ -72,9 +72,7 @@ fn setup_swagger(app: axum::Router) -> axum::Router {
     struct ApiDoc;
 
     tracing::info!("swagger UI enabled at /swagger-ui");
-    app.merge(
-        SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()),
-    )
+    app.merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
 }
 
 #[cfg(not(feature = "openapi"))]

@@ -68,13 +68,11 @@ pub async fn get_by_range(
 }
 
 pub async fn get_by_id(pool: &PgPool, id: TaskId, user_id: UserId) -> Result<Option<Task>> {
-    let task = sqlx::query_as::<_, Task>(
-        "SELECT * FROM tasks WHERE id = $1 AND user_id = $2",
-    )
-    .bind(id)
-    .bind(user_id)
-    .fetch_optional(pool)
-    .await?;
+    let task = sqlx::query_as::<_, Task>("SELECT * FROM tasks WHERE id = $1 AND user_id = $2")
+        .bind(id)
+        .bind(user_id)
+        .fetch_optional(pool)
+        .await?;
 
     Ok(task)
 }

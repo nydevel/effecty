@@ -1,6 +1,6 @@
 use anyhow::Result;
-use effecty_core::types::{NoteId, UserId};
 use chrono::{DateTime, Utc};
+use effecty_core::types::{NoteId, UserId};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
@@ -56,13 +56,11 @@ pub async fn get_tree(pool: &PgPool, user_id: UserId) -> Result<Vec<Note>> {
 }
 
 pub async fn get_by_id(pool: &PgPool, id: NoteId, user_id: UserId) -> Result<Option<Note>> {
-    let note = sqlx::query_as::<_, Note>(
-        "SELECT * FROM notes WHERE id = $1 AND user_id = $2",
-    )
-    .bind(id)
-    .bind(user_id)
-    .fetch_optional(pool)
-    .await?;
+    let note = sqlx::query_as::<_, Note>("SELECT * FROM notes WHERE id = $1 AND user_id = $2")
+        .bind(id)
+        .bind(user_id)
+        .fetch_optional(pool)
+        .await?;
 
     Ok(note)
 }
@@ -96,7 +94,12 @@ pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateNote) -> Resul
     Ok(note)
 }
 
-pub async fn update(pool: &PgPool, id: NoteId, user_id: UserId, input: &UpdateNote) -> Result<Option<Note>> {
+pub async fn update(
+    pool: &PgPool,
+    id: NoteId,
+    user_id: UserId,
+    input: &UpdateNote,
+) -> Result<Option<Note>> {
     let note = sqlx::query_as::<_, Note>(
         r#"
         UPDATE notes
@@ -117,7 +120,12 @@ pub async fn update(pool: &PgPool, id: NoteId, user_id: UserId, input: &UpdateNo
     Ok(note)
 }
 
-pub async fn move_note(pool: &PgPool, id: NoteId, user_id: UserId, input: &MoveNote) -> Result<Option<Note>> {
+pub async fn move_note(
+    pool: &PgPool,
+    id: NoteId,
+    user_id: UserId,
+    input: &MoveNote,
+) -> Result<Option<Note>> {
     let note = sqlx::query_as::<_, Note>(
         r#"
         UPDATE notes

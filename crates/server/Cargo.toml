@@ -16,6 +16,7 @@ tower-http.workspace = true
 db.workspace = true
 notes.workspace = true
 tasks.workspace = true
+workouts.workspace = true
 sqlx.workspace = true
 uuid.workspace = true
 chrono.workspace = true

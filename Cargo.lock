@@ -2119,6 +2119,7 @@ dependencies = [
  "utoipa-axum",
  "utoipa-swagger-ui",
  "uuid",
+ "workouts",
 ]
 
 [[package]]
@@ -3436,6 +3437,22 @@ dependencies = [
  "serde_json",
  "unicode-xid",
  "wasmparser",
+]
+
+[[package]]
+name = "workouts"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "chrono",
+ "core",
+ "db",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tracing",
 ]
 
 [[package]]

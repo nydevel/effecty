@@ -30,6 +30,9 @@ cargo fmt --all -- --check         # check formatting
 SQLX_OFFLINE=true cargo build      # build without DB connection
 cd frontend && npm run build       # build frontend
 cd frontend && npm run dev         # frontend dev server
+cargo run -p cli -- migrate        # run database migrations
+cargo run -p cli -- seed           # create dev user (dev@effecty.org / dev123, dev env only)
+cargo run -p cli -- dev            # build frontend + start server
 ```
 
 ## Key tech

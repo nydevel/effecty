@@ -3,10 +3,11 @@ import { isAuthenticated, clearToken } from './api/client';
 import IconBar from './components/IconBar';
 import NotesFeature from './features/NotesFeature';
 import CalendarFeature from './features/CalendarFeature';
+import WorkoutsFeature from './features/WorkoutsFeature';
 import LoginPage from './pages/LoginPage';
 import './App.css';
 
-type Feature = 'notes' | 'calendar';
+type Feature = 'notes' | 'calendar' | 'workouts';
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(isAuthenticated());
@@ -31,6 +32,7 @@ export default function App() {
       <div className="feature-content">
         {activeFeature === 'notes' && <NotesFeature />}
         {activeFeature === 'calendar' && <CalendarFeature />}
+        {activeFeature === 'workouts' && <WorkoutsFeature />}
       </div>
     </div>
   );

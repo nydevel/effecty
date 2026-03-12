@@ -1,5 +1,5 @@
-use effecty_core::types::UserId;
 use chrono::{Duration, Utc};
+use effecty_core::types::UserId;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +12,11 @@ pub struct Claims {
     pub iat: i64,
 }
 
-pub fn create_token(user_id: UserId, secret: &str, expiration_hours: u64) -> Result<String, AppError> {
+pub fn create_token(
+    user_id: UserId,
+    secret: &str,
+    expiration_hours: u64,
+) -> Result<String, AppError> {
     let now = Utc::now();
     let claims = Claims {
         sub: user_id,

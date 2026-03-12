@@ -14,16 +14,17 @@ pub fn create_router(state: AppState) -> Router {
         .route("/api/auth/login", post(auth::handlers::login))
         .route("/api/auth/register", post(auth::handlers::register));
 
-    let notes_routes = notes::router()
-        .with_state(state.pool.clone());
+    let notes_routes = notes::router().with_state(state.pool.clone());
 
-    let tasks_routes = tasks::router()
-        .with_state(state.pool.clone());
+    let tasks_routes = tasks::router().with_state(state.pool.clone());
+
+    let workouts_routes = workouts::router().with_state(state.pool.clone());
 
     let protected_routes = Router::new()
         .route("/api/auth/me", get(auth::handlers::me))
         .merge(notes_routes)
         .merge(tasks_routes)
+        .merge(workouts_routes)
         // Clone is cheap: PgPool is Arc-based, config is Arc<Config>
         .layer(middleware::from_fn_with_state(
             state.clone(),

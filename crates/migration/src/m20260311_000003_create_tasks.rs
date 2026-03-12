@@ -21,18 +21,8 @@ impl MigrationTrait for Migration {
                             .extra("DEFAULT gen_random_uuid()"),
                     )
                     .col(ColumnDef::new(Tasks::UserId).uuid().not_null())
-                    .col(
-                        ColumnDef::new(Tasks::Title)
-                            .text()
-                            .not_null()
-                            .default(""),
-                    )
-                    .col(
-                        ColumnDef::new(Tasks::Content)
-                            .text()
-                            .not_null()
-                            .default(""),
-                    )
+                    .col(ColumnDef::new(Tasks::Title).text().not_null().default(""))
+                    .col(ColumnDef::new(Tasks::Content).text().not_null().default(""))
                     .col(
                         ColumnDef::new(Tasks::Priority)
                             .small_integer()

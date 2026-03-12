@@ -1,6 +1,6 @@
 use anyhow::Result;
-use effecty_core::types::{Email, UserId};
 use chrono::{DateTime, Utc};
+use effecty_core::types::{Email, UserId};
 use serde::Serialize;
 use sqlx::PgPool;
 

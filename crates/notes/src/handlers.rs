@@ -31,7 +31,9 @@ pub async fn create_note(
     Json(input): Json<CreateNote>,
 ) -> Result<Json<notes::Note>, NotesError> {
     if input.node_type != "folder" && input.node_type != "file" {
-        return Err(NotesError::BadRequest("node_type must be 'folder' or 'file'".into()));
+        return Err(NotesError::BadRequest(
+            "node_type must be 'folder' or 'file'".into(),
+        ));
     }
     let note = notes::create(&pool, user_id, &input).await?;
     Ok(Json(note))

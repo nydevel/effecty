@@ -68,4 +68,11 @@ Swagger UI: `http://localhost:3000/swagger-ui`
 cargo test --workspace          # все тесты
 cargo clippy --workspace        # линтер
 cargo fmt --all -- --check      # проверка форматирования
+cargo run -p cli -- migrate #запуск миграций
+cargo run -p cli -- seed  #создание dev-пользователя (dev@effecty.org / dev123)
+cargo run -p cli -- dev #сборка фронта + запуск сервера
 ```
+
+Localdev user
+email = "dev@effecty.org";
+password = "dev123";
