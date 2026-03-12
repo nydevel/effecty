@@ -62,8 +62,7 @@ impl AppConfig {
 
 impl Config {
     pub fn load(path: &Path) -> Result<Self> {
-        let content =
-            std::fs::read_to_string(path).context("failed to read configuration file")?;
+        let content = std::fs::read_to_string(path).context("failed to read configuration file")?;
         let config: Config = toml::from_str(&content).context("failed to parse configuration")?;
         Ok(config)
     }
