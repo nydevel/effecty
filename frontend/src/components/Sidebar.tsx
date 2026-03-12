@@ -105,7 +105,7 @@ export default function Sidebar({
           className={`tree-node ${node.isSelected ? 'selected' : ''}`}
           style={style}
           ref={dragHandle}
-          onClick={() => node.select()}
+          onClick={() => { node.select(); if (isFolder) node.toggle(); }}
           onDoubleClick={() => node.edit()}
         >
           <span className="tree-node-icon">{isFolder ? (node.isOpen ? '📂' : '📁') : '📄'}</span>
