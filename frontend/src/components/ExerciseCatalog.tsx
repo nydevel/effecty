@@ -24,6 +24,23 @@ export default function ExerciseCatalog({ exercises, onCreateExercise }: Props) 
     <div className="exercise-catalog">
       <div className="exercise-catalog-header">
         <Typography.Text strong>{t('workouts.exercises')}</Typography.Text>
+        <Input
+          size="small"
+          placeholder={t('workouts.newExercise')}
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onPressEnter={handleAdd}
+          style={{ marginTop: 8 }}
+          suffix={
+            <Button
+              type="text"
+              size="small"
+              icon={<PlusOutlined />}
+              onClick={handleAdd}
+              style={{ marginRight: -7 }}
+            />
+          }
+        />
       </div>
       <div className="exercise-catalog-list">
         {exercises.map((ex) => (
@@ -39,24 +56,6 @@ export default function ExerciseCatalog({ exercises, onCreateExercise }: Props) 
             {ex.name}
           </div>
         ))}
-      </div>
-      <div className="exercise-catalog-footer">
-        <Input
-          size="small"
-          placeholder={t('workouts.newExercise')}
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          onPressEnter={handleAdd}
-          suffix={
-            <Button
-              type="text"
-              size="small"
-              icon={<PlusOutlined />}
-              onClick={handleAdd}
-              style={{ marginRight: -7 }}
-            />
-          }
-        />
       </div>
     </div>
   );

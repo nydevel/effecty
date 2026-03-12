@@ -1,11 +1,20 @@
 import { Button, Tooltip } from 'antd';
-import {
+import Icon, {
   FileTextOutlined,
   CalendarOutlined,
-  TrophyOutlined,
   SettingOutlined,
   LogoutOutlined,
 } from '@ant-design/icons';
+
+const DumbbellSvg = () => (
+  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+    <path d="M6.5 6a1.5 1.5 0 0 0-1.5 1.5v2H4a1.5 1.5 0 0 0-1.5 1.5v2A1.5 1.5 0 0 0 4 14.5h1v2A1.5 1.5 0 0 0 6.5 18h1A1.5 1.5 0 0 0 9 16.5v-4h6v4a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5v-2h1a1.5 1.5 0 0 0 1.5-1.5v-2A1.5 1.5 0 0 0 20 9.5h-1v-2A1.5 1.5 0 0 0 17.5 6h-1A1.5 1.5 0 0 0 15 7.5v4H9v-4A1.5 1.5 0 0 0 7.5 6h-1Z" />
+  </svg>
+);
+
+const DumbbellOutlined = (props: Record<string, unknown>) => (
+  <Icon component={DumbbellSvg} {...props} />
+);
 import { useTranslation } from 'react-i18next';
 
 type Feature = 'notes' | 'calendar' | 'workouts' | 'settings';
@@ -40,7 +49,7 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
       <Tooltip title={t('iconBar.workouts')} placement="right">
         <Button
           type="text"
-          icon={<TrophyOutlined />}
+          icon={<DumbbellOutlined />}
           className={`icon-btn ${activeFeature === 'workouts' ? 'active' : ''}`}
           onClick={() => onSelectFeature('workouts')}
         />
