@@ -24,6 +24,41 @@ pub async fn fetch_og_image(url: &str) -> Result<Option<String>> {
     Ok(og_image)
 }
 
+/// Fetch the page title from og:title meta tag or <title> element.
+pub async fn fetch_page_title(url: &str) -> Result<Option<String>> {
+    let response = reqwest::get(url)
+        .await
+        .context("failed to fetch page")?
+        .text()
+        .await
+        .context("failed to read page body")?;
+
+    let document = scraper::Html::parse_document(&response);
+
+    // Try og:title first
+    let og_selector =
+        scraper::Selector::parse(r#"meta[property="og:title"]"#).expect("valid selector");
+    if let Some(title) = document
+        .select(&og_selector)
+        .next()
+        .and_then(|el| el.value().attr("content"))
+        .map(|s| s.trim().to_owned())
+        .filter(|s| !s.is_empty())
+    {
+        return Ok(Some(title));
+    }
+
+    // Fallback to <title>
+    let title_selector = scraper::Selector::parse("title").expect("valid selector");
+    let title = document
+        .select(&title_selector)
+        .next()
+        .map(|el| el.text().collect::<String>().trim().to_owned())
+        .filter(|s| !s.is_empty());
+
+    Ok(title)
+}
+
 /// Extract a YouTube video thumbnail URL from a YouTube link.
 pub fn extract_youtube_thumbnail(url: &str) -> Option<String> {
     let video_id = extract_youtube_id(url)?;

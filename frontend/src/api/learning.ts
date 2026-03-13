@@ -89,6 +89,15 @@ export async function createTag(data: { name: string }): Promise<Tag> {
   });
 }
 
+// URL metadata
+export async function fetchUrlTitle(url: string): Promise<string | null> {
+  const res = await apiFetch<{ title: string | null }>('/learning/fetch-title', {
+    method: 'POST',
+    body: JSON.stringify({ url }),
+  });
+  return res.title;
+}
+
 // Materials
 export async function listMaterials(): Promise<Material[]> {
   return apiFetch<Material[]>('/materials');

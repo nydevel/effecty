@@ -25,6 +25,8 @@ pub fn router() -> Router<PgPool> {
         // Tags (shared, but accessible from learning context)
         .route("/api/learning/tags", get(handlers::list_tags))
         .route("/api/learning/tags", post(handlers::create_tag))
+        // URL metadata
+        .route("/api/learning/fetch-title", post(handlers::fetch_url_title))
         // Materials
         .route("/api/materials", get(handlers::list_materials))
         .route(

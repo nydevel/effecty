@@ -304,6 +304,31 @@ pub async fn unlink_material_topic(
     }
 }
 
+// --- URL metadata ---
+
+#[derive(Debug, serde::Deserialize)]
+pub struct FetchTitleRequest {
+    pub url: String,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct FetchTitleResponse {
+    pub title: Option<String>,
+}
+
+pub async fn fetch_url_title(
+    Json(input): Json<FetchTitleRequest>,
+) -> Result<Json<FetchTitleResponse>, LearningError> {
+    let title = thumbnail::fetch_page_title(&input.url)
+        .await
+        .unwrap_or_else(|err| {
+            tracing::warn!("failed to fetch page title: {err:#}");
+            None
+        });
+
+    Ok(Json(FetchTitleResponse { title }))
+}
+
 // --- Private helpers ---
 
 #[derive(Debug, serde::Deserialize)]

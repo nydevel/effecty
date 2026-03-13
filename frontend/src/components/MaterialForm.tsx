@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { Modal, Input, Radio, Upload, Button } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { useRef, useState } from 'react';
+import { Modal, Input, Radio, Upload, Button, Spin } from 'antd';
+import { UploadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { MaterialType } from '../api/learning';
+import { fetchUrlTitle } from '../api/learning';
 
 interface Props {
   open: boolean;
@@ -22,16 +23,22 @@ export default function MaterialForm({ open, onCancel, onSubmit }: Props) {
   const { t } = useTranslation();
   const [materialType, setMaterialType] = useState<MaterialType>('article_link');
   const [title, setTitle] = useState('');
+  const [titleManuallySet, setTitleManuallySet] = useState(false);
   const [url, setUrl] = useState('');
   const [content, setContent] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [fetchingTitle, setFetchingTitle] = useState(false);
+  const fetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const reset = () => {
     setMaterialType('article_link');
     setTitle('');
+    setTitleManuallySet(false);
     setUrl('');
     setContent('');
     setFile(null);
+    setFetchingTitle(false);
+    if (fetchTimerRef.current) clearTimeout(fetchTimerRef.current);
   };
 
   const handleOk = () => {
@@ -48,6 +55,35 @@ export default function MaterialForm({ open, onCancel, onSubmit }: Props) {
   const handleCancel = () => {
     reset();
     onCancel();
+  };
+
+  const handleUrlChange = (newUrl: string) => {
+    setUrl(newUrl);
+
+    if (materialType !== 'article_link' || titleManuallySet) return;
+
+    if (fetchTimerRef.current) clearTimeout(fetchTimerRef.current);
+
+    if (!URL_REGEX.test(newUrl.trim())) return;
+
+    fetchTimerRef.current = setTimeout(async () => {
+      setFetchingTitle(true);
+      try {
+        const fetched = await fetchUrlTitle(newUrl.trim());
+        if (fetched) {
+          setTitle(fetched);
+        }
+      } catch (err) {
+        console.error('Failed to fetch title:', err);
+      } finally {
+        setFetchingTitle(false);
+      }
+    }, 600);
+  };
+
+  const handleTitleChange = (val: string) => {
+    setTitle(val);
+    setTitleManuallySet(true);
   };
 
   const isLinkType = materialType === 'article_link' || materialType === 'video_link';
@@ -87,6 +123,7 @@ export default function MaterialForm({ open, onCancel, onSubmit }: Props) {
             setUrl('');
             setContent('');
             setFile(null);
+            setTitleManuallySet(false);
           }}
           optionType="button"
           buttonStyle="solid"
@@ -99,20 +136,21 @@ export default function MaterialForm({ open, onCancel, onSubmit }: Props) {
           <Radio.Button value="document">{t('learning.document')}</Radio.Button>
         </Radio.Group>
 
-        <Input
-          placeholder={t('learning.title')}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-
         {isLinkType && (
           <Input
             placeholder={t('learning.url')}
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => handleUrlChange(e.target.value)}
             status={url && !URL_REGEX.test(url) ? 'error' : undefined}
           />
         )}
+
+        <Input
+          placeholder={t('learning.title')}
+          value={title}
+          onChange={(e) => handleTitleChange(e.target.value)}
+          suffix={fetchingTitle ? <Spin indicator={<LoadingOutlined spin />} size="small" /> : undefined}
+        />
 
         {isTextType && (
           <Input.TextArea
