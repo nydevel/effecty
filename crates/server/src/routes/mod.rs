@@ -1,9 +1,12 @@
 mod health;
 mod spa;
 
+use std::path::PathBuf;
+
 use axum::middleware;
 use axum::routing::{get, post};
 use axum::Router;
+use tower_http::services::ServeDir;
 
 use crate::app_state::AppState;
 use crate::auth;
@@ -24,6 +27,11 @@ pub fn create_router(state: AppState) -> Router {
 
     let thoughts_routes = thoughts::router().with_state(state.pool.clone());
 
+    let upload_dir = PathBuf::from(&state.config.storage.upload_dir);
+    let learning_routes = learning::router()
+        .layer(axum::Extension(upload_dir.clone()))
+        .with_state(state.pool.clone());
+
     let protected_routes = Router::new()
         .route("/api/auth/me", get(auth::handlers::me))
         .merge(notes_routes)
@@ -31,6 +39,8 @@ pub fn create_router(state: AppState) -> Router {
         .merge(workouts_routes)
         .merge(profile_routes)
         .merge(thoughts_routes)
+        .merge(learning_routes)
+        .nest_service("/uploads", ServeDir::new(&upload_dir))
         // Clone is cheap: PgPool is Arc-based, config is Arc<Config>
         .layer(middleware::from_fn_with_state(
             state.clone(),

@@ -47,6 +47,16 @@ pub struct TagId(pub Uuid);
 #[sqlx(transparent)]
 pub struct ThoughtCommentId(pub Uuid);
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
+#[serde(transparent)]
+#[sqlx(transparent)]
+pub struct TopicId(pub Uuid);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
+#[serde(transparent)]
+#[sqlx(transparent)]
+pub struct MaterialId(pub Uuid);
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
 #[serde(transparent)]
 #[sqlx(transparent)]
@@ -107,6 +117,18 @@ impl std::fmt::Display for TagId {
 }
 
 impl std::fmt::Display for ThoughtCommentId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::fmt::Display for TopicId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::fmt::Display for MaterialId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
     }

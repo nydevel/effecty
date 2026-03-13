@@ -10,11 +10,12 @@ import NotesFeature from './features/NotesFeature';
 import CalendarFeature from './features/CalendarFeature';
 import WorkoutsFeature from './features/WorkoutsFeature';
 import ThoughtsFeature from './features/ThoughtsFeature';
+import LearningFeature from './features/LearningFeature';
 import SettingsFeature from './features/SettingsFeature';
 import LoginPage from './pages/LoginPage';
 import './App.css';
 
-type Feature = 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'settings';
+type Feature = 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'learning' | 'settings';
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(isAuthenticated());
@@ -69,6 +70,7 @@ export default function App() {
           {activeFeature === 'calendar' && <CalendarFeature />}
           {activeFeature === 'workouts' && <WorkoutsFeature />}
           {activeFeature === 'thoughts' && <ThoughtsFeature />}
+          {activeFeature === 'learning' && <LearningFeature />}
           {activeFeature === 'settings' && <SettingsFeature />}
         </div>
       </div>

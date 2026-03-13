@@ -39,6 +39,8 @@ async fn main() -> Result<()> {
     db::run_migrations(&config.database.url).await?;
     let pool = db::create_pool(&config.database).await?;
 
+    tokio::fs::create_dir_all(&config.storage.upload_dir).await?;
+
     let state = AppState {
         pool,
         config: Arc::new(config),

@@ -10,6 +10,8 @@ pub struct Config {
     pub database: DatabaseConfig,
     pub auth: AuthConfig,
     pub app: AppConfig,
+    #[serde(default)]
+    pub storage: StorageConfig,
 }
 
 #[derive(Debug, Deserialize)]
@@ -57,6 +59,26 @@ pub struct AppConfig {
 impl AppConfig {
     pub fn is_dev(&self) -> bool {
         self.environment == Environment::Dev
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct StorageConfig {
+    #[serde(default = "StorageConfig::default_upload_dir")]
+    pub upload_dir: String,
+}
+
+impl Default for StorageConfig {
+    fn default() -> Self {
+        Self {
+            upload_dir: Self::default_upload_dir(),
+        }
+    }
+}
+
+impl StorageConfig {
+    fn default_upload_dir() -> String {
+        "uploads".into()
     }
 }
 

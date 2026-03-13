@@ -1,4 +1,6 @@
 pub mod exercises;
+pub mod material_topics;
+pub mod materials;
 pub mod notes;
 pub mod profiles;
 pub mod tags;
@@ -6,5 +8,7 @@ pub mod tasks;
 pub mod thought_comments;
 pub mod thought_tags;
 pub mod thoughts;
+pub mod topic_tags;
+pub mod topics;
 pub mod users;
 pub mod workouts;

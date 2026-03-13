@@ -13,3 +13,6 @@ jwt_expiration_hours = 24
 
 [app]
 environment = "dev"
+
+[storage]
+upload_dir = "uploads"

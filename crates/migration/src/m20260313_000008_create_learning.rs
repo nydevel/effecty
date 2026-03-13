@@ -1,6 +1,7 @@
 use sea_orm_migration::prelude::*;
 
 use crate::m20260311_000001_create_users::Users;
+use crate::m20260312_000006_create_thoughts::Tags;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -8,36 +9,36 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // tags (generic, reusable across features)
+        // topics
         manager
             .create_table(
                 Table::create()
-                    .table(Tags::Table)
+                    .table(Topics::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(Tags::Id)
+                        ColumnDef::new(Topics::Id)
                             .uuid()
                             .not_null()
                             .primary_key()
                             .extra("DEFAULT gen_random_uuid()"),
                     )
-                    .col(ColumnDef::new(Tags::UserId).uuid().not_null())
-                    .col(ColumnDef::new(Tags::Name).text().not_null().default(""))
+                    .col(ColumnDef::new(Topics::UserId).uuid().not_null())
+                    .col(ColumnDef::new(Topics::Name).text().not_null().default(""))
                     .col(
-                        ColumnDef::new(Tags::CreatedAt)
+                        ColumnDef::new(Topics::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
                             .extra("DEFAULT NOW()"),
                     )
                     .col(
-                        ColumnDef::new(Tags::UpdatedAt)
+                        ColumnDef::new(Topics::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
                             .extra("DEFAULT NOW()"),
                     )
                     .foreign_key(
                         ForeignKey::create()
-                            .from(Tags::Table, Tags::UserId)
+                            .from(Topics::Table, Topics::UserId)
                             .to(Users::Table, Users::Id)
                             .on_delete(ForeignKeyAction::Cascade),
                     )
@@ -48,155 +49,37 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("idx_tags_user")
-                    .table(Tags::Table)
-                    .col(Tags::UserId)
+                    .name("idx_topics_user")
+                    .table(Topics::Table)
+                    .col(Topics::UserId)
                     .to_owned(),
             )
             .await?;
 
-        // thoughts
+        // topic_tags (many-to-many: topics <-> tags)
         manager
             .create_table(
                 Table::create()
-                    .table(Thoughts::Table)
+                    .table(TopicTags::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(Thoughts::Id)
+                        ColumnDef::new(TopicTags::Id)
                             .uuid()
                             .not_null()
                             .primary_key()
                             .extra("DEFAULT gen_random_uuid()"),
                     )
-                    .col(ColumnDef::new(Thoughts::UserId).uuid().not_null())
-                    .col(
-                        ColumnDef::new(Thoughts::Title)
-                            .text()
-                            .not_null()
-                            .default(""),
-                    )
-                    .col(
-                        ColumnDef::new(Thoughts::Content)
-                            .text()
-                            .not_null()
-                            .default(""),
-                    )
-                    .col(
-                        ColumnDef::new(Thoughts::Position)
-                            .double()
-                            .not_null()
-                            .default(0.0),
-                    )
-                    .col(
-                        ColumnDef::new(Thoughts::CreatedAt)
-                            .timestamp_with_time_zone()
-                            .not_null()
-                            .extra("DEFAULT NOW()"),
-                    )
-                    .col(
-                        ColumnDef::new(Thoughts::UpdatedAt)
-                            .timestamp_with_time_zone()
-                            .not_null()
-                            .extra("DEFAULT NOW()"),
-                    )
+                    .col(ColumnDef::new(TopicTags::TopicId).uuid().not_null())
+                    .col(ColumnDef::new(TopicTags::TagId).uuid().not_null())
                     .foreign_key(
                         ForeignKey::create()
-                            .from(Thoughts::Table, Thoughts::UserId)
-                            .to(Users::Table, Users::Id)
-                            .on_delete(ForeignKeyAction::Cascade),
-                    )
-                    .to_owned(),
-            )
-            .await?;
-
-        manager
-            .create_index(
-                Index::create()
-                    .name("idx_thoughts_user")
-                    .table(Thoughts::Table)
-                    .col(Thoughts::UserId)
-                    .to_owned(),
-            )
-            .await?;
-
-        // thought_comments
-        manager
-            .create_table(
-                Table::create()
-                    .table(ThoughtComments::Table)
-                    .if_not_exists()
-                    .col(
-                        ColumnDef::new(ThoughtComments::Id)
-                            .uuid()
-                            .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
-                    )
-                    .col(ColumnDef::new(ThoughtComments::ThoughtId).uuid().not_null())
-                    .col(ColumnDef::new(ThoughtComments::UserId).uuid().not_null())
-                    .col(ColumnDef::new(ThoughtComments::Content).text().not_null())
-                    .col(
-                        ColumnDef::new(ThoughtComments::CreatedAt)
-                            .timestamp_with_time_zone()
-                            .not_null()
-                            .extra("DEFAULT NOW()"),
-                    )
-                    .col(
-                        ColumnDef::new(ThoughtComments::UpdatedAt)
-                            .timestamp_with_time_zone()
-                            .not_null()
-                            .extra("DEFAULT NOW()"),
-                    )
-                    .foreign_key(
-                        ForeignKey::create()
-                            .from(ThoughtComments::Table, ThoughtComments::ThoughtId)
-                            .to(Thoughts::Table, Thoughts::Id)
+                            .from(TopicTags::Table, TopicTags::TopicId)
+                            .to(Topics::Table, Topics::Id)
                             .on_delete(ForeignKeyAction::Cascade),
                     )
                     .foreign_key(
                         ForeignKey::create()
-                            .from(ThoughtComments::Table, ThoughtComments::UserId)
-                            .to(Users::Table, Users::Id)
-                            .on_delete(ForeignKeyAction::Cascade),
-                    )
-                    .to_owned(),
-            )
-            .await?;
-
-        manager
-            .create_index(
-                Index::create()
-                    .name("idx_thought_comments_thought")
-                    .table(ThoughtComments::Table)
-                    .col(ThoughtComments::ThoughtId)
-                    .to_owned(),
-            )
-            .await?;
-
-        // thought_tags (many-to-many junction)
-        manager
-            .create_table(
-                Table::create()
-                    .table(ThoughtTags::Table)
-                    .if_not_exists()
-                    .col(
-                        ColumnDef::new(ThoughtTags::Id)
-                            .uuid()
-                            .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
-                    )
-                    .col(ColumnDef::new(ThoughtTags::ThoughtId).uuid().not_null())
-                    .col(ColumnDef::new(ThoughtTags::TagId).uuid().not_null())
-                    .foreign_key(
-                        ForeignKey::create()
-                            .from(ThoughtTags::Table, ThoughtTags::ThoughtId)
-                            .to(Thoughts::Table, Thoughts::Id)
-                            .on_delete(ForeignKeyAction::Cascade),
-                    )
-                    .foreign_key(
-                        ForeignKey::create()
-                            .from(ThoughtTags::Table, ThoughtTags::TagId)
+                            .from(TopicTags::Table, TopicTags::TagId)
                             .to(Tags::Table, Tags::Id)
                             .on_delete(ForeignKeyAction::Cascade),
                     )
@@ -207,10 +90,110 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("idx_thought_tags_unique")
-                    .table(ThoughtTags::Table)
-                    .col(ThoughtTags::ThoughtId)
-                    .col(ThoughtTags::TagId)
+                    .name("idx_topic_tags_unique")
+                    .table(TopicTags::Table)
+                    .col(TopicTags::TopicId)
+                    .col(TopicTags::TagId)
+                    .unique()
+                    .to_owned(),
+            )
+            .await?;
+
+        // materials
+        manager
+            .create_table(
+                Table::create()
+                    .table(Materials::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(Materials::Id)
+                            .uuid()
+                            .not_null()
+                            .primary_key()
+                            .extra("DEFAULT gen_random_uuid()"),
+                    )
+                    .col(ColumnDef::new(Materials::UserId).uuid().not_null())
+                    .col(ColumnDef::new(Materials::MaterialType).text().not_null())
+                    .col(
+                        ColumnDef::new(Materials::Title)
+                            .text()
+                            .not_null()
+                            .default(""),
+                    )
+                    .col(ColumnDef::new(Materials::Url).text().null())
+                    .col(ColumnDef::new(Materials::Content).text().null())
+                    .col(ColumnDef::new(Materials::FilePath).text().null())
+                    .col(ColumnDef::new(Materials::ThumbnailPath).text().null())
+                    .col(
+                        ColumnDef::new(Materials::CreatedAt)
+                            .timestamp_with_time_zone()
+                            .not_null()
+                            .extra("DEFAULT NOW()"),
+                    )
+                    .col(
+                        ColumnDef::new(Materials::UpdatedAt)
+                            .timestamp_with_time_zone()
+                            .not_null()
+                            .extra("DEFAULT NOW()"),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .from(Materials::Table, Materials::UserId)
+                            .to(Users::Table, Users::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .create_index(
+                Index::create()
+                    .name("idx_materials_user")
+                    .table(Materials::Table)
+                    .col(Materials::UserId)
+                    .to_owned(),
+            )
+            .await?;
+
+        // material_topics (many-to-many: materials <-> topics)
+        manager
+            .create_table(
+                Table::create()
+                    .table(MaterialTopics::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(MaterialTopics::Id)
+                            .uuid()
+                            .not_null()
+                            .primary_key()
+                            .extra("DEFAULT gen_random_uuid()"),
+                    )
+                    .col(ColumnDef::new(MaterialTopics::MaterialId).uuid().not_null())
+                    .col(ColumnDef::new(MaterialTopics::TopicId).uuid().not_null())
+                    .foreign_key(
+                        ForeignKey::create()
+                            .from(MaterialTopics::Table, MaterialTopics::MaterialId)
+                            .to(Materials::Table, Materials::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .from(MaterialTopics::Table, MaterialTopics::TopicId)
+                            .to(Topics::Table, Topics::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .create_index(
+                Index::create()
+                    .name("idx_material_topics_unique")
+                    .table(MaterialTopics::Table)
+                    .col(MaterialTopics::MaterialId)
+                    .col(MaterialTopics::TopicId)
                     .unique()
                     .to_owned(),
             )
@@ -219,22 +202,22 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(ThoughtTags::Table).to_owned())
+            .drop_table(Table::drop().table(MaterialTopics::Table).to_owned())
             .await?;
         manager
-            .drop_table(Table::drop().table(ThoughtComments::Table).to_owned())
+            .drop_table(Table::drop().table(Materials::Table).to_owned())
             .await?;
         manager
-            .drop_table(Table::drop().table(Thoughts::Table).to_owned())
+            .drop_table(Table::drop().table(TopicTags::Table).to_owned())
             .await?;
         manager
-            .drop_table(Table::drop().table(Tags::Table).to_owned())
+            .drop_table(Table::drop().table(Topics::Table).to_owned())
             .await
     }
 }
 
 #[derive(DeriveIden)]
-pub(crate) enum Tags {
+pub(crate) enum Topics {
     Table,
     Id,
     UserId,
@@ -244,32 +227,32 @@ pub(crate) enum Tags {
 }
 
 #[derive(DeriveIden)]
-enum Thoughts {
+enum TopicTags {
     Table,
     Id,
-    UserId,
-    Title,
-    Content,
-    Position,
-    CreatedAt,
-    UpdatedAt,
-}
-
-#[derive(DeriveIden)]
-enum ThoughtComments {
-    Table,
-    Id,
-    ThoughtId,
-    UserId,
-    Content,
-    CreatedAt,
-    UpdatedAt,
-}
-
-#[derive(DeriveIden)]
-enum ThoughtTags {
-    Table,
-    Id,
-    ThoughtId,
+    TopicId,
     TagId,
+}
+
+#[derive(DeriveIden)]
+enum Materials {
+    Table,
+    Id,
+    UserId,
+    MaterialType,
+    Title,
+    Url,
+    Content,
+    FilePath,
+    ThumbnailPath,
+    CreatedAt,
+    UpdatedAt,
+}
+
+#[derive(DeriveIden)]
+enum MaterialTopics {
+    Table,
+    Id,
+    MaterialId,
+    TopicId,
 }

@@ -11,6 +11,7 @@ members = [
     "crates/workouts",
     "crates/profile",
     "crates/thoughts",
+    "crates/learning",
 ]
 
 [workspace.package]
@@ -28,6 +29,7 @@ tasks = { path = "crates/tasks" }
 workouts = { path = "crates/workouts" }
 profile = { path = "crates/profile" }
 thoughts = { path = "crates/thoughts" }
+learning = { path = "crates/learning" }
 sea-orm-migration = { version = "1", features = ["sqlx-postgres", "runtime-tokio-rustls"] }
 anyhow = "1"
 tokio = { version = "1", features = ["full"] }

@@ -1,0 +1,54 @@
+#![deny(unsafe_code)]
+
+mod error;
+mod handlers;
+pub mod thumbnail;
+
+use axum::routing::{delete, get, post, put};
+use axum::Router;
+use sqlx::PgPool;
+
+pub fn router() -> Router<PgPool> {
+    Router::new()
+        // Topics
+        .route("/api/topics", get(handlers::list_topics))
+        .route("/api/topics", post(handlers::create_topic))
+        .route("/api/topics/{id}", put(handlers::update_topic))
+        .route("/api/topics/{id}", delete(handlers::delete_topic))
+        // Topic tags
+        .route("/api/topics/{id}/tags", get(handlers::list_topic_tags))
+        .route("/api/topics/{id}/tags", post(handlers::link_topic_tag))
+        .route(
+            "/api/topics/{id}/tags/{tag_id}",
+            delete(handlers::unlink_topic_tag),
+        )
+        // Tags (shared, but accessible from learning context)
+        .route("/api/learning/tags", get(handlers::list_tags))
+        .route("/api/learning/tags", post(handlers::create_tag))
+        // Materials
+        .route("/api/materials", get(handlers::list_materials))
+        .route(
+            "/api/materials/by-topic/{topic_id}",
+            get(handlers::list_materials_by_topic),
+        )
+        .route("/api/materials", post(handlers::create_material))
+        .route("/api/materials/{id}", put(handlers::update_material))
+        .route("/api/materials/{id}", delete(handlers::delete_material))
+        .route(
+            "/api/materials/{id}/upload",
+            post(handlers::upload_material_file),
+        )
+        // Material topics
+        .route(
+            "/api/materials/{id}/topics",
+            get(handlers::list_material_topics),
+        )
+        .route(
+            "/api/materials/{id}/topics",
+            post(handlers::link_material_topic),
+        )
+        .route(
+            "/api/materials/{id}/topics/{topic_id}",
+            delete(handlers::unlink_material_topic),
+        )
+}

@@ -3,6 +3,7 @@ import Icon, {
   FileTextOutlined,
   CalendarOutlined,
   BulbOutlined,
+  ReadOutlined,
   SettingOutlined,
   LogoutOutlined,
 } from '@ant-design/icons';
@@ -18,7 +19,7 @@ const DumbbellOutlined = (props: Record<string, unknown>) => (
 );
 import { useTranslation } from 'react-i18next';
 
-type Feature = 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'settings';
+type Feature = 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'learning' | 'settings';
 
 interface Props {
   activeFeature: Feature;
@@ -61,6 +62,14 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
           icon={<BulbOutlined />}
           className={`icon-btn ${activeFeature === 'thoughts' ? 'active' : ''}`}
           onClick={() => onSelectFeature('thoughts')}
+        />
+      </Tooltip>
+      <Tooltip title={t('iconBar.learning')} placement="right">
+        <Button
+          type="text"
+          icon={<ReadOutlined />}
+          className={`icon-btn ${activeFeature === 'learning' ? 'active' : ''}`}
+          onClick={() => onSelectFeature('learning')}
         />
       </Tooltip>
       <div className="icon-bar-spacer" />
