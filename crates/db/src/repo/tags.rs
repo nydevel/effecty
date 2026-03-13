@@ -28,6 +28,8 @@ pub async fn list(pool: &PgPool, user_id: UserId) -> Result<Vec<Tag>> {
 }
 
 pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateTag) -> Result<Tag> {
+    let name = input.name.split_whitespace().collect::<Vec<_>>().join(" ");
+
     let tag = sqlx::query_as::<_, Tag>(
         r#"
         INSERT INTO tags (user_id, name)
@@ -36,7 +38,7 @@ pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateTag) -> Result
         "#,
     )
     .bind(user_id)
-    .bind(&input.name)
+    .bind(&name)
     .fetch_one(pool)
     .await?;
 
