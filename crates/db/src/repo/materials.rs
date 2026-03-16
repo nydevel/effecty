@@ -68,13 +68,21 @@ pub struct UpdateMaterial {
     pub content: Option<String>,
 }
 
+const SELECT_WITH_STATUS: &str = r#"
+    SELECT m.id, m.user_id, m.material_type, m.title, m.url, m.content,
+           m.file_path, m.thumbnail_path,
+           COALESCE(um.is_done, FALSE) AS is_done,
+           m.created_at, m.updated_at
+    FROM materials m
+    LEFT JOIN user_materials um ON um.material_id = m.id AND um.user_id = m.user_id
+"#;
+
 pub async fn list(pool: &PgPool, user_id: UserId) -> Result<Vec<Material>> {
-    let materials = sqlx::query_as::<_, Material>(
-        "SELECT * FROM materials WHERE user_id = $1 ORDER BY created_at DESC",
-    )
-    .bind(user_id)
-    .fetch_all(pool)
-    .await?;
+    let query = format!("{SELECT_WITH_STATUS} WHERE m.user_id = $1 ORDER BY m.created_at DESC");
+    let materials = sqlx::query_as::<_, Material>(&query)
+        .bind(user_id)
+        .fetch_all(pool)
+        .await?;
 
     Ok(materials)
 }
@@ -84,30 +92,30 @@ pub async fn list_by_topic(
     topic_id: TopicId,
     user_id: UserId,
 ) -> Result<Vec<Material>> {
-    let materials = sqlx::query_as::<_, Material>(
+    let query = format!(
         r#"
-        SELECT m.*
-        FROM materials m
+        {SELECT_WITH_STATUS}
         JOIN material_topics mt ON mt.material_id = m.id
         WHERE mt.topic_id = $1 AND m.user_id = $2
         ORDER BY m.created_at DESC
-        "#,
-    )
-    .bind(topic_id)
-    .bind(user_id)
-    .fetch_all(pool)
-    .await?;
+        "#
+    );
+    let materials = sqlx::query_as::<_, Material>(&query)
+        .bind(topic_id)
+        .bind(user_id)
+        .fetch_all(pool)
+        .await?;
 
     Ok(materials)
 }
 
 pub async fn get(pool: &PgPool, id: MaterialId, user_id: UserId) -> Result<Option<Material>> {
-    let material =
-        sqlx::query_as::<_, Material>("SELECT * FROM materials WHERE id = $1 AND user_id = $2")
-            .bind(id)
-            .bind(user_id)
-            .fetch_optional(pool)
-            .await?;
+    let query = format!("{SELECT_WITH_STATUS} WHERE m.id = $1 AND m.user_id = $2");
+    let material = sqlx::query_as::<_, Material>(&query)
+        .bind(id)
+        .bind(user_id)
+        .fetch_optional(pool)
+        .await?;
 
     Ok(material)
 }
@@ -117,9 +125,16 @@ pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateMaterial) -> R
 
     let material = sqlx::query_as::<_, Material>(
         r#"
-        INSERT INTO materials (user_id, material_type, title, url, content)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING *
+        WITH inserted AS (
+            INSERT INTO materials (user_id, material_type, title, url, content)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
+        )
+        SELECT i.id, i.user_id, i.material_type, i.title, i.url, i.content,
+               i.file_path, i.thumbnail_path,
+               FALSE AS is_done,
+               i.created_at, i.updated_at
+        FROM inserted i
         "#,
     )
     .bind(user_id)
@@ -141,13 +156,21 @@ pub async fn update(
 ) -> Result<Option<Material>> {
     let material = sqlx::query_as::<_, Material>(
         r#"
-        UPDATE materials
-        SET title = COALESCE($3, title),
-            url = COALESCE($4, url),
-            content = COALESCE($5, content),
-            updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
-        RETURNING *
+        WITH updated AS (
+            UPDATE materials
+            SET title = COALESCE($3, title),
+                url = COALESCE($4, url),
+                content = COALESCE($5, content),
+                updated_at = NOW()
+            WHERE id = $1 AND user_id = $2
+            RETURNING *
+        )
+        SELECT u.id, u.user_id, u.material_type, u.title, u.url, u.content,
+               u.file_path, u.thumbnail_path,
+               COALESCE(um.is_done, FALSE) AS is_done,
+               u.created_at, u.updated_at
+        FROM updated u
+        LEFT JOIN user_materials um ON um.material_id = u.id AND um.user_id = u.user_id
         "#,
     )
     .bind(id)
@@ -169,10 +192,18 @@ pub async fn update_file_path(
 ) -> Result<Option<Material>> {
     let material = sqlx::query_as::<_, Material>(
         r#"
-        UPDATE materials
-        SET file_path = $3, updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
-        RETURNING *
+        WITH updated AS (
+            UPDATE materials
+            SET file_path = $3, updated_at = NOW()
+            WHERE id = $1 AND user_id = $2
+            RETURNING *
+        )
+        SELECT u.id, u.user_id, u.material_type, u.title, u.url, u.content,
+               u.file_path, u.thumbnail_path,
+               COALESCE(um.is_done, FALSE) AS is_done,
+               u.created_at, u.updated_at
+        FROM updated u
+        LEFT JOIN user_materials um ON um.material_id = u.id AND um.user_id = u.user_id
         "#,
     )
     .bind(id)
@@ -192,10 +223,18 @@ pub async fn update_thumbnail(
 ) -> Result<Option<Material>> {
     let material = sqlx::query_as::<_, Material>(
         r#"
-        UPDATE materials
-        SET thumbnail_path = $3, updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
-        RETURNING *
+        WITH updated AS (
+            UPDATE materials
+            SET thumbnail_path = $3, updated_at = NOW()
+            WHERE id = $1 AND user_id = $2
+            RETURNING *
+        )
+        SELECT u.id, u.user_id, u.material_type, u.title, u.url, u.content,
+               u.file_path, u.thumbnail_path,
+               COALESCE(um.is_done, FALSE) AS is_done,
+               u.created_at, u.updated_at
+        FROM updated u
+        LEFT JOIN user_materials um ON um.material_id = u.id AND um.user_id = u.user_id
         "#,
     )
     .bind(id)
@@ -212,20 +251,22 @@ pub async fn toggle_done(
     id: MaterialId,
     user_id: UserId,
 ) -> Result<Option<Material>> {
-    let material = sqlx::query_as::<_, Material>(
+    // Upsert into user_materials, toggling is_done
+    sqlx::query(
         r#"
-        UPDATE materials
-        SET is_done = NOT is_done, updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
-        RETURNING *
+        INSERT INTO user_materials (user_id, material_id, is_done)
+        VALUES ($1, $2, TRUE)
+        ON CONFLICT (user_id, material_id)
+        DO UPDATE SET is_done = NOT user_materials.is_done,
+                      updated_at = NOW()
         "#,
     )
-    .bind(id)
     .bind(user_id)
-    .fetch_optional(pool)
+    .bind(id)
+    .execute(pool)
     .await?;
 
-    Ok(material)
+    get(pool, id, user_id).await
 }
 
 pub async fn delete(pool: &PgPool, id: MaterialId, user_id: UserId) -> Result<bool> {
