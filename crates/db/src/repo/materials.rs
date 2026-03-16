@@ -47,6 +47,7 @@ pub struct Material {
     pub content: Option<String>,
     pub file_path: Option<String>,
     pub thumbnail_path: Option<String>,
+    pub is_done: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -200,6 +201,27 @@ pub async fn update_thumbnail(
     .bind(id)
     .bind(user_id)
     .bind(thumbnail_path)
+    .fetch_optional(pool)
+    .await?;
+
+    Ok(material)
+}
+
+pub async fn toggle_done(
+    pool: &PgPool,
+    id: MaterialId,
+    user_id: UserId,
+) -> Result<Option<Material>> {
+    let material = sqlx::query_as::<_, Material>(
+        r#"
+        UPDATE materials
+        SET is_done = NOT is_done, updated_at = NOW()
+        WHERE id = $1 AND user_id = $2
+        RETURNING *
+        "#,
+    )
+    .bind(id)
+    .bind(user_id)
     .fetch_optional(pool)
     .await?;
 

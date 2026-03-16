@@ -7,6 +7,7 @@ import {
   FilePdfOutlined,
   EditOutlined,
   DeleteOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { Material } from '../api/learning';
@@ -15,6 +16,7 @@ interface Props {
   material: Material;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onToggleDone: (id: string) => void;
 }
 
 function getThumbnailUrl(material: Material): string | null {
@@ -41,7 +43,7 @@ function getTypeIcon(type: string) {
   }
 }
 
-export default function MaterialCard({ material, onEdit, onDelete }: Props) {
+export default function MaterialCard({ material, onEdit, onDelete, onToggleDone }: Props) {
   const { t } = useTranslation();
   const thumbUrl = getThumbnailUrl(material);
   const showThumbnail =
@@ -68,7 +70,7 @@ export default function MaterialCard({ material, onEdit, onDelete }: Props) {
       }}
       trigger={['contextMenu']}
     >
-      <div className="material-card">
+      <div className={`material-card${material.is_done ? ' material-card--done' : ''}`}>
         <div className="material-card-thumb">
           {showThumbnail ? (
             <img src={thumbUrl} alt={material.title} />
@@ -85,6 +87,16 @@ export default function MaterialCard({ material, onEdit, onDelete }: Props) {
           </div>
         </div>
         <div className="material-card-actions">
+          <button
+            className={`material-done-btn${material.is_done ? ' material-done-btn--checked' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleDone(material.id);
+            }}
+            title={material.is_done ? t('learning.mark_undone') : t('learning.mark_done')}
+          >
+            {material.is_done && <CheckOutlined />}
+          </button>
           <Button
             type="text"
             size="small"

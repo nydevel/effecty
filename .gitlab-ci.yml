@@ -1,0 +1,69 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  DOCKER_IMAGE: effecty-server
+
+# Тестирование
+test:
+  stage: test
+  tags:
+    - prod
+  script:
+    - docker build -f infra/Dockerfile --target builder -t effecty-test .
+    - docker run --rm -e SQLX_OFFLINE=true effecty-test cargo test --workspace
+  only:
+    - merge_requests
+    - main
+
+# Линтинг
+lint:
+  stage: test
+  tags:
+    - prod
+  script:
+    - docker build -f infra/Dockerfile --target builder -t effecty-lint .
+    - docker run --rm -e SQLX_OFFLINE=true effecty-lint sh -c "rustup component add clippy && cargo clippy --workspace -- -D warnings"
+  only:
+    - merge_requests
+    - main
+
+# Проверка форматирования
+fmt:
+  stage: test
+  tags:
+    - prod
+  script:
+    - docker build -f infra/Dockerfile --target builder -t effecty-fmt .
+    - docker run --rm effecty-fmt cargo fmt --all -- --check
+  only:
+    - merge_requests
+    - main
+
+# Сборка Docker образа
+build:
+  stage: build
+  tags:
+    - prod
+  script:
+    - docker build -f infra/Dockerfile -t $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA .
+    - docker tag $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA $DOCKER_IMAGE:latest
+  only:
+    - main
+
+# Деплой на production
+deploy:
+  stage: deploy
+  tags:
+    - prod
+  script:
+    - cd infra
+    - docker compose -f docker-compose.prod.yml up -d --build
+    - docker image prune -f
+  only:
+    - main
+  when: manual
+  environment:
+    name: production

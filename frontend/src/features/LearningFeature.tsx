@@ -117,6 +117,15 @@ export default function LearningFeature() {
     await loadMaterials();
   };
 
+  const handleToggleDone = async (id: string) => {
+    try {
+      const updated = await learningApi.toggleMaterialDone(id);
+      setMaterials((prev) => prev.map((m) => (m.id === id ? updated : m)));
+    } catch (err) {
+      console.error('Failed to toggle material done:', err);
+    }
+  };
+
   const handleEditMaterial = (id: string) => {
     // TODO: open edit form
     console.log('Edit material:', id);
@@ -163,6 +172,7 @@ export default function LearningFeature() {
                       material={m}
                       onEdit={handleEditMaterial}
                       onDelete={handleDeleteMaterial}
+                      onToggleDone={handleToggleDone}
                     />
                   ))}
                 </div>

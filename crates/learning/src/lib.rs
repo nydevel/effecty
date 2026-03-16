@@ -4,7 +4,7 @@ mod error;
 mod handlers;
 pub mod thumbnail;
 
-use axum::routing::{delete, get, post, put};
+use axum::routing::{delete, get, patch, post, put};
 use axum::Router;
 use sqlx::PgPool;
 
@@ -36,6 +36,10 @@ pub fn router() -> Router<PgPool> {
         .route("/api/materials", post(handlers::create_material))
         .route("/api/materials/{id}", put(handlers::update_material))
         .route("/api/materials/{id}", delete(handlers::delete_material))
+        .route(
+            "/api/materials/{id}/toggle-done",
+            patch(handlers::toggle_material_done),
+        )
         .route(
             "/api/materials/{id}/upload",
             post(handlers::upload_material_file),
