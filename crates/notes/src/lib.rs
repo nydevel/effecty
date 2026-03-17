@@ -15,4 +15,13 @@ pub fn router() -> Router<PgPool> {
         .route("/api/notes/{id}", put(handlers::update_note))
         .route("/api/notes/{id}/move", patch(handlers::move_note))
         .route("/api/notes/{id}", delete(handlers::delete_note))
+        // Memos (belong to memolist notes)
+        .route(
+            "/api/notes/{note_id}/memos",
+            get(handlers::list_memos).post(handlers::create_memo),
+        )
+        .route(
+            "/api/notes/{note_id}/memos/{memo_id}",
+            put(handlers::update_memo).delete(handlers::delete_memo),
+        )
 }

@@ -23,9 +23,14 @@
     "newFile": "New file",
     "newNote": "New Note",
     "emptyState": "Select a note to start editing",
+    "newMemolist": "New Memo List",
     "rename": "Rename",
     "delete": "Delete",
-    "untitled": "Untitled"
+    "untitled": "Untitled",
+    "memoTitle": "Title",
+    "memoContent": "Content",
+    "addMemo": "Add memo",
+    "cancel": "Cancel"
   },
   "tasks": {
     "editTask": "Edit Task",

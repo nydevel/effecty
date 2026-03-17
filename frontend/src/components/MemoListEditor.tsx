@@ -1,0 +1,195 @@
+import { useCallback, useEffect, useState } from 'react';
+import { Button, Input } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
+import type { Memo } from '../api/notes';
+import * as notesApi from '../api/notes';
+
+interface Props {
+  noteId: string;
+  title: string;
+  onTitleChange: (title: string) => void;
+}
+
+function linkify(text: string) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map((part, i) =>
+    urlRegex.test(part) ? (
+      <a key={i} href={part} target="_blank" rel="noopener noreferrer">
+        {part}
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    ),
+  );
+}
+
+export default function MemoListEditor({ noteId, title, onTitleChange }: Props) {
+  const { t } = useTranslation();
+  const [memos, setMemos] = useState<Memo[]>([]);
+  const [adding, setAdding] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newContent, setNewContent] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+
+  const loadMemos = useCallback(async () => {
+    try {
+      const list = await notesApi.listMemos(noteId);
+      setMemos(list);
+    } catch (err) {
+      console.error('Failed to load memos:', err);
+    }
+  }, [noteId]);
+
+  useEffect(() => {
+    loadMemos();
+  }, [loadMemos]);
+
+  const handleAdd = async () => {
+    if (!newTitle.trim()) return;
+    await notesApi.createMemo(noteId, {
+      title: newTitle.trim(),
+      content: newContent.trim() || undefined,
+    });
+    setNewTitle('');
+    setNewContent('');
+    setAdding(false);
+    await loadMemos();
+  };
+
+  const handleStartEdit = (memo: Memo) => {
+    setEditingId(memo.id);
+    setEditTitle(memo.title);
+    setEditContent(memo.content);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingId || !editTitle.trim()) return;
+    await notesApi.updateMemo(noteId, editingId, {
+      title: editTitle.trim(),
+      content: editContent,
+    });
+    setEditingId(null);
+    await loadMemos();
+  };
+
+  const handleDelete = async (memoId: string) => {
+    await notesApi.deleteMemo(noteId, memoId);
+    await loadMemos();
+  };
+
+  return (
+    <div className="memo-list-editor">
+      <Input
+        variant="borderless"
+        defaultValue={title}
+        placeholder={t('notes.untitled')}
+        style={{ fontSize: 28, fontWeight: 700, padding: '8px 0 12px' }}
+        onBlur={(e) => {
+          const val = e.currentTarget.value.trim();
+          if (val && val !== title) onTitleChange(val);
+        }}
+        onPressEnter={(e) => e.currentTarget.blur()}
+      />
+
+      <div className="memo-list">
+        {memos.map((memo) => (
+          <div key={memo.id} className="memo-item">
+            {editingId === memo.id ? (
+              <div className="memo-item-edit">
+                <Input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  onPressEnter={handleSaveEdit}
+                  placeholder={t('notes.memoTitle')}
+                />
+                <Input.TextArea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  rows={3}
+                  placeholder={t('notes.memoContent')}
+                />
+                <div className="memo-item-edit-actions">
+                  <Button
+                    size="small"
+                    type="primary"
+                    icon={<CheckOutlined />}
+                    onClick={handleSaveEdit}
+                  />
+                  <Button
+                    size="small"
+                    icon={<CloseOutlined />}
+                    onClick={() => setEditingId(null)}
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="memo-item-body">
+                  <div className="memo-item-title">{memo.title}</div>
+                  {memo.content && (
+                    <div className="memo-item-content">{linkify(memo.content)}</div>
+                  )}
+                </div>
+                <div className="memo-item-actions">
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => handleStartEdit(memo)}
+                  />
+                  <Button
+                    type="text"
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => handleDelete(memo.id)}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {adding ? (
+        <div className="memo-add-form">
+          <Input
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            onPressEnter={handleAdd}
+            placeholder={t('notes.memoTitle')}
+            autoFocus
+          />
+          <Input.TextArea
+            value={newContent}
+            onChange={(e) => setNewContent(e.target.value)}
+            rows={3}
+            placeholder={t('notes.memoContent')}
+          />
+          <div className="memo-add-form-actions">
+            <Button size="small" type="primary" onClick={handleAdd}>
+              {t('notes.addMemo')}
+            </Button>
+            <Button size="small" onClick={() => { setAdding(false); setNewTitle(''); setNewContent(''); }}>
+              {t('notes.cancel')}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button
+          type="dashed"
+          icon={<PlusOutlined />}
+          onClick={() => setAdding(true)}
+          style={{ marginTop: 12 }}
+          block
+        >
+          {t('notes.addMemo')}
+        </Button>
+      )}
+    </div>
+  );
+}

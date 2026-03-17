@@ -1,6 +1,7 @@
 pub mod exercises;
 pub mod material_topics;
 pub mod materials;
+pub mod memos;
 pub mod notes;
 pub mod profiles;
 pub mod tags;
