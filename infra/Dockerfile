@@ -12,6 +12,8 @@ RUN npm run build
 # Stage 2: Build Rust backend
 FROM rust:latest AS builder
 
+RUN rustup component add rustfmt clippy
+
 WORKDIR /build
 
 # Copy manifests for dependency caching
