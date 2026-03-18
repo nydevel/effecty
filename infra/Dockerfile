@@ -75,7 +75,7 @@ COPY --from=frontend-builder /build/frontend/dist /build/frontend/dist
 RUN cargo build --release -p server -p cli
 
 # Stage 3: Runtime
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 WORKDIR /app
 
