@@ -9,13 +9,8 @@ services:
       - "8010"
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    environment:
-      - HOST=0.0.0.0
-      - PORT=8010
-      - DATABASE_URL=${DATABASE_URL:-postgres://effecty:effecty@host.docker.internal:5432/effecty}
-      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
-      - APP_ENVIRONMENT=${APP_ENVIRONMENT:-production}
     volumes:
+      - /opt/effecty/configuration.toml:/app/configuration.toml:ro
       - effecty-uploads:/app/uploads
     networks:
       - infra-network

@@ -89,9 +89,6 @@ RUN chmod +x /app/entrypoint.sh
 
 RUN mkdir -p /app/uploads
 
-ENV HOST=0.0.0.0
-ENV PORT=8010
-
 EXPOSE 8010
 
 ENTRYPOINT ["/app/entrypoint.sh"]
