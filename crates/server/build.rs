@@ -11,6 +11,11 @@ fn main() {
     let frontend_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../frontend");
     let dist_dir = frontend_dir.join("dist");
 
+    // If dist/ already exists (e.g. pre-built in Docker), skip npm entirely
+    if dist_dir.exists() {
+        return;
+    }
+
     if !frontend_dir.join("node_modules").exists() {
         let status = Command::new("npm")
             .arg("install")
@@ -21,13 +26,11 @@ fn main() {
         assert!(status.success(), "npm install failed");
     }
 
-    if !dist_dir.exists() || std::env::var("PROFILE").as_deref() == Ok("release") {
-        let status = Command::new("npm")
-            .args(["run", "build"])
-            .current_dir(&frontend_dir)
-            .status()
-            .expect("failed to run npm run build");
+    let status = Command::new("npm")
+        .args(["run", "build"])
+        .current_dir(&frontend_dir)
+        .status()
+        .expect("failed to run npm run build");
 
-        assert!(status.success(), "npm run build failed");
-    }
+    assert!(status.success(), "npm run build failed");
 }
