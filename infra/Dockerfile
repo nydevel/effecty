@@ -67,8 +67,9 @@ RUN rm -rf crates/ \
     target/release/deps/liblearning-* \
     target/release/deps/libmigration-*
 
-# Copy real source code and build
+# Copy real source code and pre-built frontend
 COPY crates ./crates
+COPY --from=frontend-builder /build/frontend/dist /build/frontend/dist
 RUN cargo build --release -p server -p cli
 
 # Stage 3: Runtime
