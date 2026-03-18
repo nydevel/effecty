@@ -197,6 +197,17 @@ pub async fn update_material(
     Ok(Json(material))
 }
 
+pub async fn toggle_material_done(
+    State(pool): State<PgPool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path(id): Path<MaterialId>,
+) -> Result<Json<materials::Material>, LearningError> {
+    let material = materials::toggle_done(&pool, id, user_id)
+        .await?
+        .ok_or(LearningError::NotFound)?;
+    Ok(Json(material))
+}
+
 pub async fn delete_material(
     State(pool): State<PgPool>,
     axum::Extension(user_id): axum::Extension<UserId>,

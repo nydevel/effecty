@@ -57,6 +57,11 @@ pub struct TopicId(pub Uuid);
 #[sqlx(transparent)]
 pub struct MaterialId(pub Uuid);
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
+#[serde(transparent)]
+#[sqlx(transparent)]
+pub struct MemoId(pub Uuid);
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
 #[serde(transparent)]
 #[sqlx(transparent)]
@@ -129,6 +134,12 @@ impl std::fmt::Display for TopicId {
 }
 
 impl std::fmt::Display for MaterialId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::fmt::Display for MemoId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
     }

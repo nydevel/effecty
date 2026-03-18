@@ -1,0 +1,18 @@
+[server]
+host = "0.0.0.0"
+port = 8010
+
+[database]
+url = "postgres://effecty:CHANGE_ME@host.docker.internal:5432/effecty"
+max_connections = 10
+
+[auth]
+registration_enabled = false
+jwt_secret = "CHANGE_ME_generate_with_openssl_rand_base64_32"
+jwt_expiration_hours = 24
+
+[app]
+environment = "prod"
+
+[storage]
+upload_dir = "uploads"

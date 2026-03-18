@@ -34,7 +34,9 @@ impl MigrationTrait for Migration {
                             .text()
                             .not_null()
                             .default("file")
-                            .check(Expr::col(Notes::NodeType).is_in(["folder", "file"])),
+                            .check(
+                                Expr::col(Notes::NodeType).is_in(["folder", "file", "memolist"]),
+                            ),
                     )
                     .col(
                         ColumnDef::new(Notes::SortOrder)
@@ -90,10 +92,75 @@ impl MigrationTrait for Migration {
                     .col(Notes::SortOrder)
                     .to_owned(),
             )
+            .await?;
+
+        // memos (belong to a memolist note)
+        manager
+            .create_table(
+                Table::create()
+                    .table(Memos::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(Memos::Id)
+                            .uuid()
+                            .not_null()
+                            .primary_key()
+                            .extra("DEFAULT gen_random_uuid()"),
+                    )
+                    .col(ColumnDef::new(Memos::NoteId).uuid().not_null())
+                    .col(ColumnDef::new(Memos::UserId).uuid().not_null())
+                    .col(ColumnDef::new(Memos::Title).text().not_null().default(""))
+                    .col(ColumnDef::new(Memos::Content).text().not_null().default(""))
+                    .col(
+                        ColumnDef::new(Memos::SortOrder)
+                            .double()
+                            .not_null()
+                            .default(0.0),
+                    )
+                    .col(
+                        ColumnDef::new(Memos::CreatedAt)
+                            .timestamp_with_time_zone()
+                            .not_null()
+                            .extra("DEFAULT NOW()"),
+                    )
+                    .col(
+                        ColumnDef::new(Memos::UpdatedAt)
+                            .timestamp_with_time_zone()
+                            .not_null()
+                            .extra("DEFAULT NOW()"),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .from(Memos::Table, Memos::NoteId)
+                            .to(Notes::Table, Notes::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .foreign_key(
+                        ForeignKey::create()
+                            .from(Memos::Table, Memos::UserId)
+                            .to(Users::Table, Users::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
+                    )
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .create_index(
+                Index::create()
+                    .name("idx_memos_note_sort")
+                    .table(Memos::Table)
+                    .col(Memos::NoteId)
+                    .col(Memos::SortOrder)
+                    .to_owned(),
+            )
             .await
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .drop_table(Table::drop().table(Memos::Table).to_owned())
+            .await?;
         manager
             .drop_table(Table::drop().table(Notes::Table).to_owned())
             .await
@@ -109,6 +176,19 @@ enum Notes {
     Title,
     Content,
     NodeType,
+    SortOrder,
+    CreatedAt,
+    UpdatedAt,
+}
+
+#[derive(DeriveIden)]
+enum Memos {
+    Table,
+    Id,
+    NoteId,
+    UserId,
+    Title,
+    Content,
     SortOrder,
     CreatedAt,
     UpdatedAt,

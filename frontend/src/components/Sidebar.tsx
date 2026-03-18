@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Dropdown } from 'antd';
-import { FolderAddOutlined, FileAddOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { FolderAddOutlined, FileAddOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Tree, type TreeApi, type NodeRendererProps } from 'react-arborist';
 import { useTranslation } from 'react-i18next';
 import type { Note } from '../api/notes';
@@ -8,7 +8,7 @@ import type { Note } from '../api/notes';
 export interface TreeNode {
   id: string;
   name: string;
-  nodeType: 'folder' | 'file';
+  nodeType: 'folder' | 'file' | 'memolist';
   children?: TreeNode[];
 }
 
@@ -18,6 +18,7 @@ interface Props {
   onSelect: (id: string | null) => void;
   onCreateFolder: () => void;
   onCreateFile: () => void;
+  onCreateMemolist?: () => void;
   onMove: (id: string, parentId: string | null, index: number) => void;
   onRename: (id: string, name: string) => void;
   onDelete: (id: string) => void;
@@ -48,12 +49,19 @@ function buildTree(notes: Note[]): TreeNode[] {
   return roots;
 }
 
+function getNodeIcon(nodeType: string, isOpen: boolean): string {
+  if (nodeType === 'folder') return isOpen ? '📂' : '📁';
+  if (nodeType === 'memolist') return '📋';
+  return '📄';
+}
+
 export default function Sidebar({
   notes,
   selectedId,
   onSelect,
   onCreateFolder,
   onCreateFile,
+  onCreateMemolist,
   onMove,
   onRename,
   onDelete,
@@ -110,7 +118,7 @@ export default function Sidebar({
           onClick={() => { node.select(); if (isFolder) node.toggle(); }}
           onDoubleClick={() => node.edit()}
         >
-          <span className="tree-node-icon">{isFolder ? (node.isOpen ? '📂' : '📁') : '📄'}</span>
+          <span className="tree-node-icon">{getNodeIcon(node.data.nodeType, node.isOpen)}</span>
           {node.isEditing ? (
             <input
               className="tree-node-input"
@@ -147,6 +155,14 @@ export default function Sidebar({
           onClick={onCreateFile}
           title={t('notes.newFile')}
         />
+        {onCreateMemolist && (
+          <Button
+            size="small"
+            icon={<UnorderedListOutlined />}
+            onClick={onCreateMemolist}
+            title={t('notes.newMemolist')}
+          />
+        )}
       </div>
       <div
         ref={containerRef}

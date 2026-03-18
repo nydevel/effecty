@@ -27,6 +27,7 @@ export interface Material {
   content: string | null;
   file_path: string | null;
   thumbnail_path: string | null;
+  is_done: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -128,6 +129,10 @@ export async function updateMaterial(
     method: 'PUT',
     body: JSON.stringify(data),
   });
+}
+
+export async function toggleMaterialDone(id: string): Promise<Material> {
+  return apiFetch<Material>(`/materials/${id}/toggle-done`, { method: 'PATCH' });
 }
 
 export async function deleteMaterial(id: string): Promise<void> {

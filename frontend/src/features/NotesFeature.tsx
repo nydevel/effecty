@@ -4,6 +4,7 @@ import * as notesApi from '../api/notes';
 import type { Note } from '../api/notes';
 import Sidebar from '../components/Sidebar';
 import NoteEditor from '../components/NoteEditor';
+import MemoListEditor from '../components/MemoListEditor';
 
 export default function NotesFeature() {
   const { t } = useTranslation();
@@ -27,7 +28,7 @@ export default function NotesFeature() {
   useEffect(() => {
     if (selectedId) {
       const note = notes.find((n) => n.id === selectedId);
-      if (note && note.node_type === 'file') {
+      if (note && (note.node_type === 'file' || note.node_type === 'memolist')) {
         notesApi.getNote(selectedId).then(setActiveNote).catch((err) => {
           console.error('Failed to load note:', err);
         });
@@ -57,6 +58,15 @@ export default function NotesFeature() {
     await loadTree();
   };
 
+  const handleCreateMemolist = async () => {
+    await notesApi.createNote({
+      parent_id: selectedId,
+      title: t('notes.newMemolist'),
+      node_type: 'memolist',
+    });
+    await loadTree();
+  };
+
   const handleMove = async (id: string, parentId: string | null, index: number) => {
     await notesApi.moveNote(id, { parent_id: parentId, sort_order: index });
     await loadTree();
@@ -82,6 +92,33 @@ export default function NotesFeature() {
     [activeNote],
   );
 
+  const renderContent = () => {
+    if (!activeNote) {
+      return <div className="empty-state">{t('notes.emptyState')}</div>;
+    }
+
+    if (activeNote.node_type === 'memolist') {
+      return (
+        <MemoListEditor
+          key={activeNote.id}
+          noteId={activeNote.id}
+          title={activeNote.title}
+          onTitleChange={(title) => handleRename(activeNote.id, title)}
+        />
+      );
+    }
+
+    return (
+      <NoteEditor
+        key={activeNote.id}
+        title={activeNote.title}
+        content={activeNote.content}
+        onTitleChange={(title) => handleRename(activeNote.id, title)}
+        onChange={handleContentChange}
+      />
+    );
+  };
+
   return (
     <div className="feature-layout">
       <Sidebar
@@ -90,22 +127,13 @@ export default function NotesFeature() {
         onSelect={setSelectedId}
         onCreateFolder={handleCreateFolder}
         onCreateFile={handleCreateFile}
+        onCreateMemolist={handleCreateMemolist}
         onMove={handleMove}
         onRename={handleRename}
         onDelete={handleDelete}
       />
       <main className="main-content">
-        {activeNote ? (
-          <NoteEditor
-            key={activeNote.id}
-            title={activeNote.title}
-            content={activeNote.content}
-            onTitleChange={(title) => handleRename(activeNote.id, title)}
-            onChange={handleContentChange}
-          />
-        ) : (
-          <div className="empty-state">{t('notes.emptyState')}</div>
-        )}
+        {renderContent()}
       </main>
     </div>
   );
