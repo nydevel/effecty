@@ -30,7 +30,7 @@ function linkify(text: string) {
 
 export default function MemoListEditor({ noteId, title, onTitleChange, profile }: Props) {
   const { t } = useTranslation();
-  const { encryptField, decryptField } = useEncryption(profile);
+  const { encryptField, decryptField, shouldEncrypt } = useEncryption(profile);
   const [memos, setMemos] = useState<Memo[]>([]);
   const [adding, setAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -63,11 +63,12 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile }
 
   const handleAdd = async () => {
     if (!newTitle.trim()) return;
-    const encTitle = await encryptField('notes', newTitle.trim());
+    const encTitle = await encryptField('memos', 'title', newTitle.trim());
     const encContent = newContent.trim()
-      ? await encryptField('notes', newContent.trim())
+      ? await encryptField('memos', 'content', newContent.trim())
       : undefined;
-    await notesApi.createMemo(noteId, { title: encTitle, content: encContent });
+    const isEnc = shouldEncrypt('memos', 'title') || shouldEncrypt('memos', 'content');
+    await notesApi.createMemo(noteId, { title: encTitle, content: encContent, is_encrypted: isEnc });
     setNewTitle('');
     setNewContent('');
     setAdding(false);
@@ -82,11 +83,13 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile }
 
   const handleSaveEdit = async () => {
     if (!editingId || !editTitle.trim()) return;
-    const encTitle = await encryptField('notes', editTitle.trim());
-    const encContent = await encryptField('notes', editContent);
+    const encTitle = await encryptField('memos', 'title', editTitle.trim());
+    const encContent = await encryptField('memos', 'content', editContent);
+    const isEnc = shouldEncrypt('memos', 'title') || shouldEncrypt('memos', 'content');
     await notesApi.updateMemo(noteId, editingId, {
       title: encTitle,
       content: encContent,
+      is_encrypted: isEnc,
     });
     setEditingId(null);
     await loadMemos();

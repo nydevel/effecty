@@ -2,17 +2,28 @@ import { useCallback } from 'react';
 import { encrypt, decrypt, getEncryptionPassphrase } from '../crypto';
 import type { UserProfile } from '../api/profile';
 
+type Section = 'notes' | 'memos' | 'thoughts' | 'thought_comments';
+type Field = 'title' | 'content';
+
 export function useEncryption(profile: UserProfile | null) {
-  const encryptField = useCallback(
-    async (section: 'notes' | 'thoughts', text: string): Promise<string> => {
-      if (!text) return text;
-      if (!profile) return text;
-      const enabled =
-        section === 'notes' ? profile.encrypt_notes : profile.encrypt_thoughts;
-      if (!enabled || !getEncryptionPassphrase()) return text;
-      return encrypt(text);
+  const shouldEncrypt = useCallback(
+    (section: Section, field: Field): boolean => {
+      if (!profile) return false;
+      if (!getEncryptionPassphrase()) return false;
+      const s = profile.encryption_settings?.[section];
+      if (!s) return false;
+      return (field in s) && (s as unknown as Record<string, boolean>)[field];
     },
     [profile],
+  );
+
+  const encryptField = useCallback(
+    async (section: Section, field: Field, text: string): Promise<string> => {
+      if (!text) return text;
+      if (!shouldEncrypt(section, field)) return text;
+      return encrypt(text);
+    },
+    [shouldEncrypt],
   );
 
   const decryptField = useCallback(
@@ -23,5 +34,5 @@ export function useEncryption(profile: UserProfile | null) {
     [],
   );
 
-  return { encryptField, decryptField };
+  return { encryptField, decryptField, shouldEncrypt };
 }

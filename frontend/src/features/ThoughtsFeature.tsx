@@ -4,7 +4,6 @@ import * as thoughtsApi from '../api/thoughts';
 import type { Thought, Tag, ThoughtTag, ThoughtComment } from '../api/thoughts';
 import type { UserProfile } from '../api/profile';
 import { useEncryption } from '../hooks/useEncryption';
-import { isEncrypted } from '../crypto';
 import ThoughtSidebar from '../components/ThoughtSidebar';
 import ThoughtEditor from '../components/ThoughtEditor';
 import TagsCatalog from '../components/TagsCatalog';
@@ -15,9 +14,8 @@ interface Props {
 
 export default function ThoughtsFeature({ profile }: Props) {
   const { t } = useTranslation();
-  const { encryptField, decryptField } = useEncryption(profile);
+  const { encryptField, decryptField, shouldEncrypt } = useEncryption(profile);
   const [thoughts, setThoughts] = useState<Thought[]>([]);
-  const [encryptedIds, setEncryptedIds] = useState<Set<string>>(new Set());
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [thoughtTags, setThoughtTags] = useState<ThoughtTag[]>([]);
@@ -28,13 +26,6 @@ export default function ThoughtsFeature({ profile }: Props) {
   const loadThoughts = useCallback(async () => {
     try {
       const list = await thoughtsApi.listThoughts();
-      const encIds = new Set<string>();
-      for (const th of list) {
-        if (isEncrypted(th.title) || isEncrypted(th.content)) {
-          encIds.add(th.id);
-        }
-      }
-      setEncryptedIds(encIds);
       const decrypted = await Promise.all(
         list.map(async (th) => ({
           ...th,
@@ -115,15 +106,17 @@ export default function ThoughtsFeature({ profile }: Props) {
 
   const handleTitleChange = async (title: string) => {
     if (!selectedId) return;
-    const encrypted = await encryptField('thoughts', title);
-    await thoughtsApi.updateThought(selectedId, { title: encrypted });
+    const encTitle = await encryptField('thoughts', 'title', title);
+    const isEnc = shouldEncrypt('thoughts', 'title') || shouldEncrypt('thoughts', 'content');
+    await thoughtsApi.updateThought(selectedId, { title: encTitle, is_encrypted: isEnc });
     await loadThoughts();
   };
 
   const handleContentChange = async (content: string) => {
     if (!selectedId) return;
-    const encrypted = await encryptField('thoughts', content);
-    await thoughtsApi.updateThought(selectedId, { content: encrypted });
+    const encContent = await encryptField('thoughts', 'content', content);
+    const isEnc = shouldEncrypt('thoughts', 'title') || shouldEncrypt('thoughts', 'content');
+    await thoughtsApi.updateThought(selectedId, { content: encContent, is_encrypted: isEnc });
   };
 
   const handleDropTag = async (tagId: string) => {
@@ -144,8 +137,9 @@ export default function ThoughtsFeature({ profile }: Props) {
 
   const handleAddComment = async (content: string) => {
     if (!selectedId) return;
-    const encrypted = await encryptField('thoughts', content);
-    await thoughtsApi.createComment(selectedId, { content: encrypted });
+    const encContent = await encryptField('thought_comments', 'content', content);
+    const isEnc = shouldEncrypt('thought_comments', 'content');
+    await thoughtsApi.createComment(selectedId, { content: encContent, is_encrypted: isEnc });
     await loadComments(selectedId);
   };
 
@@ -164,7 +158,6 @@ export default function ThoughtsFeature({ profile }: Props) {
     <div className="feature-layout">
       <ThoughtSidebar
         thoughts={thoughts}
-        encryptedIds={encryptedIds}
         selectedId={selectedId}
         onSelect={setSelectedId}
         onCreate={handleCreate}

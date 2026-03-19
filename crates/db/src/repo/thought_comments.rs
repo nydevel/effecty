@@ -10,6 +10,7 @@ pub struct ThoughtComment {
     pub thought_id: ThoughtId,
     pub user_id: UserId,
     pub content: String,
+    pub is_encrypted: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -17,6 +18,7 @@ pub struct ThoughtComment {
 #[derive(Debug, Deserialize)]
 pub struct CreateComment {
     pub content: String,
+    pub is_encrypted: Option<bool>,
 }
 
 pub async fn list(
@@ -49,14 +51,15 @@ pub async fn create(
 ) -> Result<ThoughtComment> {
     let comment = sqlx::query_as::<_, ThoughtComment>(
         r#"
-        INSERT INTO thought_comments (thought_id, user_id, content)
-        VALUES ($1, $2, $3)
+        INSERT INTO thought_comments (thought_id, user_id, content, is_encrypted)
+        VALUES ($1, $2, $3, $4)
         RETURNING *
         "#,
     )
     .bind(thought_id)
     .bind(user_id)
     .bind(&input.content)
+    .bind(input.is_encrypted.unwrap_or(false))
     .fetch_one(pool)
     .await?;
 

@@ -3,11 +3,9 @@ import { Button, Dropdown } from 'antd';
 import { PlusOutlined, DeleteOutlined, LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { Thought } from '../api/thoughts';
-import { isEncrypted } from '../crypto';
 
 interface Props {
   thoughts: Thought[];
-  encryptedIds?: Set<string>;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onCreate: () => void;
@@ -17,7 +15,6 @@ interface Props {
 
 export default function ThoughtSidebar({
   thoughts,
-  encryptedIds,
   selectedId,
   onSelect,
   onCreate,
@@ -93,7 +90,7 @@ export default function ThoughtSidebar({
               onDrop={handleDrop}
             >
               <span>{thought.title || t('thoughts.untitled')}</span>
-              {(encryptedIds?.has(thought.id) || isEncrypted(thought.title) || isEncrypted(thought.content)) && (
+              {thought.is_encrypted && (
                 <LockOutlined className="tree-node-lock" />
               )}
             </div>

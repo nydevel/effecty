@@ -2,6 +2,48 @@ use serde::{Deserialize, Serialize};
 use sqlx::Type;
 use uuid::Uuid;
 
+/// Per-field encryption toggles for a section with title + content.
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
+pub struct FieldEncryption {
+    #[serde(default)]
+    pub title: bool,
+    #[serde(default)]
+    pub content: bool,
+}
+
+/// Per-field encryption toggle for a section with content only.
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
+pub struct ContentOnlyEncryption {
+    #[serde(default)]
+    pub content: bool,
+}
+
+/// User encryption preferences stored as JSONB in user_profiles.
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
+pub struct EncryptionSettings {
+    #[serde(default)]
+    pub notes: FieldEncryption,
+    #[serde(default)]
+    pub memos: FieldEncryption,
+    #[serde(default)]
+    pub thoughts: FieldEncryption,
+    #[serde(default)]
+    pub thought_comments: ContentOnlyEncryption,
+}
+
+impl EncryptionSettings {
+    /// Returns true if any encryption is enabled.
+    pub fn any_enabled(&self) -> bool {
+        self.notes.title
+            || self.notes.content
+            || self.memos.title
+            || self.memos.content
+            || self.thoughts.title
+            || self.thoughts.content
+            || self.thought_comments.content
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
 #[serde(transparent)]
 #[sqlx(transparent)]

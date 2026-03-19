@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Form, Select, Button, Input, Checkbox, message, Typography, Divider, Tag } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { updateProfile, changePassword } from '../api/profile';
-import type { UserProfile } from '../api/profile';
+import { updateProfile, changePassword, DEFAULT_ENCRYPTION_SETTINGS } from '../api/profile';
+import type { UserProfile, EncryptionSettings } from '../api/profile';
 import {
   getEncryptionPassphrase,
   setEncryptionPassphrase,
@@ -25,6 +25,8 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
   const hasKey = useMemo(() => !!getEncryptionPassphrase(), [keyVersion, localKeyVersion]);
   const [form] = Form.useForm();
   const [pwForm] = Form.useForm();
+
+  const encSettings = profile?.encryption_settings ?? DEFAULT_ENCRYPTION_SETTINGS;
 
   const handleFinish = async (values: { locale: string }) => {
     setLoading(true);
@@ -64,13 +66,24 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
     }
   };
 
-  const handleEncryptionChange = async (field: 'encrypt_notes' | 'encrypt_thoughts', value: boolean) => {
+  const handleEncryptionToggle = async (
+    section: keyof EncryptionSettings,
+    field: string,
+    value: boolean,
+  ) => {
     if (!profile) return;
     setEncLoading(true);
     try {
+      const updated: EncryptionSettings = {
+        ...encSettings,
+        [section]: {
+          ...encSettings[section],
+          [field]: value,
+        },
+      };
       await updateProfile({
         locale: profile.locale,
-        [field]: value,
+        encryption_settings: updated,
       });
       await onProfileUpdate();
       message.success(t('settings.saved'));
@@ -152,22 +165,79 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
 
       <Typography.Title level={4}>{t('settings.encryption')}</Typography.Title>
 
-      <div style={{ marginBottom: 16 }}>
+      <Typography.Text strong style={{ display: 'block', marginBottom: 4 }}>
+        {t('settings.encNotes')}
+      </Typography.Text>
+      <div style={{ marginBottom: 8, paddingLeft: 16 }}>
         <Checkbox
-          checked={profile?.encrypt_notes ?? false}
+          checked={encSettings.notes.title}
           disabled={encLoading}
-          onChange={(e) => handleEncryptionChange('encrypt_notes', e.target.checked)}
+          onChange={(e) => handleEncryptionToggle('notes', 'title', e.target.checked)}
         >
-          {t('settings.encryptNotes')}
+          {t('settings.encTitle')}
+        </Checkbox>
+        <br />
+        <Checkbox
+          checked={encSettings.notes.content}
+          disabled={encLoading}
+          onChange={(e) => handleEncryptionToggle('notes', 'content', e.target.checked)}
+        >
+          {t('settings.encContent')}
         </Checkbox>
       </div>
-      <div style={{ marginBottom: 16 }}>
+
+      <Typography.Text strong style={{ display: 'block', marginBottom: 4 }}>
+        {t('settings.encMemos')}
+      </Typography.Text>
+      <div style={{ marginBottom: 8, paddingLeft: 16 }}>
         <Checkbox
-          checked={profile?.encrypt_thoughts ?? false}
+          checked={encSettings.memos.title}
           disabled={encLoading}
-          onChange={(e) => handleEncryptionChange('encrypt_thoughts', e.target.checked)}
+          onChange={(e) => handleEncryptionToggle('memos', 'title', e.target.checked)}
         >
-          {t('settings.encryptThoughts')}
+          {t('settings.encTitle')}
+        </Checkbox>
+        <br />
+        <Checkbox
+          checked={encSettings.memos.content}
+          disabled={encLoading}
+          onChange={(e) => handleEncryptionToggle('memos', 'content', e.target.checked)}
+        >
+          {t('settings.encContent')}
+        </Checkbox>
+      </div>
+
+      <Typography.Text strong style={{ display: 'block', marginBottom: 4 }}>
+        {t('settings.encThoughts')}
+      </Typography.Text>
+      <div style={{ marginBottom: 8, paddingLeft: 16 }}>
+        <Checkbox
+          checked={encSettings.thoughts.title}
+          disabled={encLoading}
+          onChange={(e) => handleEncryptionToggle('thoughts', 'title', e.target.checked)}
+        >
+          {t('settings.encTitle')}
+        </Checkbox>
+        <br />
+        <Checkbox
+          checked={encSettings.thoughts.content}
+          disabled={encLoading}
+          onChange={(e) => handleEncryptionToggle('thoughts', 'content', e.target.checked)}
+        >
+          {t('settings.encContent')}
+        </Checkbox>
+      </div>
+
+      <Typography.Text strong style={{ display: 'block', marginBottom: 4 }}>
+        {t('settings.encComments')}
+      </Typography.Text>
+      <div style={{ marginBottom: 16, paddingLeft: 16 }}>
+        <Checkbox
+          checked={encSettings.thought_comments.content}
+          disabled={encLoading}
+          onChange={(e) => handleEncryptionToggle('thought_comments', 'content', e.target.checked)}
+        >
+          {t('settings.encContent')}
         </Checkbox>
       </div>
 

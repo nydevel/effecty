@@ -5,7 +5,7 @@ import enUS from 'antd/locale/en_US';
 import ruRU from 'antd/locale/ru_RU';
 import { useTranslation } from 'react-i18next';
 import { isAuthenticated, clearToken } from './api/client';
-import { getProfile } from './api/profile';
+import { getProfile, hasAnyEncryption, DEFAULT_ENCRYPTION_SETTINGS } from './api/profile';
 import type { UserProfile } from './api/profile';
 import { getEncryptionPassphrase, setEncryptionPassphrase, setUserId } from './crypto';
 import IconBar from './components/IconBar';
@@ -44,7 +44,7 @@ export default function App() {
       if (p.locale !== i18n.language) {
         i18n.changeLanguage(p.locale);
       }
-      if ((p.encrypt_notes || p.encrypt_thoughts) && !getEncryptionPassphrase()) {
+      if (hasAnyEncryption(p.encryption_settings ?? DEFAULT_ENCRYPTION_SETTINGS) && !getEncryptionPassphrase()) {
         setShowKeyModal(true);
       }
     } catch (err) {
