@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import enUS from 'antd/locale/en_US';
 import ruRU from 'antd/locale/ru_RU';
@@ -27,7 +27,6 @@ export default function App() {
   const [activeFeature, setActiveFeature] = useState<Feature>('notes');
   const { i18n } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const antLocale = i18n.language === 'ru' ? ruRU : enUS;
 
