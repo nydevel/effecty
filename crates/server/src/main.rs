@@ -41,9 +41,23 @@ async fn main() -> Result<()> {
 
     tokio::fs::create_dir_all(&config.storage.upload_dir).await?;
 
+    let login_limiter = auth::rate_limit::LoginRateLimiter::new();
+
+    // Periodic cleanup of stale rate-limit entries
+    let limiter_cleanup = login_limiter.clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(std::time::Duration::from_secs(600));
+        #[allow(unused_labels)]
+        'cleanup: loop {
+            interval.tick().await;
+            limiter_cleanup.cleanup().await;
+        }
+    });
+
     let state = AppState {
         pool,
         config: Arc::new(config),
+        login_limiter,
     };
 
     let app = routes::create_router(state)
