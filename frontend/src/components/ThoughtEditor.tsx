@@ -14,6 +14,7 @@ interface Props {
   onRemoveTag: (tagId: string) => void;
   onAddComment: (content: string) => void;
   onDeleteComment: (commentId: string) => void;
+  readOnly?: boolean;
 }
 
 export default function ThoughtEditor({
@@ -26,6 +27,7 @@ export default function ThoughtEditor({
   onRemoveTag,
   onAddComment,
   onDeleteComment,
+  readOnly,
 }: Props) {
   const { t } = useTranslation();
   const [dragOver, setDragOver] = useState(false);
@@ -46,6 +48,7 @@ export default function ThoughtEditor({
         key={thought.id + '-title'}
         placeholder={t('thoughts.untitled')}
         style={{ fontSize: 28, fontWeight: 700, padding: '8px 0 12px' }}
+        disabled={readOnly}
         onBlur={(e) => {
           const val = e.currentTarget.value.trim();
           if (val !== thought.title) onTitleChange(val);
@@ -56,6 +59,7 @@ export default function ThoughtEditor({
       <div
         className={`thought-tags-zone ${dragOver ? 'active' : ''}`}
         onDragOver={(e) => {
+          if (readOnly) return;
           if (e.dataTransfer.types.includes('application/tag-id')) {
             e.preventDefault();
             setDragOver(true);
@@ -63,6 +67,7 @@ export default function ThoughtEditor({
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => {
+          if (readOnly) return;
           e.preventDefault();
           setDragOver(false);
           const tagId = e.dataTransfer.getData('application/tag-id');
@@ -73,7 +78,7 @@ export default function ThoughtEditor({
           tags.map((tt) => (
             <Tag
               key={tt.tag_id}
-              closable
+              closable={!readOnly}
               onClose={() => onRemoveTag(tt.tag_id)}
             >
               {tt.tag_name}
@@ -92,6 +97,7 @@ export default function ThoughtEditor({
         placeholder={t('thoughts.contentPlaceholder')}
         autoSize={{ minRows: 4 }}
         style={{ marginTop: 16 }}
+        disabled={readOnly}
         onBlur={(e) => {
           const val = e.currentTarget.value;
           if (val !== thought.content) onContentChange(val);
@@ -121,27 +127,29 @@ export default function ThoughtEditor({
           </div>
         ))}
 
-        <div className="thought-comment-form">
-          <Input.TextArea
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder={t('thoughts.commentPlaceholder')}
-            autoSize={{ minRows: 2, maxRows: 6 }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                handleAddComment();
-              }
-            }}
-          />
-          <Button
-            type="primary"
-            icon={<SendOutlined />}
-            onClick={handleAddComment}
-            style={{ marginTop: 8 }}
-          >
-            {t('thoughts.addComment')}
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="thought-comment-form">
+            <Input.TextArea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder={t('thoughts.commentPlaceholder')}
+              autoSize={{ minRows: 2, maxRows: 6 }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                  handleAddComment();
+                }
+              }}
+            />
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              onClick={handleAddComment}
+              style={{ marginTop: 8 }}
+            >
+              {t('thoughts.addComment')}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

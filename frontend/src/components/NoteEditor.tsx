@@ -10,15 +10,16 @@ interface Props {
   content: string;
   onTitleChange: (title: string) => void;
   onChange: (content: string) => void;
+  readOnly?: boolean;
 }
 
-export default function NoteEditor({ title, content, onTitleChange, onChange }: Props) {
+export default function NoteEditor({ title, content, onTitleChange, onChange, readOnly }: Props) {
   const { t } = useTranslation();
   const editor = useCreateBlockNote();
 
   useEffect(() => {
     const loadContent = async () => {
-      if (content) {
+      if (content && !content.startsWith('ENC:')) {
         try {
           const blocks = JSON.parse(content);
           editor.replaceBlocks(editor.document, blocks);
@@ -35,10 +36,11 @@ export default function NoteEditor({ title, content, onTitleChange, onChange }: 
 
   const handleChange = useMemo(
     () => () => {
+      if (readOnly) return;
       const blocks = editor.document;
       onChange(JSON.stringify(blocks));
     },
-    [editor, onChange],
+    [editor, onChange, readOnly],
   );
 
   return (
@@ -48,13 +50,14 @@ export default function NoteEditor({ title, content, onTitleChange, onChange }: 
         defaultValue={title}
         placeholder={t('notes.untitled')}
         style={{ fontSize: 28, fontWeight: 700, padding: '8px 0 12px' }}
+        disabled={readOnly}
         onBlur={(e) => {
           const val = e.currentTarget.value.trim();
           if (val && val !== title) onTitleChange(val);
         }}
         onPressEnter={(e) => e.currentTarget.blur()}
       />
-      <BlockNoteView editor={editor} onChange={handleChange} theme="light" />
+      <BlockNoteView editor={editor} onChange={handleChange} theme="light" editable={!readOnly} />
     </div>
   );
 }

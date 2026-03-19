@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { ConfigProvider, Modal, Input, message } from 'antd';
 import enUS from 'antd/locale/en_US';
 import ruRU from 'antd/locale/ru_RU';
@@ -20,13 +20,68 @@ import './App.css';
 
 type Feature = 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'learning' | 'settings';
 
+const FEATURES: Feature[] = ['notes', 'calendar', 'workouts', 'thoughts', 'learning', 'settings'];
+
+function useActiveFeature(): Feature {
+  const location = useLocation();
+  const segment = location.pathname.split('/')[2];
+  if (FEATURES.includes(segment as Feature)) return segment as Feature;
+  return 'notes';
+}
+
 function BlankPage() {
   return <div style={{ background: '#fff', minHeight: '100vh' }} />;
 }
 
+function AppLayout({ profile, loadProfile, keyVersion }: {
+  profile: UserProfile | null;
+  loadProfile: () => Promise<void>;
+  keyVersion: number;
+}) {
+  const navigate = useNavigate();
+  const activeFeature = useActiveFeature();
+
+  const handleSelectFeature = (feature: Feature) => {
+    navigate(`/app/${feature}`);
+  };
+
+  const handleLogout = () => {
+    clearToken();
+    navigate('/');
+    window.location.reload();
+  };
+
+  return (
+    <div className="app-layout">
+      <IconBar
+        activeFeature={activeFeature}
+        onSelectFeature={handleSelectFeature}
+        onLogout={handleLogout}
+      />
+      <div className="feature-content">
+        <Routes>
+          <Route path="notes" element={<NotesFeature key={keyVersion} profile={profile} />} />
+          <Route path="notes/:id" element={<NotesFeature key={keyVersion} profile={profile} />} />
+          <Route path="calendar" element={<CalendarFeature />} />
+          <Route path="workouts" element={<WorkoutsFeature />} />
+          <Route path="workouts/:id" element={<WorkoutsFeature />} />
+          <Route path="thoughts" element={<ThoughtsFeature key={keyVersion} profile={profile} />} />
+          <Route path="thoughts/:id" element={<ThoughtsFeature key={keyVersion} profile={profile} />} />
+          <Route path="learning" element={<LearningFeature />} />
+          <Route path="learning/:id" element={<LearningFeature />} />
+          <Route path="settings" element={
+            <SettingsFeature profile={profile} onProfileUpdate={loadProfile} keyVersion={keyVersion} />
+          } />
+          <Route path="" element={<Navigate to="notes" replace />} />
+          <Route path="*" element={<Navigate to="notes" replace />} />
+        </Routes>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(isAuthenticated());
-  const [activeFeature, setActiveFeature] = useState<Feature>('notes');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [keyInput, setKeyInput] = useState('');
@@ -59,14 +114,7 @@ export default function App() {
 
   const handleLogin = () => {
     setLoggedIn(true);
-    navigate('/app');
-  };
-
-  const handleLogout = () => {
-    clearToken();
-    setLoggedIn(false);
-    setProfile(null);
-    navigate('/');
+    navigate('/app/notes');
   };
 
   const handleKeySubmit = () => {
@@ -114,33 +162,15 @@ export default function App() {
           path="/auttth"
           element={
             loggedIn
-              ? <Navigate to="/app" replace />
+              ? <Navigate to="/app/notes" replace />
               : <LoginPage onLogin={handleLogin} />
           }
         />
         <Route
-          path="/app"
+          path="/app/*"
           element={
             loggedIn
-              ? (
-                <div className="app-layout">
-                  <IconBar
-                    activeFeature={activeFeature}
-                    onSelectFeature={setActiveFeature}
-                    onLogout={handleLogout}
-                  />
-                  <div className="feature-content">
-                    {activeFeature === 'notes' && <NotesFeature profile={profile} />}
-                    {activeFeature === 'calendar' && <CalendarFeature />}
-                    {activeFeature === 'workouts' && <WorkoutsFeature />}
-                    {activeFeature === 'thoughts' && <ThoughtsFeature profile={profile} />}
-                    {activeFeature === 'learning' && <LearningFeature />}
-                    {activeFeature === 'settings' && (
-                      <SettingsFeature profile={profile} onProfileUpdate={loadProfile} keyVersion={keyVersion} />
-                    )}
-                  </div>
-                </div>
-              )
+              ? <AppLayout profile={profile} loadProfile={loadProfile} keyVersion={keyVersion} />
               : <Navigate to="/auttth" replace />
           }
         />

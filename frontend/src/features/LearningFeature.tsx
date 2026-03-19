@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Segmented } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -14,11 +15,20 @@ type Tab = 'materials' | 'roadmap';
 
 export default function LearningFeature() {
   const { t } = useTranslation();
+  const { id: selectedTopicId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('materials');
   const [topics, setTopics] = useState<Topic[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
-  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+
+  const setSelectedTopicId = (id: string | null) => {
+    if (id) {
+      navigate(`/app/learning/${id}`);
+    } else {
+      navigate('/app/learning');
+    }
+  };
   const [topicModalOpen, setTopicModalOpen] = useState(false);
   const [materialFormOpen, setMaterialFormOpen] = useState(false);
 
@@ -72,7 +82,7 @@ export default function LearningFeature() {
 
   const handleDeleteTopic = async (id: string) => {
     await learningApi.deleteTopic(id);
-    if (selectedTopicId === id) setSelectedTopicId(null);
+    if (selectedTopicId === id) navigate('/app/learning');
     await loadTopics();
   };
 
@@ -148,7 +158,7 @@ export default function LearningFeature() {
           <>
             <TopicSidebar
               topics={topics}
-              selectedId={selectedTopicId}
+              selectedId={selectedTopicId ?? null}
               onSelect={setSelectedTopicId}
               onCreate={() => setTopicModalOpen(true)}
               onDelete={handleDeleteTopic}

@@ -226,18 +226,13 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
         >
           {t('settings.encContent')}
         </Checkbox>
-      </div>
-
-      <Typography.Text strong style={{ display: 'block', marginBottom: 4 }}>
-        {t('settings.encComments')}
-      </Typography.Text>
-      <div style={{ marginBottom: 16, paddingLeft: 16 }}>
+        <br />
         <Checkbox
           checked={encSettings.thought_comments.content}
           disabled={encLoading}
           onChange={(e) => handleEncryptionToggle('thought_comments', 'content', e.target.checked)}
         >
-          {t('settings.encContent')}
+          {t('settings.encComments')}
         </Checkbox>
       </div>
 

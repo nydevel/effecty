@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as workoutsApi from '../api/workouts';
 import type { Workout, Exercise, WorkoutExercise } from '../api/workouts';
@@ -8,9 +9,18 @@ import ExerciseCatalog from '../components/ExerciseCatalog';
 
 export default function WorkoutsFeature() {
   const { t } = useTranslation();
+  const { id: selectedId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+
+  const setSelectedId = (id: string | null) => {
+    if (id) {
+      navigate(`/app/workouts/${id}`);
+    } else {
+      navigate('/app/workouts');
+    }
+  };
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>([]);
 
   const selectedWorkout = workouts.find((w) => w.id === selectedId) ?? null;
@@ -107,7 +117,7 @@ export default function WorkoutsFeature() {
     <div className="feature-layout">
       <WorkoutSidebar
         workouts={workouts}
-        selectedId={selectedId}
+        selectedId={selectedId ?? null}
         onSelect={setSelectedId}
         onCreate={handleCreate}
         onDelete={handleDelete}

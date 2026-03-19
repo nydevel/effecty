@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as notesApi from '../api/notes';
 import type { Note } from '../api/notes';
 import type { UserProfile } from '../api/profile';
 import { useEncryption } from '../hooks/useEncryption';
+import { getEncryptionPassphrase } from '../crypto';
 import Sidebar from '../components/Sidebar';
 import NoteEditor from '../components/NoteEditor';
 import MemoListEditor from '../components/MemoListEditor';
@@ -14,10 +16,19 @@ interface Props {
 
 export default function NotesFeature({ profile }: Props) {
   const { t } = useTranslation();
+  const { id: selectedId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [notes, setNotes] = useState<Note[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeNote, setActiveNote] = useState<Note | null>(null);
   const { encryptField, decryptField, shouldEncrypt } = useEncryption(profile);
+
+  const setSelectedId = (id: string | null) => {
+    if (id) {
+      navigate(`/app/notes/${id}`);
+    } else {
+      navigate('/app/notes');
+    }
+  };
 
   const loadTree = useCallback(async () => {
     try {
@@ -61,7 +72,7 @@ export default function NotesFeature({ profile }: Props) {
 
   const handleCreateFolder = async () => {
     await notesApi.createNote({
-      parent_id: selectedId,
+      parent_id: selectedId ?? null,
       title: t('notes.newFolder'),
       node_type: 'folder',
     });
@@ -70,7 +81,7 @@ export default function NotesFeature({ profile }: Props) {
 
   const handleCreateFile = async () => {
     await notesApi.createNote({
-      parent_id: selectedId,
+      parent_id: selectedId ?? null,
       title: t('notes.newNote'),
       node_type: 'file',
     });
@@ -79,7 +90,7 @@ export default function NotesFeature({ profile }: Props) {
 
   const handleCreateMemolist = async () => {
     await notesApi.createNote({
-      parent_id: selectedId,
+      parent_id: selectedId ?? null,
       title: t('notes.newMemolist'),
       node_type: 'memolist',
     });
@@ -93,8 +104,8 @@ export default function NotesFeature({ profile }: Props) {
 
   const handleRename = async (id: string, name: string) => {
     const encTitle = await encryptField('notes', 'title', name);
-    const isEnc = shouldEncrypt('notes', 'title');
-    await notesApi.updateNote(id, { title: encTitle, is_encrypted: isEnc });
+    const isEnc = shouldEncrypt('notes', 'title') || shouldEncrypt('notes', 'content');
+    await notesApi.updateNote(id, { title: encTitle, is_encrypted: isEnc || undefined });
     await loadTree();
   };
 
@@ -109,7 +120,7 @@ export default function NotesFeature({ profile }: Props) {
       if (activeNote) {
         const encContent = await encryptField('notes', 'content', content);
         const isEnc = shouldEncrypt('notes', 'title') || shouldEncrypt('notes', 'content');
-        await notesApi.updateNote(activeNote.id, { content: encContent, is_encrypted: isEnc });
+        await notesApi.updateNote(activeNote.id, { content: encContent, is_encrypted: isEnc || undefined });
       }
     },
     [activeNote, encryptField, shouldEncrypt],
@@ -121,6 +132,7 @@ export default function NotesFeature({ profile }: Props) {
     }
 
     if (activeNote.node_type === 'memolist') {
+      const locked = activeNote.is_encrypted && !getEncryptionPassphrase();
       return (
         <MemoListEditor
           key={activeNote.id}
@@ -128,10 +140,12 @@ export default function NotesFeature({ profile }: Props) {
           title={activeNote.title}
           onTitleChange={(title) => handleRename(activeNote.id, title)}
           profile={profile}
+          readOnly={locked}
         />
       );
     }
 
+    const locked = activeNote.is_encrypted && !getEncryptionPassphrase();
     return (
       <NoteEditor
         key={activeNote.id}
@@ -139,6 +153,7 @@ export default function NotesFeature({ profile }: Props) {
         content={activeNote.content}
         onTitleChange={(title) => handleRename(activeNote.id, title)}
         onChange={handleContentChange}
+        readOnly={locked}
       />
     );
   };
@@ -147,7 +162,7 @@ export default function NotesFeature({ profile }: Props) {
     <div className="feature-layout">
       <Sidebar
         notes={notes}
-        selectedId={selectedId}
+        selectedId={selectedId ?? null}
         onSelect={setSelectedId}
         onCreateFolder={handleCreateFolder}
         onCreateFile={handleCreateFile}

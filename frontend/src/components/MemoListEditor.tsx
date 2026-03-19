@@ -12,6 +12,7 @@ interface Props {
   title: string;
   onTitleChange: (title: string) => void;
   profile: UserProfile | null;
+  readOnly?: boolean;
 }
 
 function linkify(text: string) {
@@ -28,7 +29,7 @@ function linkify(text: string) {
   );
 }
 
-export default function MemoListEditor({ noteId, title, onTitleChange, profile }: Props) {
+export default function MemoListEditor({ noteId, title, onTitleChange, profile, readOnly }: Props) {
   const { t } = useTranslation();
   const { encryptField, decryptField, shouldEncrypt } = useEncryption(profile);
   const [memos, setMemos] = useState<Memo[]>([]);
@@ -68,7 +69,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile }
       ? await encryptField('memos', 'content', newContent.trim())
       : undefined;
     const isEnc = shouldEncrypt('memos', 'title') || shouldEncrypt('memos', 'content');
-    await notesApi.createMemo(noteId, { title: encTitle, content: encContent, is_encrypted: isEnc });
+    await notesApi.createMemo(noteId, { title: encTitle, content: encContent, is_encrypted: isEnc || undefined });
     setNewTitle('');
     setNewContent('');
     setAdding(false);
@@ -89,7 +90,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile }
     await notesApi.updateMemo(noteId, editingId, {
       title: encTitle,
       content: encContent,
-      is_encrypted: isEnc,
+      is_encrypted: isEnc || undefined,
     });
     setEditingId(null);
     await loadMemos();
@@ -144,6 +145,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile }
         defaultValue={title}
         placeholder={t('notes.untitled')}
         style={{ fontSize: 28, fontWeight: 700, padding: '8px 0 12px' }}
+        disabled={readOnly}
         onBlur={(e) => {
           const val = e.currentTarget.value.trim();
           if (val && val !== title) onTitleChange(val);
@@ -156,7 +158,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile }
           <div
             key={memo.id}
             className={`memo-item${dragOverIdx === idx ? ' memo-item-drag-over' : ''}`}
-            draggable={editingId !== memo.id}
+            draggable={!readOnly && editingId !== memo.id}
             onDragStart={(e) => handleDragStart(e, idx)}
             onDragOver={(e) => handleDragOver(e, idx)}
             onDrop={(e) => handleDrop(e, idx)}
@@ -200,12 +202,14 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile }
                   )}
                 </div>
                 <div className="memo-item-actions">
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<EditOutlined />}
-                    onClick={() => handleStartEdit(memo)}
-                  />
+                  {!readOnly && (
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<EditOutlined />}
+                      onClick={() => handleStartEdit(memo)}
+                    />
+                  )}
                   <Button
                     type="text"
                     size="small"
@@ -220,40 +224,42 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile }
         ))}
       </div>
 
-      {adding ? (
-        <div className="memo-add-form">
-          <Input
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            onPressEnter={handleAdd}
-            placeholder={t('notes.memoTitle')}
-            autoFocus
-          />
-          <Input.TextArea
-            value={newContent}
-            onChange={(e) => setNewContent(e.target.value)}
-            rows={3}
-            placeholder={t('notes.memoContent')}
-          />
-          <div className="memo-add-form-actions">
-            <Button size="small" type="primary" onClick={handleAdd}>
-              {t('notes.addMemo')}
-            </Button>
-            <Button size="small" onClick={() => { setAdding(false); setNewTitle(''); setNewContent(''); }}>
-              {t('notes.cancel')}
-            </Button>
+      {!readOnly && (
+        adding ? (
+          <div className="memo-add-form">
+            <Input
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onPressEnter={handleAdd}
+              placeholder={t('notes.memoTitle')}
+              autoFocus
+            />
+            <Input.TextArea
+              value={newContent}
+              onChange={(e) => setNewContent(e.target.value)}
+              rows={3}
+              placeholder={t('notes.memoContent')}
+            />
+            <div className="memo-add-form-actions">
+              <Button size="small" type="primary" onClick={handleAdd}>
+                {t('notes.addMemo')}
+              </Button>
+              <Button size="small" onClick={() => { setAdding(false); setNewTitle(''); setNewContent(''); }}>
+                {t('notes.cancel')}
+              </Button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <Button
-          type="dashed"
-          icon={<PlusOutlined />}
-          onClick={() => setAdding(true)}
-          style={{ marginTop: 12 }}
-          block
-        >
-          {t('notes.addMemo')}
-        </Button>
+        ) : (
+          <Button
+            type="dashed"
+            icon={<PlusOutlined />}
+            onClick={() => setAdding(true)}
+            style={{ marginTop: 12 }}
+            block
+          >
+            {t('notes.addMemo')}
+          </Button>
+        )
       )}
     </div>
   );

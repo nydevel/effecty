@@ -4,6 +4,7 @@ import { FolderAddOutlined, FileAddOutlined, UnorderedListOutlined, EditOutlined
 import { Tree, type TreeApi, type NodeRendererProps } from 'react-arborist';
 import { useTranslation } from 'react-i18next';
 import type { Note } from '../api/notes';
+import { getEncryptionPassphrase } from '../crypto';
 
 export interface TreeNode {
   id: string;
@@ -85,9 +86,9 @@ export default function Sidebar({
   }, []);
 
   const getContextMenuItems = useCallback(
-    (nodeId: string) => ({
+    (nodeId: string, locked?: boolean) => ({
       items: [
-        {
+        ...(!locked ? [{
           key: 'rename',
           label: t('notes.rename'),
           icon: <EditOutlined />,
@@ -96,7 +97,7 @@ export default function Sidebar({
               treeRef.current?.edit(nodeId);
             });
           },
-        },
+        }] : []),
         {
           key: 'delete',
           label: t('notes.delete'),
@@ -111,14 +112,15 @@ export default function Sidebar({
 
   function Node({ node, style, dragHandle }: NodeRendererProps<TreeNode>) {
     const isFolder = node.data.nodeType === 'folder';
+    const locked = node.data.encrypted && !getEncryptionPassphrase();
     return (
-      <Dropdown menu={getContextMenuItems(node.id)} trigger={['contextMenu']}>
+      <Dropdown menu={getContextMenuItems(node.id, locked)} trigger={['contextMenu']}>
         <div
           className={`tree-node ${node.isSelected ? 'selected' : ''}`}
           style={style}
           ref={dragHandle}
           onClick={() => { node.select(); if (isFolder) node.toggle(); }}
-          onDoubleClick={() => node.edit()}
+          onDoubleClick={() => { if (!locked) node.edit(); }}
         >
           <span className="tree-node-icon">{getNodeIcon(node.data.nodeType, node.isOpen)}</span>
           {node.isEditing ? (
