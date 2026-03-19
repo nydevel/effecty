@@ -4,6 +4,7 @@ import * as notesApi from '../api/notes';
 import type { Note } from '../api/notes';
 import type { UserProfile } from '../api/profile';
 import { useEncryption } from '../hooks/useEncryption';
+import { isEncrypted } from '../crypto';
 import Sidebar from '../components/Sidebar';
 import NoteEditor from '../components/NoteEditor';
 import MemoListEditor from '../components/MemoListEditor';
@@ -17,11 +18,19 @@ export default function NotesFeature({ profile }: Props) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeNote, setActiveNote] = useState<Note | null>(null);
+  const [encryptedIds, setEncryptedIds] = useState<Set<string>>(new Set());
   const { encryptField, decryptField } = useEncryption(profile);
 
   const loadTree = useCallback(async () => {
     try {
       const tree = await notesApi.getTree();
+      const encIds = new Set<string>();
+      for (const n of tree) {
+        if (isEncrypted(n.title) || isEncrypted(n.content)) {
+          encIds.add(n.id);
+        }
+      }
+      setEncryptedIds(encIds);
       const decrypted = await Promise.all(
         tree.map(async (n) => ({
           ...n,
@@ -145,6 +154,7 @@ export default function NotesFeature({ profile }: Props) {
     <div className="feature-layout">
       <Sidebar
         notes={notes}
+        encryptedIds={encryptedIds}
         selectedId={selectedId}
         onSelect={setSelectedId}
         onCreateFolder={handleCreateFolder}

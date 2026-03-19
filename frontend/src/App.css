@@ -113,6 +113,13 @@
   outline: none;
 }
 
+.tree-node-lock {
+  font-size: 11px;
+  color: #999;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
 /* Main content */
 .main-content {
   flex: 1;
@@ -769,7 +776,7 @@
 }
 
 .memo-item-title {
-  font-weight: 500;
+  font-weight: 700;
   font-size: 14px;
   color: #333;
 }

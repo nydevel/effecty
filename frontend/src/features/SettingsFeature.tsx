@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Form, Select, Button, Input, Checkbox, message, Typography, Divider, Tag } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { updateProfile, changePassword } from '../api/profile';
@@ -12,15 +12,17 @@ import {
 interface Props {
   profile: UserProfile | null;
   onProfileUpdate: () => Promise<void>;
+  keyVersion?: number;
 }
 
-export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
+export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }: Props) {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [encLoading, setEncLoading] = useState(false);
   const [keyInput, setKeyInput] = useState('');
-  const [hasKey, setHasKey] = useState(!!getEncryptionPassphrase());
+  const [localKeyVersion, setLocalKeyVersion] = useState(0);
+  const hasKey = useMemo(() => !!getEncryptionPassphrase(), [keyVersion, localKeyVersion]);
   const [form] = Form.useForm();
   const [pwForm] = Form.useForm();
 
@@ -83,13 +85,13 @@ export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
     if (!keyInput.trim()) return;
     setEncryptionPassphrase(keyInput.trim());
     setKeyInput('');
-    setHasKey(true);
+    setLocalKeyVersion((v) => v + 1);
     message.success(t('settings.keyLoaded'));
   };
 
   const handleClearKey = () => {
     clearEncryptionPassphrase();
-    setHasKey(false);
+    setLocalKeyVersion((v) => v + 1);
   };
 
   return (

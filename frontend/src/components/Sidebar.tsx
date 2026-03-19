@@ -1,19 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Dropdown } from 'antd';
-import { FolderAddOutlined, FileAddOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { FolderAddOutlined, FileAddOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined, LockOutlined } from '@ant-design/icons';
 import { Tree, type TreeApi, type NodeRendererProps } from 'react-arborist';
 import { useTranslation } from 'react-i18next';
 import type { Note } from '../api/notes';
+import { isEncrypted } from '../crypto';
 
 export interface TreeNode {
   id: string;
   name: string;
   nodeType: 'folder' | 'file' | 'memolist';
+  encrypted?: boolean;
   children?: TreeNode[];
 }
 
 interface Props {
   notes: Note[];
+  encryptedIds?: Set<string>;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onCreateFolder: () => void;
@@ -24,7 +27,7 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
-function buildTree(notes: Note[]): TreeNode[] {
+function buildTree(notes: Note[], encryptedIds?: Set<string>): TreeNode[] {
   const map = new Map<string, TreeNode>();
   const roots: TreeNode[] = [];
 
@@ -33,6 +36,7 @@ function buildTree(notes: Note[]): TreeNode[] {
       id: note.id,
       name: note.title,
       nodeType: note.node_type,
+      encrypted: encryptedIds?.has(note.id) || isEncrypted(note.title) || isEncrypted(note.content),
       children: note.node_type === 'folder' ? [] : undefined,
     });
   }
@@ -57,6 +61,7 @@ function getNodeIcon(nodeType: string, isOpen: boolean): string {
 
 export default function Sidebar({
   notes,
+  encryptedIds,
   selectedId,
   onSelect,
   onCreateFolder,
@@ -67,7 +72,7 @@ export default function Sidebar({
   onDelete,
 }: Props) {
   const { t } = useTranslation();
-  const treeData = buildTree(notes);
+  const treeData = buildTree(notes, encryptedIds);
   const treeRef = useRef<TreeApi<TreeNode>>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [treeHeight, setTreeHeight] = useState(400);
@@ -133,7 +138,10 @@ export default function Sidebar({
               autoFocus
             />
           ) : (
-            <span className="tree-node-name">{node.data.name}</span>
+            <>
+              <span className="tree-node-name">{node.data.name}</span>
+              {node.data.encrypted && <LockOutlined className="tree-node-lock" />}
+            </>
           )}
         </div>
       </Dropdown>

@@ -30,6 +30,7 @@ export default function App() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [keyInput, setKeyInput] = useState('');
+  const [keyVersion, setKeyVersion] = useState(0);
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
@@ -73,6 +74,7 @@ export default function App() {
     setEncryptionPassphrase(keyInput.trim());
     setKeyInput('');
     setShowKeyModal(false);
+    setKeyVersion((v) => v + 1);
     message.success(t('settings.keyLoaded'));
   };
 
@@ -134,7 +136,7 @@ export default function App() {
                     {activeFeature === 'thoughts' && <ThoughtsFeature profile={profile} />}
                     {activeFeature === 'learning' && <LearningFeature />}
                     {activeFeature === 'settings' && (
-                      <SettingsFeature profile={profile} onProfileUpdate={loadProfile} />
+                      <SettingsFeature profile={profile} onProfileUpdate={loadProfile} keyVersion={keyVersion} />
                     )}
                   </div>
                 </div>
