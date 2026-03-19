@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import enUS from 'antd/locale/en_US';
 import ruRU from 'antd/locale/ru_RU';
@@ -17,10 +18,15 @@ import './App.css';
 
 type Feature = 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'learning' | 'settings';
 
+function BlankPage() {
+  return <div style={{ background: '#fff', minHeight: '100vh' }} />;
+}
+
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(isAuthenticated());
   const [activeFeature, setActiveFeature] = useState<Feature>('notes');
   const { i18n } = useTranslation();
+  const navigate = useNavigate();
 
   const antLocale = i18n.language === 'ru' ? ruRU : enUS;
 
@@ -38,42 +44,58 @@ export default function App() {
       });
   }, [loggedIn, i18n]);
 
+  const handleLogin = () => {
+    setLoggedIn(true);
+    navigate('/app');
+  };
+
   const handleLogout = () => {
     clearToken();
     setLoggedIn(false);
+    navigate('/');
   };
-
-  if (!loggedIn) {
-    return (
-      <ConfigProvider
-        locale={antLocale}
-        theme={{ token: { colorPrimary: '#1a1a2e', borderRadius: 8 } }}
-      >
-        <LoginPage onLogin={() => setLoggedIn(true)} />
-      </ConfigProvider>
-    );
-  }
 
   return (
     <ConfigProvider
       locale={antLocale}
       theme={{ token: { colorPrimary: '#1a1a2e', borderRadius: 8 } }}
     >
-      <div className="app-layout">
-        <IconBar
-          activeFeature={activeFeature}
-          onSelectFeature={setActiveFeature}
-          onLogout={handleLogout}
+      <Routes>
+        <Route path="/" element={<BlankPage />} />
+        <Route
+          path="/auttth"
+          element={
+            loggedIn
+              ? <Navigate to="/app" replace />
+              : <LoginPage onLogin={handleLogin} />
+          }
         />
-        <div className="feature-content">
-          {activeFeature === 'notes' && <NotesFeature />}
-          {activeFeature === 'calendar' && <CalendarFeature />}
-          {activeFeature === 'workouts' && <WorkoutsFeature />}
-          {activeFeature === 'thoughts' && <ThoughtsFeature />}
-          {activeFeature === 'learning' && <LearningFeature />}
-          {activeFeature === 'settings' && <SettingsFeature />}
-        </div>
-      </div>
+        <Route
+          path="/app"
+          element={
+            loggedIn
+              ? (
+                <div className="app-layout">
+                  <IconBar
+                    activeFeature={activeFeature}
+                    onSelectFeature={setActiveFeature}
+                    onLogout={handleLogout}
+                  />
+                  <div className="feature-content">
+                    {activeFeature === 'notes' && <NotesFeature />}
+                    {activeFeature === 'calendar' && <CalendarFeature />}
+                    {activeFeature === 'workouts' && <WorkoutsFeature />}
+                    {activeFeature === 'thoughts' && <ThoughtsFeature />}
+                    {activeFeature === 'learning' && <LearningFeature />}
+                    {activeFeature === 'settings' && <SettingsFeature />}
+                  </div>
+                </div>
+              )
+              : <Navigate to="/auttth" replace />
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </ConfigProvider>
   );
 }

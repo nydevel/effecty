@@ -14,6 +14,9 @@ pub enum AppError {
     #[error("forbidden: {0}")]
     Forbidden(String),
 
+    #[error("too many requests")]
+    TooManyRequests,
+
     #[error("internal: {0}")]
     Internal(String),
 
@@ -30,6 +33,7 @@ impl IntoResponse for AppError {
             Self::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized".into()),
             Self::NotFound => (StatusCode::NOT_FOUND, "not found".into()),
             Self::Forbidden(msg) => (StatusCode::FORBIDDEN, msg),
+            Self::TooManyRequests => (StatusCode::TOO_MANY_REQUESTS, "too many requests".into()),
             Self::Internal(msg) => {
                 tracing::error!("internal error: {msg}");
                 (StatusCode::INTERNAL_SERVER_ERROR, "internal error".into())
