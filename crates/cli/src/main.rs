@@ -35,7 +35,9 @@ fn print_usage() {
     eprintln!("Commands:");
     eprintln!("  dev      Build frontend and start server");
     eprintln!("  migrate  Run database migrations");
-    eprintln!("  seed     Create dev user (nydevel@effecty.org / dev123). Only in dev environment.");
+    eprintln!(
+        "  seed     Create dev user (nydevel@effecty.org / dev123). Only in dev environment."
+    );
 }
 
 fn dev() -> Result<()> {
