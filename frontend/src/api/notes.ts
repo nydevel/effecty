@@ -96,3 +96,10 @@ export async function updateMemo(
 export async function deleteMemo(noteId: string, memoId: string): Promise<void> {
   return apiFetch<void>(`/notes/${noteId}/memos/${memoId}`, { method: 'DELETE' });
 }
+
+export async function reorderMemos(noteId: string, ids: string[]): Promise<void> {
+  await apiFetch(`/notes/${noteId}/memos/reorder`, {
+    method: 'PATCH',
+    body: JSON.stringify({ ids }),
+  });
+}

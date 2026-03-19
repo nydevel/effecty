@@ -741,8 +741,26 @@
   border-radius: 8px;
   padding: 10px 12px;
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 8px;
+  transition: border-color 0.15s;
+  border: 2px solid transparent;
+}
+
+.memo-item-drag-over {
+  border-color: #1677ff;
+}
+
+.memo-drag-handle {
+  cursor: grab;
+  color: #bbb;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.memo-drag-handle:hover {
+  color: #888;
 }
 
 .memo-item-body {

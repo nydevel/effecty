@@ -110,6 +110,26 @@ pub async fn update(
     Ok(memo)
 }
 
+pub async fn reorder(pool: &PgPool, user_id: UserId, ids: &[MemoId]) -> Result<()> {
+    let mut tx = pool.begin().await?;
+    #[allow(clippy::needless_range_loop)]
+    'update: for i in 0..ids.len() {
+        sqlx::query(
+            "UPDATE memos SET sort_order = $1, updated_at = NOW() WHERE id = $2 AND user_id = $3",
+        )
+        .bind(i as f64)
+        .bind(ids[i])
+        .bind(user_id)
+        .execute(&mut *tx)
+        .await?;
+        if i == ids.len() - 1 {
+            break 'update;
+        }
+    }
+    tx.commit().await?;
+    Ok(())
+}
+
 pub async fn delete(pool: &PgPool, id: MemoId, user_id: UserId) -> Result<bool> {
     let result = sqlx::query("DELETE FROM memos WHERE id = $1 AND user_id = $2")
         .bind(id)

@@ -122,3 +122,18 @@ pub async fn delete_memo(
         Err(NotesError::NotFound)
     }
 }
+
+#[derive(serde::Deserialize)]
+pub struct ReorderMemosRequest {
+    pub ids: Vec<MemoId>,
+}
+
+pub async fn reorder_memos(
+    State(pool): State<PgPool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path(_note_id): Path<NoteId>,
+    Json(input): Json<ReorderMemosRequest>,
+) -> Result<axum::http::StatusCode, NotesError> {
+    memos::reorder(&pool, user_id, &input.ids).await?;
+    Ok(axum::http::StatusCode::NO_CONTENT)
+}

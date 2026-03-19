@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Input } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined, HolderOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { Memo } from '../api/notes';
 import * as notesApi from '../api/notes';
@@ -34,6 +34,8 @@ export default function MemoListEditor({ noteId, title, onTitleChange }: Props) 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  const dragIdx = useRef<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   const loadMemos = useCallback(async () => {
     try {
@@ -81,6 +83,43 @@ export default function MemoListEditor({ noteId, title, onTitleChange }: Props) 
     await loadMemos();
   };
 
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    dragIdx.current = idx;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(idx));
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIdx(idx);
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetIdx: number) => {
+    e.preventDefault();
+    const fromIdx = dragIdx.current;
+    dragIdx.current = null;
+    setDragOverIdx(null);
+    if (fromIdx === null || fromIdx === targetIdx) return;
+
+    const updated = [...memos];
+    const [moved] = updated.splice(fromIdx, 1);
+    updated.splice(targetIdx, 0, moved);
+    setMemos(updated);
+
+    try {
+      await notesApi.reorderMemos(noteId, updated.map((m) => m.id));
+    } catch (err) {
+      console.error('Failed to reorder memos:', err);
+      await loadMemos();
+    }
+  };
+
+  const handleDragEnd = () => {
+    dragIdx.current = null;
+    setDragOverIdx(null);
+  };
+
   return (
     <div className="memo-list-editor">
       <Input
@@ -96,8 +135,16 @@ export default function MemoListEditor({ noteId, title, onTitleChange }: Props) 
       />
 
       <div className="memo-list">
-        {memos.map((memo) => (
-          <div key={memo.id} className="memo-item">
+        {memos.map((memo, idx) => (
+          <div
+            key={memo.id}
+            className={`memo-item${dragOverIdx === idx ? ' memo-item-drag-over' : ''}`}
+            draggable={editingId !== memo.id}
+            onDragStart={(e) => handleDragStart(e, idx)}
+            onDragOver={(e) => handleDragOver(e, idx)}
+            onDrop={(e) => handleDrop(e, idx)}
+            onDragEnd={handleDragEnd}
+          >
             {editingId === memo.id ? (
               <div className="memo-item-edit">
                 <Input
@@ -128,6 +175,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange }: Props) 
               </div>
             ) : (
               <>
+                <HolderOutlined className="memo-drag-handle" />
                 <div className="memo-item-body">
                   <div className="memo-item-title">{memo.title}</div>
                   {memo.content && (

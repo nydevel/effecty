@@ -24,4 +24,8 @@ pub fn router() -> Router<PgPool> {
             "/api/notes/{note_id}/memos/{memo_id}",
             put(handlers::update_memo).delete(handlers::delete_memo),
         )
+        .route(
+            "/api/notes/{note_id}/memos/reorder",
+            patch(handlers::reorder_memos),
+        )
 }
