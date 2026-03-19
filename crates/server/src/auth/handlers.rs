@@ -99,3 +99,28 @@ pub async fn me(
         email: user.email,
     }))
 }
+
+#[derive(Debug, Deserialize)]
+pub struct ChangePasswordRequest {
+    pub current_password: String,
+    pub new_password: String,
+}
+
+pub async fn change_password(
+    State(state): State<AppState>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Json(input): Json<ChangePasswordRequest>,
+) -> Result<Json<serde_json::Value>, AppError> {
+    let user = db::repo::users::find_by_id(&state.pool, user_id)
+        .await?
+        .ok_or(AppError::NotFound)?;
+
+    if !password::verify(&input.current_password, &user.password_hash)? {
+        return Err(AppError::Forbidden("invalid current password".into()));
+    }
+
+    let new_hash = password::hash(&input.new_password)?;
+    db::repo::users::update_password(&state.pool, user_id, &new_hash).await?;
+
+    Ok(Json(serde_json::json!({ "ok": true })))
+}

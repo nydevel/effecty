@@ -18,3 +18,13 @@ export async function updateProfile(data: { locale: string }): Promise<UserProfi
     body: JSON.stringify(data),
   });
 }
+
+export async function changePassword(data: {
+  current_password: string;
+  new_password: string;
+}): Promise<void> {
+  await apiFetch('/auth/password', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}

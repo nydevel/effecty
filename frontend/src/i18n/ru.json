@@ -128,6 +128,16 @@
     "english": "Английский",
     "russian": "Русский",
     "save": "Сохранить",
-    "saved": "Настройки сохранены"
+    "saved": "Настройки сохранены",
+    "changePassword": "Изменить пароль",
+    "currentPassword": "Текущий пароль",
+    "newPassword": "Новый пароль",
+    "confirmPassword": "Подтвердите новый пароль",
+    "currentPasswordRequired": "Введите текущий пароль",
+    "newPasswordRequired": "Введите новый пароль",
+    "confirmPasswordRequired": "Подтвердите новый пароль",
+    "passwordsMismatch": "Пароли не совпадают",
+    "passwordChanged": "Пароль успешно изменён",
+    "passwordChangeFailed": "Не удалось изменить пароль"
   }
 }

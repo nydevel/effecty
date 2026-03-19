@@ -4,7 +4,7 @@ mod spa;
 use std::path::PathBuf;
 
 use axum::middleware;
-use axum::routing::{get, post};
+use axum::routing::{get, post, put};
 use axum::Router;
 use tower_http::services::ServeDir;
 
@@ -34,6 +34,7 @@ pub fn create_router(state: AppState) -> Router {
 
     let protected_routes = Router::new()
         .route("/api/auth/me", get(auth::handlers::me))
+        .route("/api/auth/password", put(auth::handlers::change_password))
         .merge(notes_routes)
         .merge(tasks_routes)
         .merge(workouts_routes)
