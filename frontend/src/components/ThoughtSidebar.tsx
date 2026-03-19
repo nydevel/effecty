@@ -3,7 +3,7 @@ import { Button, Dropdown } from 'antd';
 import { PlusOutlined, DeleteOutlined, LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { Thought } from '../api/thoughts';
-import { getEncryptionPassphrase } from '../crypto';
+import { getEncryptionPassphrase, isEncrypted } from '../crypto';
 
 interface Props {
   thoughts: Thought[];
@@ -67,7 +67,11 @@ export default function ThoughtSidebar({
         }}
       >
         {thoughts.map((thought) => {
-          const locked = thought.is_encrypted && !getEncryptionPassphrase();
+          const locked = thought.is_encrypted && (
+            !getEncryptionPassphrase() ||
+            isEncrypted(thought.title) ||
+            isEncrypted(thought.content)
+          );
           return (
             <Dropdown
               key={thought.id}

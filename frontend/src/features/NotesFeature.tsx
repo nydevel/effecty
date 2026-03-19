@@ -5,7 +5,7 @@ import * as notesApi from '../api/notes';
 import type { Note } from '../api/notes';
 import type { UserProfile } from '../api/profile';
 import { useEncryption } from '../hooks/useEncryption';
-import { getEncryptionPassphrase } from '../crypto';
+import { getEncryptionPassphrase, isEncrypted } from '../crypto';
 import Sidebar from '../components/Sidebar';
 import NoteEditor from '../components/NoteEditor';
 import MemoListEditor from '../components/MemoListEditor';
@@ -131,8 +131,12 @@ export default function NotesFeature({ profile }: Props) {
       return <div className="empty-state">{t('notes.emptyState')}</div>;
     }
 
+    const decryptionFailed = activeNote.is_encrypted && (
+      isEncrypted(activeNote.title) || isEncrypted(activeNote.content)
+    );
+    const locked = activeNote.is_encrypted && (!getEncryptionPassphrase() || decryptionFailed);
+
     if (activeNote.node_type === 'memolist') {
-      const locked = activeNote.is_encrypted && !getEncryptionPassphrase();
       return (
         <MemoListEditor
           key={activeNote.id}
@@ -144,8 +148,6 @@ export default function NotesFeature({ profile }: Props) {
         />
       );
     }
-
-    const locked = activeNote.is_encrypted && !getEncryptionPassphrase();
     return (
       <NoteEditor
         key={activeNote.id}

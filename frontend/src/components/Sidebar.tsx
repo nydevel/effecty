@@ -4,7 +4,7 @@ import { FolderAddOutlined, FileAddOutlined, UnorderedListOutlined, EditOutlined
 import { Tree, type TreeApi, type NodeRendererProps } from 'react-arborist';
 import { useTranslation } from 'react-i18next';
 import type { Note } from '../api/notes';
-import { getEncryptionPassphrase } from '../crypto';
+import { getEncryptionPassphrase, isEncrypted } from '../crypto';
 
 export interface TreeNode {
   id: string;
@@ -112,7 +112,9 @@ export default function Sidebar({
 
   function Node({ node, style, dragHandle }: NodeRendererProps<TreeNode>) {
     const isFolder = node.data.nodeType === 'folder';
-    const locked = node.data.encrypted && !getEncryptionPassphrase();
+    const locked = node.data.encrypted && (
+      !getEncryptionPassphrase() || isEncrypted(node.data.name)
+    );
     return (
       <Dropdown menu={getContextMenuItems(node.id, locked)} trigger={['contextMenu']}>
         <div

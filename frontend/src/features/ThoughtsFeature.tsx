@@ -5,7 +5,7 @@ import * as thoughtsApi from '../api/thoughts';
 import type { Thought, Tag, ThoughtTag, ThoughtComment } from '../api/thoughts';
 import type { UserProfile } from '../api/profile';
 import { useEncryption } from '../hooks/useEncryption';
-import { getEncryptionPassphrase } from '../crypto';
+import { getEncryptionPassphrase, isEncrypted } from '../crypto';
 import ThoughtSidebar from '../components/ThoughtSidebar';
 import ThoughtEditor from '../components/ThoughtEditor';
 import TagsCatalog from '../components/TagsCatalog';
@@ -189,7 +189,11 @@ export default function ThoughtsFeature({ profile }: Props) {
             onRemoveTag={handleRemoveTag}
             onAddComment={handleAddComment}
             onDeleteComment={handleDeleteComment}
-            readOnly={selectedThought.is_encrypted && !getEncryptionPassphrase()}
+            readOnly={selectedThought.is_encrypted && (
+              !getEncryptionPassphrase() ||
+              isEncrypted(selectedThought.title) ||
+              isEncrypted(selectedThought.content)
+            )}
           />
         ) : (
           <div className="empty-state">{t('thoughts.emptyState')}</div>
