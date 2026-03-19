@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, Modal, Input, message } from 'antd';
 import enUS from 'antd/locale/en_US';
 import ruRU from 'antd/locale/ru_RU';
 import { useTranslation } from 'react-i18next';
 import { isAuthenticated, clearToken } from './api/client';
 import { getProfile } from './api/profile';
+import type { UserProfile } from './api/profile';
+import { getEncryptionPassphrase, setEncryptionPassphrase, setUserId } from './crypto';
 import IconBar from './components/IconBar';
 import NotesFeature from './features/NotesFeature';
 import CalendarFeature from './features/CalendarFeature';
@@ -25,24 +27,34 @@ function BlankPage() {
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(isAuthenticated());
   const [activeFeature, setActiveFeature] = useState<Feature>('notes');
-  const { i18n } = useTranslation();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [keyInput, setKeyInput] = useState('');
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const antLocale = i18n.language === 'ru' ? ruRU : enUS;
 
+  const loadProfile = useCallback(async () => {
+    try {
+      const p = await getProfile();
+      setProfile(p);
+      setUserId(p.user_id);
+      if (p.locale !== i18n.language) {
+        i18n.changeLanguage(p.locale);
+      }
+      if ((p.encrypt_notes || p.encrypt_thoughts) && !getEncryptionPassphrase()) {
+        setShowKeyModal(true);
+      }
+    } catch (err) {
+      console.warn('Failed to load user profile:', err);
+    }
+  }, [i18n]);
+
   useEffect(() => {
     if (!loggedIn) return;
-
-    getProfile()
-      .then((profile) => {
-        if (profile.locale !== i18n.language) {
-          i18n.changeLanguage(profile.locale);
-        }
-      })
-      .catch((err) => {
-        console.warn('Failed to load user profile:', err);
-      });
-  }, [loggedIn, i18n]);
+    loadProfile();
+  }, [loggedIn, loadProfile]);
 
   const handleLogin = () => {
     setLoggedIn(true);
@@ -52,7 +64,21 @@ export default function App() {
   const handleLogout = () => {
     clearToken();
     setLoggedIn(false);
+    setProfile(null);
     navigate('/');
+  };
+
+  const handleKeySubmit = () => {
+    if (!keyInput.trim()) return;
+    setEncryptionPassphrase(keyInput.trim());
+    setKeyInput('');
+    setShowKeyModal(false);
+    message.success(t('settings.keyLoaded'));
+  };
+
+  const handleKeySkip = () => {
+    setKeyInput('');
+    setShowKeyModal(false);
   };
 
   return (
@@ -60,6 +86,26 @@ export default function App() {
       locale={antLocale}
       theme={{ token: { colorPrimary: '#1a1a2e', borderRadius: 8 } }}
     >
+      <Modal
+        title={t('settings.enterEncryptionKey')}
+        open={showKeyModal}
+        onOk={handleKeySubmit}
+        onCancel={handleKeySkip}
+        cancelText={t('settings.skipKeyEntry')}
+        okText={t('settings.setKey')}
+        closable={false}
+        maskClosable={false}
+      >
+        <p style={{ marginBottom: 12 }}>{t('settings.encryptionKeyRequired')}</p>
+        <Input.Password
+          value={keyInput}
+          onChange={(e) => setKeyInput(e.target.value)}
+          onPressEnter={handleKeySubmit}
+          placeholder={t('settings.encryptionKey')}
+          autoFocus
+        />
+      </Modal>
+
       <Routes>
         <Route path="/" element={<BlankPage />} />
         <Route
@@ -82,12 +128,14 @@ export default function App() {
                     onLogout={handleLogout}
                   />
                   <div className="feature-content">
-                    {activeFeature === 'notes' && <NotesFeature />}
+                    {activeFeature === 'notes' && <NotesFeature profile={profile} />}
                     {activeFeature === 'calendar' && <CalendarFeature />}
                     {activeFeature === 'workouts' && <WorkoutsFeature />}
-                    {activeFeature === 'thoughts' && <ThoughtsFeature />}
+                    {activeFeature === 'thoughts' && <ThoughtsFeature profile={profile} />}
                     {activeFeature === 'learning' && <LearningFeature />}
-                    {activeFeature === 'settings' && <SettingsFeature />}
+                    {activeFeature === 'settings' && (
+                      <SettingsFeature profile={profile} onProfileUpdate={loadProfile} />
+                    )}
                   </div>
                 </div>
               )

@@ -9,6 +9,8 @@ pub struct UserProfile {
     pub id: uuid::Uuid,
     pub user_id: UserId,
     pub locale: String,
+    pub encrypt_notes: bool,
+    pub encrypt_thoughts: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -16,6 +18,8 @@ pub struct UserProfile {
 #[derive(Debug, Deserialize)]
 pub struct UpdateProfile {
     pub locale: String,
+    pub encrypt_notes: Option<bool>,
+    pub encrypt_thoughts: Option<bool>,
 }
 
 pub async fn get_or_create(pool: &PgPool, user_id: UserId) -> Result<UserProfile> {
@@ -24,7 +28,7 @@ pub async fn get_or_create(pool: &PgPool, user_id: UserId) -> Result<UserProfile
         INSERT INTO user_profiles (user_id, locale)
         VALUES ($1, 'en')
         ON CONFLICT (user_id) DO UPDATE SET updated_at = user_profiles.updated_at
-        RETURNING id, user_id, locale, created_at, updated_at
+        RETURNING id, user_id, locale, encrypt_notes, encrypt_thoughts, created_at, updated_at
         "#,
     )
     .bind(user_id)
@@ -42,13 +46,18 @@ pub async fn update(
     let profile = sqlx::query_as::<_, UserProfile>(
         r#"
         UPDATE user_profiles
-        SET locale = $2, updated_at = NOW()
+        SET locale = $2,
+            encrypt_notes = COALESCE($3, encrypt_notes),
+            encrypt_thoughts = COALESCE($4, encrypt_thoughts),
+            updated_at = NOW()
         WHERE user_id = $1
-        RETURNING id, user_id, locale, created_at, updated_at
+        RETURNING id, user_id, locale, encrypt_notes, encrypt_thoughts, created_at, updated_at
         "#,
     )
     .bind(user_id)
     .bind(&input.locale)
+    .bind(input.encrypt_notes)
+    .bind(input.encrypt_thoughts)
     .fetch_optional(pool)
     .await?;
 

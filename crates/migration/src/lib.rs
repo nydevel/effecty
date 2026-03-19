@@ -11,6 +11,7 @@ mod m20260312_000006_create_thoughts;
 mod m20260313_000007_tags_unique_name;
 mod m20260313_000008_create_learning;
 mod m20260315_000009_add_materials_is_done;
+mod m20260319_000010_add_encryption_prefs;
 
 pub struct Migrator;
 
@@ -27,6 +28,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260313_000007_tags_unique_name::Migration),
             Box::new(m20260313_000008_create_learning::Migration),
             Box::new(m20260315_000009_add_materials_is_done::Migration),
+            Box::new(m20260319_000010_add_encryption_prefs::Migration),
         ]
     }
 }

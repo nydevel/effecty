@@ -138,6 +138,18 @@
     "confirmPasswordRequired": "Confirm your new password",
     "passwordsMismatch": "Passwords do not match",
     "passwordChanged": "Password changed successfully",
-    "passwordChangeFailed": "Failed to change password"
+    "passwordChangeFailed": "Failed to change password",
+    "encryption": "Encryption",
+    "encryptNotes": "Encrypt Notes (titles & content)",
+    "encryptThoughts": "Encrypt Thoughts (titles, text, comments)",
+    "encryptionKey": "Encryption key",
+    "setKey": "Set key",
+    "clearKey": "Clear key",
+    "keyLoaded": "Key is loaded",
+    "keyNotLoaded": "Key is not loaded",
+    "encryptionWarning": "If you lose this key, encrypted data cannot be recovered.",
+    "enterEncryptionKey": "Enter encryption key",
+    "encryptionKeyRequired": "Encryption key is required to view encrypted data",
+    "skipKeyEntry": "Skip"
   }
 }

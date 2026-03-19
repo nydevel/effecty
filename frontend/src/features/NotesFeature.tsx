@@ -2,24 +2,37 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as notesApi from '../api/notes';
 import type { Note } from '../api/notes';
+import type { UserProfile } from '../api/profile';
+import { useEncryption } from '../hooks/useEncryption';
 import Sidebar from '../components/Sidebar';
 import NoteEditor from '../components/NoteEditor';
 import MemoListEditor from '../components/MemoListEditor';
 
-export default function NotesFeature() {
+interface Props {
+  profile: UserProfile | null;
+}
+
+export default function NotesFeature({ profile }: Props) {
   const { t } = useTranslation();
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeNote, setActiveNote] = useState<Note | null>(null);
+  const { encryptField, decryptField } = useEncryption(profile);
 
   const loadTree = useCallback(async () => {
     try {
       const tree = await notesApi.getTree();
-      setNotes(tree);
+      const decrypted = await Promise.all(
+        tree.map(async (n) => ({
+          ...n,
+          title: await decryptField(n.title),
+        })),
+      );
+      setNotes(decrypted);
     } catch (err) {
       console.error('Failed to load notes tree:', err);
     }
-  }, []);
+  }, [decryptField]);
 
   useEffect(() => {
     loadTree();
@@ -29,7 +42,13 @@ export default function NotesFeature() {
     if (selectedId) {
       const note = notes.find((n) => n.id === selectedId);
       if (note && (note.node_type === 'file' || note.node_type === 'memolist')) {
-        notesApi.getNote(selectedId).then(setActiveNote).catch((err) => {
+        notesApi.getNote(selectedId).then(async (n) => {
+          setActiveNote({
+            ...n,
+            title: await decryptField(n.title),
+            content: await decryptField(n.content),
+          });
+        }).catch((err) => {
           console.error('Failed to load note:', err);
         });
       } else {
@@ -38,7 +57,7 @@ export default function NotesFeature() {
     } else {
       setActiveNote(null);
     }
-  }, [selectedId, notes]);
+  }, [selectedId, notes, decryptField]);
 
   const handleCreateFolder = async () => {
     await notesApi.createNote({
@@ -73,7 +92,8 @@ export default function NotesFeature() {
   };
 
   const handleRename = async (id: string, name: string) => {
-    await notesApi.updateNote(id, { title: name });
+    const encrypted = await encryptField('notes', name);
+    await notesApi.updateNote(id, { title: encrypted });
     await loadTree();
   };
 
@@ -86,10 +106,11 @@ export default function NotesFeature() {
   const handleContentChange = useCallback(
     async (content: string) => {
       if (activeNote) {
-        await notesApi.updateNote(activeNote.id, { content });
+        const encrypted = await encryptField('notes', content);
+        await notesApi.updateNote(activeNote.id, { content: encrypted });
       }
     },
-    [activeNote],
+    [activeNote, encryptField],
   );
 
   const renderContent = () => {
@@ -104,6 +125,7 @@ export default function NotesFeature() {
           noteId={activeNote.id}
           title={activeNote.title}
           onTitleChange={(title) => handleRename(activeNote.id, title)}
+          profile={profile}
         />
       );
     }

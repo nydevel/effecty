@@ -2,12 +2,19 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as thoughtsApi from '../api/thoughts';
 import type { Thought, Tag, ThoughtTag, ThoughtComment } from '../api/thoughts';
+import type { UserProfile } from '../api/profile';
+import { useEncryption } from '../hooks/useEncryption';
 import ThoughtSidebar from '../components/ThoughtSidebar';
 import ThoughtEditor from '../components/ThoughtEditor';
 import TagsCatalog from '../components/TagsCatalog';
 
-export default function ThoughtsFeature() {
+interface Props {
+  profile: UserProfile | null;
+}
+
+export default function ThoughtsFeature({ profile }: Props) {
   const { t } = useTranslation();
+  const { encryptField, decryptField } = useEncryption(profile);
   const [thoughts, setThoughts] = useState<Thought[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -19,11 +26,18 @@ export default function ThoughtsFeature() {
   const loadThoughts = useCallback(async () => {
     try {
       const list = await thoughtsApi.listThoughts();
-      setThoughts(list);
+      const decrypted = await Promise.all(
+        list.map(async (th) => ({
+          ...th,
+          title: await decryptField(th.title),
+          content: await decryptField(th.content),
+        })),
+      );
+      setThoughts(decrypted);
     } catch (err) {
       console.error('Failed to load thoughts:', err);
     }
-  }, []);
+  }, [decryptField]);
 
   const loadTags = useCallback(async () => {
     try {
@@ -46,11 +60,17 @@ export default function ThoughtsFeature() {
   const loadComments = useCallback(async (thoughtId: string) => {
     try {
       const list = await thoughtsApi.listComments(thoughtId);
-      setComments(list);
+      const decrypted = await Promise.all(
+        list.map(async (c) => ({
+          ...c,
+          content: await decryptField(c.content),
+        })),
+      );
+      setComments(decrypted);
     } catch (err) {
       console.error('Failed to load comments:', err);
     }
-  }, []);
+  }, [decryptField]);
 
   useEffect(() => {
     loadThoughts();
@@ -86,13 +106,15 @@ export default function ThoughtsFeature() {
 
   const handleTitleChange = async (title: string) => {
     if (!selectedId) return;
-    await thoughtsApi.updateThought(selectedId, { title });
+    const encrypted = await encryptField('thoughts', title);
+    await thoughtsApi.updateThought(selectedId, { title: encrypted });
     await loadThoughts();
   };
 
   const handleContentChange = async (content: string) => {
     if (!selectedId) return;
-    await thoughtsApi.updateThought(selectedId, { content });
+    const encrypted = await encryptField('thoughts', content);
+    await thoughtsApi.updateThought(selectedId, { content: encrypted });
   };
 
   const handleDropTag = async (tagId: string) => {
@@ -113,7 +135,8 @@ export default function ThoughtsFeature() {
 
   const handleAddComment = async (content: string) => {
     if (!selectedId) return;
-    await thoughtsApi.createComment(selectedId, { content });
+    const encrypted = await encryptField('thoughts', content);
+    await thoughtsApi.createComment(selectedId, { content: encrypted });
     await loadComments(selectedId);
   };
 

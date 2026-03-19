@@ -138,6 +138,18 @@
     "confirmPasswordRequired": "Подтвердите новый пароль",
     "passwordsMismatch": "Пароли не совпадают",
     "passwordChanged": "Пароль успешно изменён",
-    "passwordChangeFailed": "Не удалось изменить пароль"
+    "passwordChangeFailed": "Не удалось изменить пароль",
+    "encryption": "Шифрование",
+    "encryptNotes": "Шифровать заметки (заголовки и содержимое)",
+    "encryptThoughts": "Шифровать идеи (заголовки, текст, комментарии)",
+    "encryptionKey": "Ключ шифрования",
+    "setKey": "Задать ключ",
+    "clearKey": "Удалить ключ",
+    "keyLoaded": "Ключ загружен",
+    "keyNotLoaded": "Ключ не загружен",
+    "encryptionWarning": "Если вы потеряете этот ключ, зашифрованные данные невозможно будет восстановить.",
+    "enterEncryptionKey": "Введите ключ шифрования",
+    "encryptionKeyRequired": "Для просмотра зашифрованных данных необходим ключ шифрования",
+    "skipKeyEntry": "Пропустить"
   }
 }

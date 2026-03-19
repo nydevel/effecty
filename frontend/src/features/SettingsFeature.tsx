@@ -1,12 +1,26 @@
 import { useState } from 'react';
-import { Form, Select, Button, Input, message, Typography, Divider } from 'antd';
+import { Form, Select, Button, Input, Checkbox, message, Typography, Divider, Tag } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { updateProfile, changePassword } from '../api/profile';
+import type { UserProfile } from '../api/profile';
+import {
+  getEncryptionPassphrase,
+  setEncryptionPassphrase,
+  clearEncryptionPassphrase,
+} from '../crypto';
 
-export default function SettingsFeature() {
+interface Props {
+  profile: UserProfile | null;
+  onProfileUpdate: () => Promise<void>;
+}
+
+export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
+  const [encLoading, setEncLoading] = useState(false);
+  const [keyInput, setKeyInput] = useState('');
+  const [hasKey, setHasKey] = useState(!!getEncryptionPassphrase());
   const [form] = Form.useForm();
   const [pwForm] = Form.useForm();
 
@@ -46,6 +60,36 @@ export default function SettingsFeature() {
     } finally {
       setPwLoading(false);
     }
+  };
+
+  const handleEncryptionChange = async (field: 'encrypt_notes' | 'encrypt_thoughts', value: boolean) => {
+    if (!profile) return;
+    setEncLoading(true);
+    try {
+      await updateProfile({
+        locale: profile.locale,
+        [field]: value,
+      });
+      await onProfileUpdate();
+      message.success(t('settings.saved'));
+    } catch (err) {
+      console.error('Failed to update encryption settings:', err);
+    } finally {
+      setEncLoading(false);
+    }
+  };
+
+  const handleSetKey = () => {
+    if (!keyInput.trim()) return;
+    setEncryptionPassphrase(keyInput.trim());
+    setKeyInput('');
+    setHasKey(true);
+    message.success(t('settings.keyLoaded'));
+  };
+
+  const handleClearKey = () => {
+    clearEncryptionPassphrase();
+    setHasKey(false);
   };
 
   return (
@@ -101,6 +145,58 @@ export default function SettingsFeature() {
           </Button>
         </Form.Item>
       </Form>
+
+      <Divider />
+
+      <Typography.Title level={4}>{t('settings.encryption')}</Typography.Title>
+
+      <div style={{ marginBottom: 16 }}>
+        <Checkbox
+          checked={profile?.encrypt_notes ?? false}
+          disabled={encLoading}
+          onChange={(e) => handleEncryptionChange('encrypt_notes', e.target.checked)}
+        >
+          {t('settings.encryptNotes')}
+        </Checkbox>
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <Checkbox
+          checked={profile?.encrypt_thoughts ?? false}
+          disabled={encLoading}
+          onChange={(e) => handleEncryptionChange('encrypt_thoughts', e.target.checked)}
+        >
+          {t('settings.encryptThoughts')}
+        </Checkbox>
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        {hasKey
+          ? <Tag color="green">{t('settings.keyLoaded')}</Tag>
+          : <Tag color="red">{t('settings.keyNotLoaded')}</Tag>
+        }
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <Input.Password
+          value={keyInput}
+          onChange={(e) => setKeyInput(e.target.value)}
+          onPressEnter={handleSetKey}
+          placeholder={t('settings.encryptionKey')}
+          style={{ flex: 1 }}
+        />
+        <Button type="primary" onClick={handleSetKey}>
+          {t('settings.setKey')}
+        </Button>
+        {hasKey && (
+          <Button danger onClick={handleClearKey}>
+            {t('settings.clearKey')}
+          </Button>
+        )}
+      </div>
+
+      <Typography.Text type="warning" style={{ fontSize: 12 }}>
+        {t('settings.encryptionWarning')}
+      </Typography.Text>
     </div>
   );
 }

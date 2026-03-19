@@ -112,18 +112,17 @@ pub async fn update(
 
 pub async fn reorder(pool: &PgPool, user_id: UserId, ids: &[MemoId]) -> Result<()> {
     let mut tx = pool.begin().await?;
-    #[allow(clippy::needless_range_loop)]
-    'update: for i in 0..ids.len() {
+    'reorder: for (i, id) in ids.iter().enumerate() {
         sqlx::query(
             "UPDATE memos SET sort_order = $1, updated_at = NOW() WHERE id = $2 AND user_id = $3",
         )
         .bind(i as f64)
-        .bind(ids[i])
+        .bind(id)
         .bind(user_id)
         .execute(&mut *tx)
         .await?;
-        if i == ids.len() - 1 {
-            break 'update;
+        if i + 1 == ids.len() {
+            break 'reorder;
         }
     }
     tx.commit().await?;

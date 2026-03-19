@@ -3,12 +3,15 @@ import { Button, Input } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined, HolderOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { Memo } from '../api/notes';
+import type { UserProfile } from '../api/profile';
+import { useEncryption } from '../hooks/useEncryption';
 import * as notesApi from '../api/notes';
 
 interface Props {
   noteId: string;
   title: string;
   onTitleChange: (title: string) => void;
+  profile: UserProfile | null;
 }
 
 function linkify(text: string) {
@@ -25,8 +28,9 @@ function linkify(text: string) {
   );
 }
 
-export default function MemoListEditor({ noteId, title, onTitleChange }: Props) {
+export default function MemoListEditor({ noteId, title, onTitleChange, profile }: Props) {
   const { t } = useTranslation();
+  const { encryptField, decryptField } = useEncryption(profile);
   const [memos, setMemos] = useState<Memo[]>([]);
   const [adding, setAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -40,11 +44,18 @@ export default function MemoListEditor({ noteId, title, onTitleChange }: Props) 
   const loadMemos = useCallback(async () => {
     try {
       const list = await notesApi.listMemos(noteId);
-      setMemos(list);
+      const decrypted = await Promise.all(
+        list.map(async (m) => ({
+          ...m,
+          title: await decryptField(m.title),
+          content: await decryptField(m.content),
+        })),
+      );
+      setMemos(decrypted);
     } catch (err) {
       console.error('Failed to load memos:', err);
     }
-  }, [noteId]);
+  }, [noteId, decryptField]);
 
   useEffect(() => {
     loadMemos();
@@ -52,10 +63,11 @@ export default function MemoListEditor({ noteId, title, onTitleChange }: Props) 
 
   const handleAdd = async () => {
     if (!newTitle.trim()) return;
-    await notesApi.createMemo(noteId, {
-      title: newTitle.trim(),
-      content: newContent.trim() || undefined,
-    });
+    const encTitle = await encryptField('notes', newTitle.trim());
+    const encContent = newContent.trim()
+      ? await encryptField('notes', newContent.trim())
+      : undefined;
+    await notesApi.createMemo(noteId, { title: encTitle, content: encContent });
     setNewTitle('');
     setNewContent('');
     setAdding(false);
@@ -70,9 +82,11 @@ export default function MemoListEditor({ noteId, title, onTitleChange }: Props) 
 
   const handleSaveEdit = async () => {
     if (!editingId || !editTitle.trim()) return;
+    const encTitle = await encryptField('notes', editTitle.trim());
+    const encContent = await encryptField('notes', editContent);
     await notesApi.updateMemo(noteId, editingId, {
-      title: editTitle.trim(),
-      content: editContent,
+      title: encTitle,
+      content: encContent,
     });
     setEditingId(null);
     await loadMemos();
