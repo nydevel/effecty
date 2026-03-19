@@ -85,7 +85,7 @@ RUN apt-get update && \
 
 COPY --from=builder /build/target/release/server /app/bin/server
 COPY --from=builder /build/target/release/cli /app/bin/cli
-COPY --from=frontend-builder /build/frontend/dist /app/static
+COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist
 
 COPY infra/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
