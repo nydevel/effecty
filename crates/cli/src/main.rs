@@ -35,7 +35,7 @@ fn print_usage() {
     eprintln!("Commands:");
     eprintln!("  dev      Build frontend and start server");
     eprintln!("  migrate  Run database migrations");
-    eprintln!("  seed     Create dev user (dev@effecty.org / dev123). Only in dev environment.");
+    eprintln!("  seed     Create dev user (nydevel@effecty.org / dev123). Only in dev environment.");
 }
 
 fn dev() -> Result<()> {
@@ -116,7 +116,7 @@ async fn seed() -> Result<()> {
     db::run_migrations(&config.database.url).await?;
     let pool = db::create_pool(&config.database).await?;
 
-    let email = "dev@effecty.org";
+    let email = "nydevel@effecty.org";
     let password = "dev123";
 
     let existing = db::repo::users::find_by_email(&pool, email).await?;

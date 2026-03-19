@@ -95,7 +95,7 @@ docker exec effecty-server /app/bin/cli seed
 docker compose -f docker-compose.prod.yml restart server
 ```
 
-Данные dev-пользователя: `dev@effecty.org` / `dev123`
+Данные dev-пользователя: `nydevel@effecty.org` / `dev123`
 
 ### 6. Настройка Nginx
 
