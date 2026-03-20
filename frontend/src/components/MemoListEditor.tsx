@@ -64,8 +64,10 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile, 
   }, [loadMemos]);
 
   const handleAdd = async () => {
-    if (!newTitle.trim()) return;
-    const encTitle = await encryptField('memos', 'title', newTitle.trim());
+    if (!newTitle.trim() && !newContent.trim()) return;
+    const encTitle = newTitle.trim()
+      ? await encryptField('memos', 'title', newTitle.trim())
+      : '';
     const encContent = newContent.trim()
       ? await encryptField('memos', 'content', newContent.trim())
       : undefined;
@@ -84,7 +86,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile, 
   };
 
   const handleSaveEdit = async () => {
-    if (!editingId || !editTitle.trim()) return;
+    if (!editingId || (!editTitle.trim() && !editContent.trim())) return;
     const encTitle = await encryptField('memos', 'title', editTitle.trim());
     const encContent = await encryptField('memos', 'content', editContent);
     const isEnc = shouldEncrypt('memos', 'title') || shouldEncrypt('memos', 'content');
@@ -207,9 +209,12 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile, 
                   }}
                   style={{ cursor: 'pointer' }}
                 >
-                  <div className="memo-item-title">{memo.title}</div>
+                  {memo.title && <div className="memo-item-title">{memo.title}</div>}
                   {memo.content && (
                     <div className="memo-item-content">{linkify(memo.content)}</div>
+                  )}
+                  {!memo.title && !memo.content && (
+                    <div className="memo-item-title" style={{ opacity: 0.4 }}>{t('notes.untitled')}</div>
                   )}
                 </div>
                 <div className="memo-item-actions">
@@ -242,7 +247,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile, 
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               onPressEnter={handleAdd}
-              placeholder={t('notes.memoTitle')}
+              placeholder={t('notes.memoTitleOptional')}
               autoFocus
             />
             <Input.TextArea

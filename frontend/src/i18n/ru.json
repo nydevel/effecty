@@ -32,6 +32,7 @@
     "delete": "Удалить",
     "untitled": "Без названия",
     "memoTitle": "Заголовок",
+    "memoTitleOptional": "Заголовок (необязателен)",
     "memoContent": "Содержание",
     "addMemo": "Добавить мемо",
     "cancel": "Отмена",

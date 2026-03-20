@@ -32,6 +32,7 @@
     "delete": "Delete",
     "untitled": "Untitled",
     "memoTitle": "Title",
+    "memoTitleOptional": "Title (optional)",
     "memoContent": "Content",
     "addMemo": "Add memo",
     "cancel": "Cancel",
