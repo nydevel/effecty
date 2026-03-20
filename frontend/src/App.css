@@ -560,9 +560,12 @@ html {
 .exercise-catalog-item.editing {
   flex-direction: column;
   align-items: stretch;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 10px 12px;
+  margin: 4px 8px;
   cursor: default;
+  background: #e8e8ec;
+  border-radius: 8px;
 }
 
 .exercise-catalog-item-name {
@@ -577,6 +580,11 @@ html {
   color: #888;
   margin-left: 8px;
   flex-shrink: 0;
+}
+
+.exercise-catalog-edit-actions {
+  display: flex;
+  gap: 4px;
 }
 
 .exercise-catalog-footer {

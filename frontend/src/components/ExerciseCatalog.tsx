@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Input, Select, Typography, Dropdown } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { Exercise, MuscleGroup } from '../api/workouts';
 import { MUSCLE_GROUPS } from '../api/workouts';
@@ -118,7 +118,6 @@ export default function ExerciseCatalog({
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   onPressEnter={saveEdit}
-                  onBlur={saveEdit}
                   autoFocus
                 />
                 <Select
@@ -130,6 +129,10 @@ export default function ExerciseCatalog({
                   style={{ width: '100%' }}
                   options={muscleGroupOptions}
                 />
+                <div className="exercise-catalog-edit-actions">
+                  <Button size="small" type="primary" icon={<CheckOutlined />} onClick={saveEdit} />
+                  <Button size="small" icon={<CloseOutlined />} onClick={() => setEditingId(null)} />
+                </div>
               </div>
             ) : (
               <div
