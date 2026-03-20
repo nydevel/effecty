@@ -31,6 +31,18 @@ pub struct EncryptionSettings {
     pub thought_comments: ContentOnlyEncryption,
 }
 
+/// UI preferences stored as JSONB in user_profiles.
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
+pub struct UiSettings {
+    /// Font scale multiplier (e.g. 1.0, 1.1, 1.2).
+    #[serde(default = "default_font_scale")]
+    pub font_scale: f64,
+}
+
+fn default_font_scale() -> f64 {
+    1.0
+}
+
 impl EncryptionSettings {
     /// Returns true if any encryption is enabled.
     pub fn any_enabled(&self) -> bool {

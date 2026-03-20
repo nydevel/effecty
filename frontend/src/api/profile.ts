@@ -16,6 +16,14 @@ export interface EncryptionSettings {
   thought_comments: ContentOnlyEncryption;
 }
 
+export interface UiSettings {
+  font_scale: number;
+}
+
+export const DEFAULT_UI_SETTINGS: UiSettings = {
+  font_scale: 1.0,
+};
+
 export const DEFAULT_ENCRYPTION_SETTINGS: EncryptionSettings = {
   notes: { title: false, content: false },
   memos: { title: false, content: false },
@@ -28,6 +36,7 @@ export interface UserProfile {
   user_id: string;
   locale: string;
   encryption_settings: EncryptionSettings;
+  ui_settings: UiSettings;
   created_at: string;
   updated_at: string;
 }
@@ -51,6 +60,7 @@ export async function getProfile(): Promise<UserProfile> {
 export async function updateProfile(data: {
   locale: string;
   encryption_settings?: EncryptionSettings;
+  ui_settings?: UiSettings;
 }): Promise<UserProfile> {
   return apiFetch<UserProfile>('/profile', {
     method: 'PUT',

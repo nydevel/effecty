@@ -1,5 +1,9 @@
+:root {
+  --font-scale: 1;
+}
+
 html {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 /* Layout */
@@ -15,6 +19,12 @@ html {
   flex: 1;
   display: flex;
   overflow: hidden;
+  zoom: var(--font-scale, 1);
+}
+
+/* Settings page — undo zoom so the settings panel stays at normal size */
+.settings-page {
+  zoom: calc(1 / var(--font-scale, 1));
 }
 
 .feature-layout {

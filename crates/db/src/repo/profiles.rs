@@ -1,6 +1,6 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use effecty_core::types::{EncryptionSettings, UserId};
+use effecty_core::types::{EncryptionSettings, UiSettings, UserId};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
@@ -10,6 +10,7 @@ pub struct UserProfile {
     pub user_id: UserId,
     pub locale: String,
     pub encryption_settings: sqlx::types::Json<EncryptionSettings>,
+    pub ui_settings: sqlx::types::Json<UiSettings>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -18,6 +19,7 @@ pub struct UserProfile {
 pub struct UpdateProfile {
     pub locale: String,
     pub encryption_settings: Option<EncryptionSettings>,
+    pub ui_settings: Option<UiSettings>,
 }
 
 pub async fn get_or_create(pool: &PgPool, user_id: UserId) -> Result<UserProfile> {
@@ -26,7 +28,7 @@ pub async fn get_or_create(pool: &PgPool, user_id: UserId) -> Result<UserProfile
         INSERT INTO user_profiles (user_id, locale)
         VALUES ($1, 'en')
         ON CONFLICT (user_id) DO UPDATE SET updated_at = user_profiles.updated_at
-        RETURNING id, user_id, locale, encryption_settings, created_at, updated_at
+        RETURNING id, user_id, locale, encryption_settings, ui_settings, created_at, updated_at
         "#,
     )
     .bind(user_id)
@@ -46,19 +48,26 @@ pub async fn update(
         .as_ref()
         .map(|s| sqlx::types::Json(s.clone()));
 
+    let ui_json = input
+        .ui_settings
+        .as_ref()
+        .map(|s| sqlx::types::Json(s.clone()));
+
     let profile = sqlx::query_as::<_, UserProfile>(
         r#"
         UPDATE user_profiles
         SET locale = $2,
             encryption_settings = COALESCE($3, encryption_settings),
+            ui_settings = COALESCE($4, ui_settings),
             updated_at = NOW()
         WHERE user_id = $1
-        RETURNING id, user_id, locale, encryption_settings, created_at, updated_at
+        RETURNING id, user_id, locale, encryption_settings, ui_settings, created_at, updated_at
         "#,
     )
     .bind(user_id)
     .bind(&input.locale)
     .bind(settings_json)
+    .bind(ui_json)
     .fetch_optional(pool)
     .await?;
 

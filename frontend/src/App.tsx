@@ -99,6 +99,8 @@ export default function App() {
       if (p.locale !== i18n.language) {
         i18n.changeLanguage(p.locale);
       }
+      const fontScale = p.ui_settings?.font_scale ?? 1.0;
+      document.documentElement.style.setProperty('--font-scale', String(fontScale));
       if (hasAnyEncryption(p.encryption_settings ?? DEFAULT_ENCRYPTION_SETTINGS) && !getEncryptionPassphrase()) {
         setShowKeyModal(true);
       }

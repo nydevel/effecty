@@ -13,6 +13,7 @@ mod m20260313_000008_create_learning;
 mod m20260315_000009_add_materials_is_done;
 mod m20260319_000010_add_encryption_prefs;
 mod m20260319_000011_encryption_settings_refactor;
+mod m20260320_000012_add_ui_settings;
 
 pub struct Migrator;
 
@@ -31,6 +32,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260315_000009_add_materials_is_done::Migration),
             Box::new(m20260319_000010_add_encryption_prefs::Migration),
             Box::new(m20260319_000011_encryption_settings_refactor::Migration),
+            Box::new(m20260320_000012_add_ui_settings::Migration),
         ]
     }
 }

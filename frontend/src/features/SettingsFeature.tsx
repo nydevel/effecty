@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Form, Select, Button, Input, Checkbox, message, Typography, Divider, Tag } from 'antd';
+import { Form, Select, Slider, Button, Input, Checkbox, message, Typography, Divider, Tag } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { updateProfile, changePassword, DEFAULT_ENCRYPTION_SETTINGS } from '../api/profile';
+import { updateProfile, changePassword, DEFAULT_ENCRYPTION_SETTINGS, DEFAULT_UI_SETTINGS } from '../api/profile';
 import type { UserProfile, EncryptionSettings } from '../api/profile';
 import {
   getEncryptionPassphrase,
@@ -27,6 +27,7 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
   const [pwForm] = Form.useForm();
 
   const encSettings = profile?.encryption_settings ?? DEFAULT_ENCRYPTION_SETTINGS;
+  const uiSettings = profile?.ui_settings ?? DEFAULT_UI_SETTINGS;
 
   const handleFinish = async (values: { locale: string }) => {
     setLoading(true);
@@ -38,6 +39,20 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
       console.error('Failed to save settings:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFontScaleChange = async (value: number) => {
+    if (!profile) return;
+    document.documentElement.style.setProperty('--font-scale', String(value));
+    try {
+      await updateProfile({
+        locale: profile.locale,
+        ui_settings: { font_scale: value },
+      });
+      await onProfileUpdate();
+    } catch (err) {
+      console.error('Failed to save font scale:', err);
     }
   };
 
@@ -108,7 +123,7 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
   };
 
   return (
-    <div style={{ maxWidth: 400, padding: 32 }}>
+    <div className="settings-page" style={{ maxWidth: 400, padding: 32, overflow: 'auto', maxHeight: '100%' }}>
       <Typography.Title level={3}>{t('settings.title')}</Typography.Title>
       <Form
         form={form}
@@ -128,6 +143,21 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
           </Button>
         </Form.Item>
       </Form>
+
+      <Divider />
+
+      <Typography.Title level={4}>{t('settings.fontScale')}</Typography.Title>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <Slider
+          min={0.8}
+          max={1.5}
+          step={0.1}
+          value={uiSettings.font_scale}
+          onChange={handleFontScaleChange}
+          style={{ flex: 1 }}
+          marks={{ 0.8: '×0.8', 1.0: '×1.0', 1.2: '×1.2', 1.5: '×1.5' }}
+        />
+      </div>
 
       <Divider />
 

@@ -140,6 +140,7 @@
     "passwordsMismatch": "Passwords do not match",
     "passwordChanged": "Password changed successfully",
     "passwordChangeFailed": "Failed to change password",
+    "fontScale": "Font scale",
     "encryption": "Encryption",
     "encNotes": "Notes",
     "encMemos": "Memos",

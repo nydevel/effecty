@@ -140,6 +140,7 @@
     "passwordsMismatch": "Пароли не совпадают",
     "passwordChanged": "Пароль успешно изменён",
     "passwordChangeFailed": "Не удалось изменить пароль",
+    "fontScale": "Масштаб шрифта",
     "encryption": "Шифрование",
     "encNotes": "Заметки",
     "encMemos": "Мемо",
