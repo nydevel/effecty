@@ -177,7 +177,8 @@ export default function Sidebar({
         ref={containerRef}
         className="sidebar-tree"
         onClick={(e) => {
-          if (e.target === e.currentTarget) {
+          const target = e.target as HTMLElement;
+          if (target === e.currentTarget || !target.closest('.tree-node')) {
             treeRef.current?.deselectAll();
             onSelect(null);
           }
@@ -194,6 +195,8 @@ export default function Sidebar({
           onSelect={(nodes) => {
             if (nodes.length > 0) {
               onSelect(nodes[0].id);
+            } else {
+              onSelect(null);
             }
           }}
           onMove={({ dragIds, parentId, index }) => {

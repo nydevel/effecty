@@ -70,9 +70,16 @@ export default function NotesFeature({ profile }: Props) {
     }
   }, [selectedId, notes, decryptField]);
 
+  const getParentId = (): string | null => {
+    if (!selectedId) return null;
+    const selected = notes.find((n) => n.id === selectedId);
+    if (selected?.node_type === 'folder') return selectedId;
+    return selected?.parent_id ?? null;
+  };
+
   const handleCreateFolder = async () => {
     await notesApi.createNote({
-      parent_id: selectedId ?? null,
+      parent_id: getParentId(),
       title: t('notes.newFolder'),
       node_type: 'folder',
     });
@@ -81,7 +88,7 @@ export default function NotesFeature({ profile }: Props) {
 
   const handleCreateFile = async () => {
     await notesApi.createNote({
-      parent_id: selectedId ?? null,
+      parent_id: getParentId(),
       title: t('notes.newNote'),
       node_type: 'file',
     });
@@ -90,7 +97,7 @@ export default function NotesFeature({ profile }: Props) {
 
   const handleCreateMemolist = async () => {
     await notesApi.createNote({
-      parent_id: selectedId ?? null,
+      parent_id: getParentId(),
       title: t('notes.newMemolist'),
       node_type: 'memolist',
     });
