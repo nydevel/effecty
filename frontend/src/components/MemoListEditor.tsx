@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Input } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined, HolderOutlined } from '@ant-design/icons';
+import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import type { Memo } from '../api/notes';
 import type { UserProfile } from '../api/profile';
@@ -195,7 +196,17 @@ export default function MemoListEditor({ noteId, title, onTitleChange, profile, 
             ) : (
               <>
                 <HolderOutlined className="memo-drag-handle" />
-                <div className="memo-item-body">
+                <div
+                  className="memo-item-body"
+                  onClick={() => {
+                    const text = memo.content || memo.title;
+                    if (text) {
+                      navigator.clipboard.writeText(text);
+                      message.success(t('notes.copiedToClipboard'));
+                    }
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="memo-item-title">{memo.title}</div>
                   {memo.content && (
                     <div className="memo-item-content">{linkify(memo.content)}</div>

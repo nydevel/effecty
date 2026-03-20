@@ -30,7 +30,8 @@
     "memoTitle": "Заголовок",
     "memoContent": "Содержание",
     "addMemo": "Добавить мемо",
-    "cancel": "Отмена"
+    "cancel": "Отмена",
+    "copiedToClipboard": "Скопировано в буфер обмена"
   },
   "tasks": {
     "editTask": "Редактировать задачу",

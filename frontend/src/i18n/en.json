@@ -30,7 +30,8 @@
     "memoTitle": "Title",
     "memoContent": "Content",
     "addMemo": "Add memo",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "copiedToClipboard": "Copied to clipboard"
   },
   "tasks": {
     "editTask": "Edit Task",
