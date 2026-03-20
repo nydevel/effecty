@@ -14,13 +14,14 @@ import CalendarFeature from './features/CalendarFeature';
 import WorkoutsFeature from './features/WorkoutsFeature';
 import ThoughtsFeature from './features/ThoughtsFeature';
 import LearningFeature from './features/LearningFeature';
+import DashboardFeature from './features/DashboardFeature';
 import SettingsFeature from './features/SettingsFeature';
 import LoginPage from './pages/LoginPage';
 import './App.css';
 
-type Feature = 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'learning' | 'settings';
+type Feature = 'dashboard' | 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'learning' | 'settings';
 
-const FEATURES: Feature[] = ['notes', 'calendar', 'workouts', 'thoughts', 'learning', 'settings'];
+const FEATURES: Feature[] = ['dashboard', 'notes', 'calendar', 'workouts', 'thoughts', 'learning', 'settings'];
 
 function useActiveFeature(): Feature {
   const location = useLocation();
@@ -60,6 +61,7 @@ function AppLayout({ profile, loadProfile, keyVersion }: {
       />
       <div className="feature-content">
         <Routes>
+          <Route path="dashboard" element={<DashboardFeature />} />
           <Route path="notes" element={<NotesFeature key={keyVersion} profile={profile} />} />
           <Route path="notes/:id" element={<NotesFeature key={keyVersion} profile={profile} />} />
           <Route path="calendar" element={<CalendarFeature />} />

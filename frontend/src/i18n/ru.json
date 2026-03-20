@@ -9,7 +9,11 @@
     "emailInvalid": "Введите корректный адрес электронной почты",
     "passwordRequired": "Введите пароль"
   },
+  "dashboard": {
+    "emptyState": "Дашборд скоро появится"
+  },
   "iconBar": {
+    "dashboard": "Дашборд",
     "notes": "Заметки",
     "calendar": "Календарь",
     "workouts": "Тренировки",

@@ -1,5 +1,6 @@
 import { Button, Tooltip } from 'antd';
 import Icon, {
+  DashboardOutlined,
   FileTextOutlined,
   CalendarOutlined,
   BulbOutlined,
@@ -19,7 +20,7 @@ const DumbbellOutlined = (props: Record<string, unknown>) => (
 );
 import { useTranslation } from 'react-i18next';
 
-type Feature = 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'learning' | 'settings';
+type Feature = 'dashboard' | 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'learning' | 'settings';
 
 interface Props {
   activeFeature: Feature;
@@ -32,6 +33,15 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
 
   return (
     <div className="icon-bar">
+      <Tooltip title={t('iconBar.dashboard')} placement="right">
+        <Button
+          type="text"
+          icon={<DashboardOutlined />}
+          className={`icon-btn ${activeFeature === 'dashboard' ? 'active' : ''}`}
+          onClick={() => onSelectFeature('dashboard')}
+        />
+      </Tooltip>
+      <div className="icon-bar-divider" />
       <Tooltip title={t('iconBar.notes')} placement="right">
         <Button
           type="text"

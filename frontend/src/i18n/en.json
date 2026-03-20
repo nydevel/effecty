@@ -9,7 +9,11 @@
     "emailInvalid": "Please enter a valid email",
     "passwordRequired": "Please enter your password"
   },
+  "dashboard": {
+    "emptyState": "Dashboard coming soon"
+  },
   "iconBar": {
+    "dashboard": "Dashboard",
     "notes": "Notes",
     "calendar": "Calendar",
     "workouts": "Workouts",

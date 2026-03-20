@@ -60,6 +60,13 @@ html {
   color: #e0e0ff !important;
 }
 
+.icon-bar-divider {
+  width: 36px;
+  height: 1px;
+  background: #3a3a5a;
+  margin: 4px 0;
+}
+
 .icon-bar-spacer {
   flex: 1;
 }
