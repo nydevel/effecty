@@ -28,7 +28,7 @@ export default function TaskModal({ task, defaultDate, onSave, onDelete, onClose
       title: task?.title ?? '',
       content: task?.content ?? '',
       priority: task?.priority ?? 0,
-      task_date: dayjs(task?.task_date ?? defaultDate),
+      task_date: dayjs(task?.task_date ?? defaultDate, 'YYYY-MM-DD'),
       time_start: task?.time_start ? dayjs(task.time_start, 'HH:mm:ss') : null,
       time_end: task?.time_end ? dayjs(task.time_end, 'HH:mm:ss') : null,
     });
