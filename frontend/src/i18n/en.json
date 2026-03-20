@@ -77,7 +77,15 @@
     "sets": "Sets",
     "reps": "Reps",
     "weight": "Weight",
-    "dragHint": "Drag an exercise here to add"
+    "dragHint": "Drag an exercise here to add",
+    "muscleGroup": "Muscle group",
+    "chest": "Chest",
+    "back": "Back",
+    "legs": "Legs",
+    "shoulders": "Shoulders",
+    "noGroup": "No group",
+    "editExercise": "Edit",
+    "deleteExercise": "Delete"
   },
   "thoughts": {
     "newThought": "New thought",

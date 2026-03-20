@@ -9,6 +9,7 @@ pub struct Exercise {
     pub id: ExerciseId,
     pub user_id: UserId,
     pub name: String,
+    pub muscle_group: Option<String>,
     pub sort_order: f64,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -17,11 +18,13 @@ pub struct Exercise {
 #[derive(Debug, Deserialize)]
 pub struct CreateExercise {
     pub name: String,
+    pub muscle_group: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateExercise {
     pub name: Option<String>,
+    pub muscle_group: Option<String>,
 }
 
 pub async fn list(pool: &PgPool, user_id: UserId) -> Result<Vec<Exercise>> {
@@ -67,6 +70,7 @@ pub async fn find_or_create_by_name(
         user_id,
         &CreateExercise {
             name: name.to_owned(),
+            muscle_group: None,
         },
     )
     .await
@@ -84,13 +88,14 @@ pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateExercise) -> R
 
     let exercise = sqlx::query_as::<_, Exercise>(
         r#"
-        INSERT INTO exercises (user_id, name, sort_order)
-        VALUES ($1, $2, $3)
+        INSERT INTO exercises (user_id, name, muscle_group, sort_order)
+        VALUES ($1, $2, $3, $4)
         RETURNING *
         "#,
     )
     .bind(user_id)
     .bind(&input.name)
+    .bind(&input.muscle_group)
     .bind(sort_order)
     .fetch_one(pool)
     .await?;
@@ -108,6 +113,7 @@ pub async fn update(
         r#"
         UPDATE exercises
         SET name = COALESCE($3, name),
+            muscle_group = COALESCE($4, muscle_group),
             updated_at = NOW()
         WHERE id = $1 AND user_id = $2
         RETURNING *
@@ -116,6 +122,7 @@ pub async fn update(
     .bind(id)
     .bind(user_id)
     .bind(&input.name)
+    .bind(&input.muscle_group)
     .fetch_optional(pool)
     .await?;
 

@@ -514,8 +514,8 @@ html {
 
 /* Exercise Catalog (right sidebar) */
 .exercise-catalog {
-  width: 300px;
-  min-width: 240px;
+  width: 360px;
+  min-width: 300px;
   background: #f5f5f7;
   border-left: 1px solid #e0e0e4;
   display: flex;
@@ -535,6 +535,8 @@ html {
 }
 
 .exercise-catalog-item {
+  display: flex;
+  align-items: center;
   padding: 6px 12px;
   cursor: grab;
   font-size: 14px;
@@ -545,6 +547,28 @@ html {
 
 .exercise-catalog-item:hover {
   background: #eaeaee;
+}
+
+.exercise-catalog-item.editing {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 6px 12px;
+  cursor: default;
+}
+
+.exercise-catalog-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exercise-catalog-item-group {
+  font-size: 11px;
+  color: #888;
+  margin-left: 8px;
+  flex-shrink: 0;
 }
 
 .exercise-catalog-footer {

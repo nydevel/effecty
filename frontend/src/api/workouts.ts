@@ -9,10 +9,15 @@ export interface Workout {
   updated_at: string;
 }
 
+export type MuscleGroup = 'chest' | 'back' | 'legs' | 'shoulders';
+
+export const MUSCLE_GROUPS: MuscleGroup[] = ['chest', 'back', 'legs', 'shoulders'];
+
 export interface Exercise {
   id: string;
   user_id: string;
   name: string;
+  muscle_group: MuscleGroup | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -110,7 +115,7 @@ export async function listExercises(): Promise<Exercise[]> {
   return apiFetch<Exercise[]>('/exercises');
 }
 
-export async function createExercise(data: { name: string }): Promise<Exercise> {
+export async function createExercise(data: { name: string; muscle_group?: string }): Promise<Exercise> {
   return apiFetch<Exercise>('/exercises', {
     method: 'POST',
     body: JSON.stringify(data),
@@ -119,7 +124,7 @@ export async function createExercise(data: { name: string }): Promise<Exercise> 
 
 export async function updateExercise(
   id: string,
-  data: { name?: string },
+  data: { name?: string; muscle_group?: string },
 ): Promise<Exercise> {
   return apiFetch<Exercise>(`/exercises/${id}`, {
     method: 'PUT',

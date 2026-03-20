@@ -108,9 +108,21 @@ export default function WorkoutsFeature() {
     }
   };
 
-  const handleCreateExercise = async (name: string) => {
-    await workoutsApi.createExercise({ name });
+  const handleCreateExercise = async (name: string, muscleGroup?: string) => {
+    await workoutsApi.createExercise({ name, muscle_group: muscleGroup });
     await loadExercises();
+  };
+
+  const handleUpdateExercise = async (id: string, data: { name?: string; muscle_group?: string }) => {
+    await workoutsApi.updateExercise(id, data);
+    await loadExercises();
+    if (selectedId) await loadWorkoutExercises(selectedId);
+  };
+
+  const handleDeleteExercise = async (id: string) => {
+    await workoutsApi.deleteExercise(id);
+    await loadExercises();
+    if (selectedId) await loadWorkoutExercises(selectedId);
   };
 
   return (
@@ -139,6 +151,8 @@ export default function WorkoutsFeature() {
       <ExerciseCatalog
         exercises={exercises}
         onCreateExercise={handleCreateExercise}
+        onUpdateExercise={handleUpdateExercise}
+        onDeleteExercise={handleDeleteExercise}
       />
     </div>
   );

@@ -77,7 +77,15 @@
     "sets": "Подходы",
     "reps": "Повторения",
     "weight": "Вес",
-    "dragHint": "Перетащите упражнение сюда"
+    "dragHint": "Перетащите упражнение сюда",
+    "muscleGroup": "Группа мышц",
+    "chest": "Грудь",
+    "back": "Спина",
+    "legs": "Ноги",
+    "shoulders": "Плечи",
+    "noGroup": "Без группы",
+    "editExercise": "Редактировать",
+    "deleteExercise": "Удалить"
   },
   "thoughts": {
     "newThought": "Новая мысль",
