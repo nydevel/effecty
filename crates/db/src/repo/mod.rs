@@ -4,6 +4,7 @@ pub mod materials;
 pub mod memos;
 pub mod notes;
 pub mod profiles;
+pub mod roadmap_nodes;
 pub mod tags;
 pub mod tasks;
 pub mod thought_comments;

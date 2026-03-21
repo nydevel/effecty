@@ -66,10 +66,52 @@
     "week": "Week",
     "month": "Month",
     "year": "Year",
-    "daysShort": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    "dayLetters": ["M", "T", "W", "T", "F", "S", "S"],
-    "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-    "monthsFull": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    "daysShort": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "dayLetters": [
+      "M",
+      "T",
+      "W",
+      "T",
+      "F",
+      "S",
+      "S"
+    ],
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "monthsFull": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ]
   },
   "workouts": {
     "newWorkout": "Workout",
@@ -134,7 +176,11 @@
     "video_link": "Video",
     "text": "Text",
     "image": "Image",
-    "document": "Document"
+    "document": "Document",
+    "roadmapAddRoot": "Add root node",
+    "roadmapAddChild": "Add child node",
+    "roadmapNewNode": "New node",
+    "roadmapDeleteConfirm": "Delete this node and all children?"
   },
   "settings": {
     "title": "Settings",

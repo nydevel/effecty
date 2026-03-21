@@ -57,4 +57,15 @@ pub fn router() -> Router<SqlitePool> {
             "/api/materials/{id}/topics/{topic_id}",
             delete(handlers::unlink_material_topic),
         )
+        // Roadmap nodes
+        .route("/api/roadmap/nodes", get(handlers::list_roadmap_nodes))
+        .route("/api/roadmap/nodes", post(handlers::create_roadmap_node))
+        .route(
+            "/api/roadmap/nodes/{id}",
+            put(handlers::update_roadmap_node),
+        )
+        .route(
+            "/api/roadmap/nodes/{id}",
+            delete(handlers::delete_roadmap_node),
+        )
 }

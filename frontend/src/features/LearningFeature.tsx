@@ -10,6 +10,7 @@ import TopicSidebar from '../components/TopicSidebar';
 import TopicModal from '../components/TopicModal';
 import MaterialCard from '../components/MaterialCard';
 import MaterialForm from '../components/MaterialForm';
+import RoadmapCanvas from '../components/RoadmapCanvas';
 
 type Tab = 'materials' | 'roadmap';
 
@@ -193,8 +194,8 @@ export default function LearningFeature() {
           </>
         )}
         {tab === 'roadmap' && (
-          <main className="main-content">
-            <div className="empty-state">{t('learning.roadmapPlaceholder')}</div>
+          <main className="main-content roadmap-main">
+            <RoadmapCanvas />
           </main>
         )}
       </div>

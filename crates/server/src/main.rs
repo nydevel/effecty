@@ -80,8 +80,9 @@ fn print_usage() {
     eprintln!("Commands:");
     eprintln!("  (none)                     Start the web server (default)");
     eprintln!("  serve                      Start the web server");
-    eprintln!("  migrate                    Run database migrations");
     eprintln!("  create-user <email>        Create a new user (prompts for password)");
+    eprintln!();
+    eprintln!("Migrations run automatically on server start.");
 }
 
 #[tokio::main]
@@ -97,7 +98,6 @@ async fn main() -> Result<()> {
 
     match args.command.as_deref() {
         None | Some("serve") => serve(&args.config_path).await,
-        Some("migrate") => migrate(&args.config_path).await,
         Some("create-user") => create_user(&args.config_path, &args.extra).await,
         Some(cmd) => bail!("unknown command: {cmd}\nRun 'effecty --help' for usage"),
     }
@@ -149,13 +149,6 @@ async fn serve(config_path: &Path) -> Result<()> {
     let listener = TcpListener::bind(&addr).await?;
     axum::serve(listener, app).await?;
 
-    Ok(())
-}
-
-async fn migrate(config_path: &Path) -> Result<()> {
-    let config = Config::load(config_path)?;
-    db::run_migrations(&config.database.url).await?;
-    tracing::info!("migrations complete");
     Ok(())
 }
 

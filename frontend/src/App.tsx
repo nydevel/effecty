@@ -29,10 +29,6 @@ function useActiveFeature(): Feature {
   return 'notes';
 }
 
-function BlankPage() {
-  return <div style={{ background: '#fff', minHeight: '100vh' }} />;
-}
-
 function AppLayout({ profile, loadProfile }: {
   profile: UserProfile | null;
   loadProfile: () => Promise<void>;
@@ -118,9 +114,8 @@ export default function App() {
       theme={{ token: { colorPrimary: '#1a1a2e', borderRadius: 8 } }}
     >
       <Routes>
-        <Route path="/" element={<BlankPage />} />
         <Route
-          path="/auttth"
+          path="/"
           element={
             loggedIn
               ? <Navigate to="/app/notes" replace />
@@ -132,7 +127,7 @@ export default function App() {
           element={
             loggedIn
               ? <AppLayout profile={profile} loadProfile={loadProfile} />
-              : <Navigate to="/auttth" replace />
+              : <Navigate to="/" replace />
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />

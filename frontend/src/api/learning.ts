@@ -158,6 +158,53 @@ export async function uploadMaterialFile(id: string, file: File): Promise<Materi
   return res.json();
 }
 
+// Roadmap nodes
+export interface RoadmapNode {
+  id: string;
+  user_id: string;
+  parent_id: string | null;
+  label: string;
+  position_x: number;
+  position_y: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function listRoadmapNodes(): Promise<RoadmapNode[]> {
+  return apiFetch<RoadmapNode[]>('/roadmap/nodes');
+}
+
+export async function createRoadmapNode(data: {
+  parent_id?: string | null;
+  label: string;
+  position_x: number;
+  position_y: number;
+}): Promise<RoadmapNode> {
+  return apiFetch<RoadmapNode>('/roadmap/nodes', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateRoadmapNode(
+  id: string,
+  data: {
+    label?: string;
+    position_x?: number;
+    position_y?: number;
+    parent_id?: string | null;
+  },
+): Promise<RoadmapNode> {
+  return apiFetch<RoadmapNode>(`/roadmap/nodes/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteRoadmapNode(id: string): Promise<void> {
+  return apiFetch<void>(`/roadmap/nodes/${id}`, { method: 'DELETE' });
+}
+
 // Material topics
 export async function listMaterialTopics(materialId: string): Promise<MaterialTopic[]> {
   return apiFetch<MaterialTopic[]>(`/materials/${materialId}/topics`);

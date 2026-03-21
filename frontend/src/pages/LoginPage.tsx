@@ -37,7 +37,6 @@ export default function LoginPage({ onLogin }: Props) {
             name="email"
             rules={[
               { required: true, message: t('login.emailRequired') },
-              { type: 'email', message: t('login.emailInvalid') },
             ]}
           >
             <Input placeholder={t('login.email')} size="large" autoFocus />
