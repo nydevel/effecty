@@ -169,6 +169,15 @@
     "encryptionWarning": "If you lose this key, encrypted data cannot be recovered.",
     "enterEncryptionKey": "Enter encryption key",
     "encryptionKeyRequired": "Encryption key is required to view encrypted data",
-    "skipKeyEntry": "Skip"
+    "skipKeyEntry": "Skip",
+    "dataTransfer": "Data export / import",
+    "exportData": "Export data",
+    "exportDescription": "Download all your data as a JSON file.",
+    "importData": "Import data",
+    "importDescription": "Upload a previously exported JSON file. This will replace all your current data.",
+    "importConfirm": "This will replace ALL your current data. Are you sure?",
+    "importSuccess": "Data imported successfully",
+    "importFailed": "Import failed",
+    "exportFailed": "Export failed"
   }
 }

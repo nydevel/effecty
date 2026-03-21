@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
-import { Form, Select, Slider, Button, Input, Checkbox, message, Typography, Divider, Tag } from 'antd';
+import { useMemo, useRef, useState } from 'react';
+import { Form, Select, Slider, Button, Input, Checkbox, message, Typography, Divider, Tag, Modal } from 'antd';
+import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { updateProfile, changePassword, DEFAULT_ENCRYPTION_SETTINGS, DEFAULT_UI_SETTINGS } from '../api/profile';
 import type { UserProfile, EncryptionSettings } from '../api/profile';
+import { exportData, importData } from '../api/data-transfer';
 import {
   getEncryptionPassphrase,
   setEncryptionPassphrase,
@@ -20,6 +22,9 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
   const [loading, setLoading] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [encLoading, setEncLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [keyInput, setKeyInput] = useState('');
   const [localKeyVersion, setLocalKeyVersion] = useState(0);
   const hasKey = useMemo(() => !!getEncryptionPassphrase(), [keyVersion, localKeyVersion]);
@@ -122,8 +127,50 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
     setLocalKeyVersion((v) => v + 1);
   };
 
+  const handleExport = async () => {
+    setExportLoading(true);
+    try {
+      await exportData();
+    } catch (err) {
+      console.error('Export failed:', err);
+      message.error(t('settings.exportFailed'));
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset input so the same file can be re-selected
+    e.target.value = '';
+
+    Modal.confirm({
+      title: t('settings.importData'),
+      content: t('settings.importConfirm'),
+      okType: 'danger',
+      onOk: async () => {
+        setImportLoading(true);
+        try {
+          await importData(file);
+          message.success(t('settings.importSuccess'));
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : t('settings.importFailed');
+          message.error(msg);
+        } finally {
+          setImportLoading(false);
+        }
+      },
+    });
+  };
+
   return (
-    <div className="settings-page" style={{ maxWidth: 400, padding: 32, overflow: 'auto', maxHeight: '100%' }}>
+    <div className="settings-page" style={{ padding: 32, maxHeight: '100%' }}>
+      <div className="settings-page-inner">
       <Typography.Title level={3}>{t('settings.title')}</Typography.Title>
       <Form
         form={form}
@@ -294,6 +341,41 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
       <Typography.Text type="warning" style={{ fontSize: 12 }}>
         {t('settings.encryptionWarning')}
       </Typography.Text>
+
+      <Divider />
+
+      <Typography.Title level={4}>{t('settings.dataTransfer')}</Typography.Title>
+      <Typography.Text style={{ display: 'block', marginBottom: 12 }}>
+        {t('settings.exportDescription')}
+      </Typography.Text>
+      <Button
+        icon={<DownloadOutlined />}
+        onClick={handleExport}
+        loading={exportLoading}
+        style={{ marginBottom: 16 }}
+      >
+        {t('settings.exportData')}
+      </Button>
+
+      <Typography.Text style={{ display: 'block', marginBottom: 12 }}>
+        {t('settings.importDescription')}
+      </Typography.Text>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        style={{ display: 'none' }}
+        onChange={handleFileSelected}
+      />
+      <Button
+        icon={<UploadOutlined />}
+        danger
+        onClick={handleImportClick}
+        loading={importLoading}
+      >
+        {t('settings.importData')}
+      </Button>
+      </div>
     </div>
   );
 }

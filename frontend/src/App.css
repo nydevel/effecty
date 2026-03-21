@@ -25,6 +25,12 @@ html {
 /* Settings page — undo zoom so the settings panel stays at normal size */
 .settings-page {
   zoom: calc(1 / var(--font-scale, 1));
+  width: 100%;
+  overflow: auto;
+}
+
+.settings-page-inner {
+  max-width: 560px;
 }
 
 .feature-layout {

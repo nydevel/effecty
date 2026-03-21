@@ -27,6 +27,8 @@ pub fn create_router(state: AppState) -> Router {
 
     let thoughts_routes = thoughts::router().with_state(state.pool.clone());
 
+    let data_transfer_routes = data_transfer::router().with_state(state.pool.clone());
+
     let upload_dir = PathBuf::from(&state.config.storage.upload_dir);
     let learning_routes = learning::router()
         .layer(axum::Extension(upload_dir.clone()))
@@ -41,6 +43,7 @@ pub fn create_router(state: AppState) -> Router {
         .merge(profile_routes)
         .merge(thoughts_routes)
         .merge(learning_routes)
+        .merge(data_transfer_routes)
         .nest_service("/uploads", ServeDir::new(&upload_dir))
         // Clone is cheap: PgPool is Arc-based, config is Arc<Config>
         .layer(middleware::from_fn_with_state(

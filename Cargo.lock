@@ -685,6 +685,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "data-transfer"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "chrono",
+ "core",
+ "db",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "db"
 version = "0.1.0"
 dependencies = [
@@ -3128,6 +3145,7 @@ dependencies = [
  "axum",
  "chrono",
  "core",
+ "data-transfer",
  "db",
  "jsonwebtoken",
  "learning",
