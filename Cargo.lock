@@ -482,8 +482,6 @@ name = "cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "core",
- "db",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -3150,6 +3148,7 @@ dependencies = [
  "db",
  "jsonwebtoken",
  "learning",
+ "libc",
  "notes",
  "profile",
  "serde",

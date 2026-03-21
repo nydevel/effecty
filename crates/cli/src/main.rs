@@ -1,21 +1,18 @@
 #![deny(unsafe_code)]
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 
 use anyhow::{bail, Result};
-use effecty_core::config::{Config, Environment};
 use tracing_subscriber::EnvFilter;
 
 struct Args {
-    config_path: PathBuf,
     command: Option<String>,
     extra: Vec<String>,
 }
 
 fn parse_args() -> Args {
     let args: Vec<String> = std::env::args().collect();
-    let mut config_path = PathBuf::from("configuration.toml");
     let mut command = None;
     let mut extra = Vec::new();
     let mut i = 1;
@@ -23,18 +20,6 @@ fn parse_args() -> Args {
     #[allow(unused_labels)]
     'args: while i < args.len() {
         match args[i].as_str() {
-            "--config" | "-c" => {
-                if let Some(path) = args.get(i + 1) {
-                    config_path = PathBuf::from(path);
-                    i += 2;
-                    continue;
-                }
-                eprintln!("error: --config requires a path argument");
-                std::process::exit(1);
-            }
-            arg if arg.starts_with("--config=") => {
-                config_path = PathBuf::from(arg.trim_start_matches("--config="));
-            }
             arg if !arg.starts_with('-') && command.is_none() => {
                 command = Some(arg.to_string());
             }
@@ -46,11 +31,7 @@ fn parse_args() -> Args {
         i += 1;
     }
 
-    Args {
-        config_path,
-        command,
-        extra,
-    }
+    Args { command, extra }
 }
 
 #[tokio::main]
@@ -64,8 +45,6 @@ async fn main() -> Result<()> {
     let args = parse_args();
 
     match args.command.as_deref() {
-        Some("migrate") => migrate(&args.config_path).await,
-        Some("seed") => seed(&args.config_path).await,
         Some("dev") => dev(),
         Some("deploy") => deploy(&args.extra),
         Some(cmd) => bail!("unknown command: {cmd}"),
@@ -77,15 +56,12 @@ async fn main() -> Result<()> {
 }
 
 fn print_usage() {
-    eprintln!("Usage: cli [--config <path>] <command> [args]");
+    eprintln!("effecty development tools");
     eprintln!();
-    eprintln!("Options:");
-    eprintln!("  -c, --config <path>  Path to configuration file (default: configuration.toml)");
+    eprintln!("Usage: cli <command> [args]");
     eprintln!();
     eprintln!("Commands:");
     eprintln!("  dev                  Build frontend and start server");
-    eprintln!("  migrate              Run database migrations");
-    eprintln!("  seed                 Create dev user (dev env only)");
     eprintln!("  deploy <user@host>   Build, package, and deploy to remote server");
 }
 
@@ -223,40 +199,4 @@ fn find_nvm_node_bin() -> Option<String> {
     } else {
         None
     }
-}
-
-async fn migrate(config_path: &Path) -> Result<()> {
-    let config = Config::load(config_path)?;
-    db::run_migrations(&config.database.url).await?;
-    tracing::info!("migrations complete");
-    Ok(())
-}
-
-async fn seed(config_path: &Path) -> Result<()> {
-    let config = Config::load(config_path)?;
-
-    if config.app.environment != Environment::Dev {
-        bail!(
-            "seed is only allowed in dev environment (current: {})",
-            config.app.environment
-        );
-    }
-
-    db::run_migrations(&config.database.url).await?;
-    let pool = db::create_pool(&config.database).await?;
-
-    let email = "nydevel@effecty.org";
-    let password = "dev123";
-
-    let existing = db::repo::users::find_by_email(&pool, email).await?;
-    if existing.is_some() {
-        tracing::info!(email, "user already exists, skipping");
-        return Ok(());
-    }
-
-    let hash = db::password::hash(password)?;
-    let user = db::repo::users::create(&pool, email, &hash).await?;
-
-    tracing::info!(email, id = %user.id, "dev user created");
-    Ok(())
 }
