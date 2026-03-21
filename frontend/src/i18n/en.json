@@ -1,11 +1,11 @@
 {
   "login": {
     "title": "effecty",
-    "email": "Email",
+    "email": "Login",
     "password": "Password",
     "signIn": "Sign in",
     "loginFailed": "Login failed",
-    "emailRequired": "Please enter your email",
+    "emailRequired": "Please enter your login",
     "emailInvalid": "Please enter a valid email",
     "passwordRequired": "Please enter your password"
   },

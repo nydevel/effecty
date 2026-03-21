@@ -152,7 +152,6 @@ html {
 .note-editor {
   height: 100%;
   padding: 16px 24px;
-  zoom: calc(1 / var(--font-scale, 1));
 }
 
 .empty-state {

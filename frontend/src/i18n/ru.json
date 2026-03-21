@@ -1,11 +1,11 @@
 {
   "login": {
     "title": "effecty",
-    "email": "Электронная почта",
+    "email": "Логин",
     "password": "Пароль",
     "signIn": "Войти",
     "loginFailed": "Ошибка входа",
-    "emailRequired": "Введите адрес электронной почты",
+    "emailRequired": "Введите логин",
     "emailInvalid": "Введите корректный адрес электронной почты",
     "passwordRequired": "Введите пароль"
   },
