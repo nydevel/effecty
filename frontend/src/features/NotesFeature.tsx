@@ -3,24 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as notesApi from '../api/notes';
 import type { Note } from '../api/notes';
-import type { UserProfile } from '../api/profile';
-import { useEncryption } from '../hooks/useEncryption';
-import { getEncryptionPassphrase, isEncrypted } from '../crypto';
 import Sidebar from '../components/Sidebar';
 import NoteEditor from '../components/NoteEditor';
 import MemoListEditor from '../components/MemoListEditor';
 
-interface Props {
-  profile: UserProfile | null;
-}
-
-export default function NotesFeature({ profile }: Props) {
+export default function NotesFeature() {
   const { t } = useTranslation();
   const { id: selectedId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [notes, setNotes] = useState<Note[]>([]);
   const [activeNote, setActiveNote] = useState<Note | null>(null);
-  const { encryptField, decryptField, shouldEncrypt } = useEncryption(profile);
 
   const setSelectedId = (id: string | null) => {
     if (id) {
@@ -33,17 +25,11 @@ export default function NotesFeature({ profile }: Props) {
   const loadTree = useCallback(async () => {
     try {
       const tree = await notesApi.getTree();
-      const decrypted = await Promise.all(
-        tree.map(async (n) => ({
-          ...n,
-          title: await decryptField(n.title),
-        })),
-      );
-      setNotes(decrypted);
+      setNotes(tree);
     } catch (err) {
       console.error('Failed to load notes tree:', err);
     }
-  }, [decryptField]);
+  }, []);
 
   useEffect(() => {
     loadTree();
@@ -53,12 +39,8 @@ export default function NotesFeature({ profile }: Props) {
     if (selectedId) {
       const note = notes.find((n) => n.id === selectedId);
       if (note && (note.node_type === 'file' || note.node_type === 'memolist')) {
-        notesApi.getNote(selectedId).then(async (n) => {
-          setActiveNote({
-            ...n,
-            title: await decryptField(n.title),
-            content: await decryptField(n.content),
-          });
+        notesApi.getNote(selectedId).then((n) => {
+          setActiveNote(n);
         }).catch((err) => {
           console.error('Failed to load note:', err);
         });
@@ -68,7 +50,7 @@ export default function NotesFeature({ profile }: Props) {
     } else {
       setActiveNote(null);
     }
-  }, [selectedId, notes, decryptField]);
+  }, [selectedId, notes]);
 
   const getParentId = (): string | null => {
     if (!selectedId) return null;
@@ -110,9 +92,7 @@ export default function NotesFeature({ profile }: Props) {
   };
 
   const handleRename = async (id: string, name: string) => {
-    const encTitle = await encryptField('notes', 'title', name);
-    const isEnc = shouldEncrypt('notes', 'title') || shouldEncrypt('notes', 'content');
-    await notesApi.updateNote(id, { title: encTitle, is_encrypted: isEnc || undefined });
+    await notesApi.updateNote(id, { title: name });
     await loadTree();
   };
 
@@ -125,23 +105,16 @@ export default function NotesFeature({ profile }: Props) {
   const handleContentChange = useCallback(
     async (content: string) => {
       if (activeNote) {
-        const encContent = await encryptField('notes', 'content', content);
-        const isEnc = shouldEncrypt('notes', 'title') || shouldEncrypt('notes', 'content');
-        await notesApi.updateNote(activeNote.id, { content: encContent, is_encrypted: isEnc || undefined });
+        await notesApi.updateNote(activeNote.id, { content });
       }
     },
-    [activeNote, encryptField, shouldEncrypt],
+    [activeNote],
   );
 
   const renderContent = () => {
     if (!activeNote) {
       return <div className="empty-state">{t('notes.emptyState')}</div>;
     }
-
-    const decryptionFailed = activeNote.is_encrypted && (
-      isEncrypted(activeNote.title) || isEncrypted(activeNote.content)
-    );
-    const locked = activeNote.is_encrypted && (!getEncryptionPassphrase() || decryptionFailed);
 
     if (activeNote.node_type === 'memolist') {
       return (
@@ -150,8 +123,6 @@ export default function NotesFeature({ profile }: Props) {
           noteId={activeNote.id}
           title={activeNote.title}
           onTitleChange={(title) => handleRename(activeNote.id, title)}
-          profile={profile}
-          readOnly={locked}
         />
       );
     }
@@ -162,7 +133,6 @@ export default function NotesFeature({ profile }: Props) {
         content={activeNote.content}
         onTitleChange={(title) => handleRename(activeNote.id, title)}
         onChange={handleContentChange}
-        readOnly={locked}
       />
     );
   };

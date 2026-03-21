@@ -12,7 +12,6 @@ pub struct Memo {
     pub title: String,
     pub content: String,
     pub sort_order: f64,
-    pub is_encrypted: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -21,14 +20,12 @@ pub struct Memo {
 pub struct CreateMemo {
     pub title: String,
     pub content: Option<String>,
-    pub is_encrypted: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateMemo {
     pub title: Option<String>,
     pub content: Option<String>,
-    pub is_encrypted: Option<bool>,
 }
 
 pub async fn list(pool: &PgPool, note_id: NoteId, user_id: UserId) -> Result<Vec<Memo>> {
@@ -71,8 +68,8 @@ pub async fn create(
 
     let memo = sqlx::query_as::<_, Memo>(
         r#"
-        INSERT INTO memos (note_id, user_id, title, content, sort_order, is_encrypted)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO memos (note_id, user_id, title, content, sort_order)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *
         "#,
     )
@@ -81,7 +78,6 @@ pub async fn create(
     .bind(&input.title)
     .bind(input.content.as_deref().unwrap_or(""))
     .bind(sort_order)
-    .bind(input.is_encrypted.unwrap_or(false))
     .fetch_one(pool)
     .await?;
 
@@ -99,7 +95,6 @@ pub async fn update(
         UPDATE memos
         SET title = COALESCE($3, title),
             content = COALESCE($4, content),
-            is_encrypted = COALESCE($5, is_encrypted),
             updated_at = NOW()
         WHERE id = $1 AND user_id = $2
         RETURNING *
@@ -109,7 +104,6 @@ pub async fn update(
     .bind(user_id)
     .bind(&input.title)
     .bind(&input.content)
-    .bind(input.is_encrypted)
     .fetch_optional(pool)
     .await?;
 

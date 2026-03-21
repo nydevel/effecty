@@ -13,7 +13,6 @@ pub struct Note {
     pub content: String,
     pub node_type: String,
     pub sort_order: f64,
-    pub is_encrypted: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -29,7 +28,6 @@ pub struct CreateNote {
 pub struct UpdateNote {
     pub title: Option<String>,
     pub content: Option<String>,
-    pub is_encrypted: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -107,7 +105,6 @@ pub async fn update(
         UPDATE notes
         SET title = COALESCE($3, title),
             content = COALESCE($4, content),
-            is_encrypted = COALESCE($5, is_encrypted),
             updated_at = NOW()
         WHERE id = $1 AND user_id = $2
         RETURNING *
@@ -117,7 +114,6 @@ pub async fn update(
     .bind(user_id)
     .bind(&input.title)
     .bind(&input.content)
-    .bind(input.is_encrypted)
     .fetch_optional(pool)
     .await?;
 

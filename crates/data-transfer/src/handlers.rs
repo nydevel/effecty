@@ -42,7 +42,6 @@ pub struct ExportNote {
     pub content: String,
     pub node_type: String,
     pub sort_order: f64,
-    pub is_encrypted: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -54,7 +53,6 @@ pub struct ExportMemo {
     pub title: String,
     pub content: String,
     pub sort_order: f64,
-    pub is_encrypted: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -119,7 +117,6 @@ pub struct ExportThought {
     pub title: String,
     pub content: String,
     pub position: f64,
-    pub is_encrypted: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -129,7 +126,6 @@ pub struct ExportThoughtComment {
     pub id: ThoughtCommentId,
     pub thought_id: ThoughtId,
     pub content: String,
-    pub is_encrypted: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -181,7 +177,7 @@ pub async fn export_data(
     axum::Extension(user_id): axum::Extension<UserId>,
 ) -> Result<impl IntoResponse, DataTransferError> {
     let notes = sqlx::query_as::<_, ExportNote>(
-        "SELECT id, parent_id, title, content, node_type, sort_order, is_encrypted, created_at, updated_at \
+        "SELECT id, parent_id, title, content, node_type, sort_order, created_at, updated_at \
          FROM notes WHERE user_id = $1 ORDER BY sort_order",
     )
     .bind(user_id)
@@ -189,7 +185,7 @@ pub async fn export_data(
     .await?;
 
     let memos = sqlx::query_as::<_, ExportMemo>(
-        "SELECT id, note_id, title, content, sort_order, is_encrypted, created_at, updated_at \
+        "SELECT id, note_id, title, content, sort_order, created_at, updated_at \
          FROM memos WHERE user_id = $1 ORDER BY note_id, sort_order",
     )
     .bind(user_id)
@@ -238,7 +234,7 @@ pub async fn export_data(
     .await?;
 
     let thoughts = sqlx::query_as::<_, ExportThought>(
-        "SELECT id, title, content, position, is_encrypted, created_at, updated_at \
+        "SELECT id, title, content, position, created_at, updated_at \
          FROM thoughts WHERE user_id = $1 ORDER BY position",
     )
     .bind(user_id)
@@ -246,7 +242,7 @@ pub async fn export_data(
     .await?;
 
     let thought_comments = sqlx::query_as::<_, ExportThoughtComment>(
-        "SELECT tc.id, tc.thought_id, tc.content, tc.is_encrypted, tc.created_at, tc.updated_at \
+        "SELECT tc.id, tc.thought_id, tc.content, tc.created_at, tc.updated_at \
          FROM thought_comments tc \
          JOIN thoughts t ON t.id = tc.thought_id \
          WHERE t.user_id = $1 ORDER BY tc.created_at",
@@ -416,11 +412,11 @@ pub async fn import_data(
     let sorted_notes = topo_sort_notes(&data.notes);
     'notes: for n in &sorted_notes {
         sqlx::query(
-            "INSERT INTO notes (id, user_id, parent_id, title, content, node_type, sort_order, is_encrypted, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+            "INSERT INTO notes (id, user_id, parent_id, title, content, node_type, sort_order, created_at, updated_at) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
         )
         .bind(n.id).bind(user_id).bind(n.parent_id).bind(&n.title).bind(&n.content)
-        .bind(&n.node_type).bind(n.sort_order).bind(n.is_encrypted)
+        .bind(&n.node_type).bind(n.sort_order)
         .bind(n.created_at).bind(n.updated_at)
         .execute(&mut *tx)
         .await?;
@@ -432,11 +428,11 @@ pub async fn import_data(
     // Insert memos
     'memos: for m in &data.memos {
         sqlx::query(
-            "INSERT INTO memos (id, note_id, user_id, title, content, sort_order, is_encrypted, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+            "INSERT INTO memos (id, note_id, user_id, title, content, sort_order, created_at, updated_at) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
         )
         .bind(m.id).bind(m.note_id).bind(user_id).bind(&m.title).bind(&m.content)
-        .bind(m.sort_order).bind(m.is_encrypted).bind(m.created_at).bind(m.updated_at)
+        .bind(m.sort_order).bind(m.created_at).bind(m.updated_at)
         .execute(&mut *tx)
         .await?;
         if false {
@@ -531,11 +527,16 @@ pub async fn import_data(
     // Insert thoughts
     'thoughts: for th in &data.thoughts {
         sqlx::query(
-            "INSERT INTO thoughts (id, user_id, title, content, position, is_encrypted, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+            "INSERT INTO thoughts (id, user_id, title, content, position, created_at, updated_at) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7)",
         )
-        .bind(th.id).bind(user_id).bind(&th.title).bind(&th.content)
-        .bind(th.position).bind(th.is_encrypted).bind(th.created_at).bind(th.updated_at)
+        .bind(th.id)
+        .bind(user_id)
+        .bind(&th.title)
+        .bind(&th.content)
+        .bind(th.position)
+        .bind(th.created_at)
+        .bind(th.updated_at)
         .execute(&mut *tx)
         .await?;
         if false {
@@ -546,11 +547,11 @@ pub async fn import_data(
     // Insert thought_comments
     'tc: for tc in &data.thought_comments {
         sqlx::query(
-            "INSERT INTO thought_comments (id, thought_id, user_id, content, is_encrypted, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7)",
+            "INSERT INTO thought_comments (id, thought_id, user_id, content, created_at, updated_at) \
+             VALUES ($1, $2, $3, $4, $5, $6)",
         )
         .bind(tc.id).bind(tc.thought_id).bind(user_id).bind(&tc.content)
-        .bind(tc.is_encrypted).bind(tc.created_at).bind(tc.updated_at)
+        .bind(tc.created_at).bind(tc.updated_at)
         .execute(&mut *tx)
         .await?;
         if false {

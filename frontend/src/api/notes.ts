@@ -8,7 +8,7 @@ export interface Note {
   content: string;
   node_type: 'folder' | 'file' | 'memolist';
   sort_order: number;
-  is_encrypted: boolean;
+
   created_at: string;
   updated_at: string;
 }
@@ -20,7 +20,6 @@ export interface Memo {
   title: string;
   content: string;
   sort_order: number;
-  is_encrypted: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -46,7 +45,7 @@ export async function createNote(data: {
 
 export async function updateNote(
   id: string,
-  data: { title?: string; content?: string; is_encrypted?: boolean },
+  data: { title?: string; content?: string },
 ): Promise<Note> {
   return apiFetch<Note>(`/notes/${id}`, {
     method: 'PUT',
@@ -76,7 +75,7 @@ export async function listMemos(noteId: string): Promise<Memo[]> {
 
 export async function createMemo(
   noteId: string,
-  data: { title: string; content?: string; is_encrypted?: boolean },
+  data: { title: string; content?: string },
 ): Promise<Memo> {
   return apiFetch<Memo>(`/notes/${noteId}/memos`, {
     method: 'POST',
@@ -87,7 +86,7 @@ export async function createMemo(
 export async function updateMemo(
   noteId: string,
   memoId: string,
-  data: { title?: string; content?: string; is_encrypted?: boolean },
+  data: { title?: string; content?: string },
 ): Promise<Memo> {
   return apiFetch<Memo>(`/notes/${noteId}/memos/${memoId}`, {
     method: 'PUT',

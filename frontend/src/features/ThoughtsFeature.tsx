@@ -3,22 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as thoughtsApi from '../api/thoughts';
 import type { Thought, Tag, ThoughtTag, ThoughtComment } from '../api/thoughts';
-import type { UserProfile } from '../api/profile';
-import { useEncryption } from '../hooks/useEncryption';
-import { getEncryptionPassphrase, isEncrypted } from '../crypto';
 import ThoughtSidebar from '../components/ThoughtSidebar';
 import ThoughtEditor from '../components/ThoughtEditor';
 import TagsCatalog from '../components/TagsCatalog';
 
-interface Props {
-  profile: UserProfile | null;
-}
-
-export default function ThoughtsFeature({ profile }: Props) {
+export default function ThoughtsFeature() {
   const { t } = useTranslation();
   const { id: selectedId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { encryptField, decryptField, shouldEncrypt } = useEncryption(profile);
   const [thoughts, setThoughts] = useState<Thought[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [thoughtTags, setThoughtTags] = useState<ThoughtTag[]>([]);
@@ -37,18 +29,11 @@ export default function ThoughtsFeature({ profile }: Props) {
   const loadThoughts = useCallback(async () => {
     try {
       const list = await thoughtsApi.listThoughts();
-      const decrypted = await Promise.all(
-        list.map(async (th) => ({
-          ...th,
-          title: await decryptField(th.title),
-          content: await decryptField(th.content),
-        })),
-      );
-      setThoughts(decrypted);
+      setThoughts(list);
     } catch (err) {
       console.error('Failed to load thoughts:', err);
     }
-  }, [decryptField]);
+  }, []);
 
   const loadTags = useCallback(async () => {
     try {
@@ -71,17 +56,11 @@ export default function ThoughtsFeature({ profile }: Props) {
   const loadComments = useCallback(async (thoughtId: string) => {
     try {
       const list = await thoughtsApi.listComments(thoughtId);
-      const decrypted = await Promise.all(
-        list.map(async (c) => ({
-          ...c,
-          content: await decryptField(c.content),
-        })),
-      );
-      setComments(decrypted);
+      setComments(list);
     } catch (err) {
       console.error('Failed to load comments:', err);
     }
-  }, [decryptField]);
+  }, []);
 
   useEffect(() => {
     loadThoughts();
@@ -118,18 +97,14 @@ export default function ThoughtsFeature({ profile }: Props) {
   const handleTitleChange = async (title: string) => {
     if (!selectedId) return;
     setThoughts((prev) => prev.map((th) => (th.id === selectedId ? { ...th, title } : th)));
-    const encTitle = await encryptField('thoughts', 'title', title);
-    const isEnc = shouldEncrypt('thoughts', 'title') || shouldEncrypt('thoughts', 'content');
-    await thoughtsApi.updateThought(selectedId, { title: encTitle, is_encrypted: isEnc || undefined });
+    await thoughtsApi.updateThought(selectedId, { title });
     await loadThoughts();
   };
 
   const handleContentChange = async (content: string) => {
     if (!selectedId) return;
     setThoughts((prev) => prev.map((th) => (th.id === selectedId ? { ...th, content } : th)));
-    const encContent = await encryptField('thoughts', 'content', content);
-    const isEnc = shouldEncrypt('thoughts', 'title') || shouldEncrypt('thoughts', 'content');
-    await thoughtsApi.updateThought(selectedId, { content: encContent, is_encrypted: isEnc || undefined });
+    await thoughtsApi.updateThought(selectedId, { content });
   };
 
   const handleDropTag = async (tagId: string) => {
@@ -150,9 +125,7 @@ export default function ThoughtsFeature({ profile }: Props) {
 
   const handleAddComment = async (content: string) => {
     if (!selectedId) return;
-    const encContent = await encryptField('thought_comments', 'content', content);
-    const isEnc = shouldEncrypt('thought_comments', 'content');
-    await thoughtsApi.createComment(selectedId, { content: encContent, is_encrypted: isEnc || undefined });
+    await thoughtsApi.createComment(selectedId, { content });
     await loadComments(selectedId);
   };
 
@@ -189,11 +162,6 @@ export default function ThoughtsFeature({ profile }: Props) {
             onRemoveTag={handleRemoveTag}
             onAddComment={handleAddComment}
             onDeleteComment={handleDeleteComment}
-            readOnly={selectedThought.is_encrypted && (
-              !getEncryptionPassphrase() ||
-              isEncrypted(selectedThought.title) ||
-              isEncrypted(selectedThought.content)
-            )}
           />
         ) : (
           <div className="empty-state">{t('thoughts.emptyState')}</div>

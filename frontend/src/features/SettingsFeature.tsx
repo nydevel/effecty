@@ -1,37 +1,26 @@
-import { useMemo, useRef, useState } from 'react';
-import { Form, Select, Slider, Button, Input, Checkbox, message, Typography, Divider, Tag, Modal } from 'antd';
+import { useRef, useState } from 'react';
+import { Form, Select, Slider, Button, Input, message, Typography, Divider, Modal } from 'antd';
 import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { updateProfile, changePassword, DEFAULT_ENCRYPTION_SETTINGS, DEFAULT_UI_SETTINGS } from '../api/profile';
-import type { UserProfile, EncryptionSettings } from '../api/profile';
+import { updateProfile, changePassword, DEFAULT_UI_SETTINGS } from '../api/profile';
+import type { UserProfile } from '../api/profile';
 import { exportData, importData } from '../api/data-transfer';
-import {
-  getEncryptionPassphrase,
-  setEncryptionPassphrase,
-  clearEncryptionPassphrase,
-} from '../crypto';
 
 interface Props {
   profile: UserProfile | null;
   onProfileUpdate: () => Promise<void>;
-  keyVersion?: number;
 }
 
-export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }: Props) {
+export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
-  const [encLoading, setEncLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [keyInput, setKeyInput] = useState('');
-  const [localKeyVersion, setLocalKeyVersion] = useState(0);
-  const hasKey = useMemo(() => !!getEncryptionPassphrase(), [keyVersion, localKeyVersion]);
   const [form] = Form.useForm();
   const [pwForm] = Form.useForm();
 
-  const encSettings = profile?.encryption_settings ?? DEFAULT_ENCRYPTION_SETTINGS;
   const uiSettings = profile?.ui_settings ?? DEFAULT_UI_SETTINGS;
 
   const handleFinish = async (values: { locale: string }) => {
@@ -86,47 +75,6 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
     }
   };
 
-  const handleEncryptionToggle = async (
-    section: keyof EncryptionSettings,
-    field: string,
-    value: boolean,
-  ) => {
-    if (!profile) return;
-    setEncLoading(true);
-    try {
-      const updated: EncryptionSettings = {
-        ...encSettings,
-        [section]: {
-          ...encSettings[section],
-          [field]: value,
-        },
-      };
-      await updateProfile({
-        locale: profile.locale,
-        encryption_settings: updated,
-      });
-      await onProfileUpdate();
-      message.success(t('settings.saved'));
-    } catch (err) {
-      console.error('Failed to update encryption settings:', err);
-    } finally {
-      setEncLoading(false);
-    }
-  };
-
-  const handleSetKey = () => {
-    if (!keyInput.trim()) return;
-    setEncryptionPassphrase(keyInput.trim());
-    setKeyInput('');
-    setLocalKeyVersion((v) => v + 1);
-    message.success(t('settings.keyLoaded'));
-  };
-
-  const handleClearKey = () => {
-    clearEncryptionPassphrase();
-    setLocalKeyVersion((v) => v + 1);
-  };
-
   const handleExport = async () => {
     setExportLoading(true);
     try {
@@ -146,7 +94,6 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
   const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Reset input so the same file can be re-selected
     e.target.value = '';
 
     Modal.confirm({
@@ -237,110 +184,6 @@ export default function SettingsFeature({ profile, onProfileUpdate, keyVersion }
           </Button>
         </Form.Item>
       </Form>
-
-      <Divider />
-
-      <Typography.Title level={4}>{t('settings.encryption')}</Typography.Title>
-
-      <Typography.Text strong style={{ display: 'block', marginBottom: 4 }}>
-        {t('settings.encNotes')}
-      </Typography.Text>
-      <div style={{ marginBottom: 8, paddingLeft: 16 }}>
-        <Checkbox
-          checked={encSettings.notes.title}
-          disabled={encLoading}
-          onChange={(e) => handleEncryptionToggle('notes', 'title', e.target.checked)}
-        >
-          {t('settings.encTitle')}
-        </Checkbox>
-        <br />
-        <Checkbox
-          checked={encSettings.notes.content}
-          disabled={encLoading}
-          onChange={(e) => handleEncryptionToggle('notes', 'content', e.target.checked)}
-        >
-          {t('settings.encContent')}
-        </Checkbox>
-      </div>
-
-      <Typography.Text strong style={{ display: 'block', marginBottom: 4 }}>
-        {t('settings.encMemos')}
-      </Typography.Text>
-      <div style={{ marginBottom: 8, paddingLeft: 16 }}>
-        <Checkbox
-          checked={encSettings.memos.title}
-          disabled={encLoading}
-          onChange={(e) => handleEncryptionToggle('memos', 'title', e.target.checked)}
-        >
-          {t('settings.encTitle')}
-        </Checkbox>
-        <br />
-        <Checkbox
-          checked={encSettings.memos.content}
-          disabled={encLoading}
-          onChange={(e) => handleEncryptionToggle('memos', 'content', e.target.checked)}
-        >
-          {t('settings.encContent')}
-        </Checkbox>
-      </div>
-
-      <Typography.Text strong style={{ display: 'block', marginBottom: 4 }}>
-        {t('settings.encThoughts')}
-      </Typography.Text>
-      <div style={{ marginBottom: 8, paddingLeft: 16 }}>
-        <Checkbox
-          checked={encSettings.thoughts.title}
-          disabled={encLoading}
-          onChange={(e) => handleEncryptionToggle('thoughts', 'title', e.target.checked)}
-        >
-          {t('settings.encTitle')}
-        </Checkbox>
-        <br />
-        <Checkbox
-          checked={encSettings.thoughts.content}
-          disabled={encLoading}
-          onChange={(e) => handleEncryptionToggle('thoughts', 'content', e.target.checked)}
-        >
-          {t('settings.encContent')}
-        </Checkbox>
-        <br />
-        <Checkbox
-          checked={encSettings.thought_comments.content}
-          disabled={encLoading}
-          onChange={(e) => handleEncryptionToggle('thought_comments', 'content', e.target.checked)}
-        >
-          {t('settings.encComments')}
-        </Checkbox>
-      </div>
-
-      <div style={{ marginBottom: 12 }}>
-        {hasKey
-          ? <Tag color="green">{t('settings.keyLoaded')}</Tag>
-          : <Tag color="red">{t('settings.keyNotLoaded')}</Tag>
-        }
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-        <Input.Password
-          value={keyInput}
-          onChange={(e) => setKeyInput(e.target.value)}
-          onPressEnter={handleSetKey}
-          placeholder={t('settings.encryptionKey')}
-          style={{ flex: 1 }}
-        />
-        <Button type="primary" onClick={handleSetKey}>
-          {t('settings.setKey')}
-        </Button>
-        {hasKey && (
-          <Button danger onClick={handleClearKey}>
-            {t('settings.clearKey')}
-          </Button>
-        )}
-      </div>
-
-      <Typography.Text type="warning" style={{ fontSize: 12 }}>
-        {t('settings.encryptionWarning')}
-      </Typography.Text>
 
       <Divider />
 

@@ -1,9 +1,8 @@
 import { useRef } from 'react';
 import { Button, Dropdown } from 'antd';
-import { PlusOutlined, DeleteOutlined, LockOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { Thought } from '../api/thoughts';
-import { getEncryptionPassphrase, isEncrypted } from '../crypto';
 
 interface Props {
   thoughts: Thought[];
@@ -66,44 +65,34 @@ export default function ThoughtSidebar({
           if (e.target === e.currentTarget) onSelect(null);
         }}
       >
-        {thoughts.map((thought) => {
-          const locked = thought.is_encrypted && (
-            !getEncryptionPassphrase() ||
-            isEncrypted(thought.title) ||
-            isEncrypted(thought.content)
-          );
-          return (
-            <Dropdown
-              key={thought.id}
-              menu={{
-                items: [
-                  {
-                    key: 'delete',
-                    label: t('thoughts.delete'),
-                    icon: <DeleteOutlined />,
-                    danger: true,
-                    onClick: () => onDelete(thought.id),
-                  },
-                ],
-              }}
-              trigger={['contextMenu']}
+        {thoughts.map((thought) => (
+          <Dropdown
+            key={thought.id}
+            menu={{
+              items: [
+                {
+                  key: 'delete',
+                  label: t('thoughts.delete'),
+                  icon: <DeleteOutlined />,
+                  danger: true,
+                  onClick: () => onDelete(thought.id),
+                },
+              ],
+            }}
+            trigger={['contextMenu']}
+          >
+            <div
+              className={`workout-list-item ${selectedId === thought.id ? 'selected' : ''}`}
+              onClick={() => onSelect(thought.id)}
+              draggable
+              onDragStart={() => handleDragStart(thought.id)}
+              onDragOver={(e) => handleDragOver(e, thought.id)}
+              onDrop={handleDrop}
             >
-              <div
-                className={`workout-list-item ${selectedId === thought.id ? 'selected' : ''}`}
-                onClick={() => onSelect(thought.id)}
-                draggable={!locked}
-                onDragStart={() => handleDragStart(thought.id)}
-                onDragOver={(e) => handleDragOver(e, thought.id)}
-                onDrop={handleDrop}
-              >
-                <span>{thought.title || t('thoughts.untitled')}</span>
-                {thought.is_encrypted && (
-                  <LockOutlined className="tree-node-lock" />
-                )}
-              </div>
-            </Dropdown>
-          );
-        })}
+              <span>{thought.title || t('thoughts.untitled')}</span>
+            </div>
+          </Dropdown>
+        ))}
       </div>
     </div>
   );

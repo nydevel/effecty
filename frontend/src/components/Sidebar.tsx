@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Dropdown } from 'antd';
-import { FolderAddOutlined, FileAddOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined, LockOutlined } from '@ant-design/icons';
+import { FolderAddOutlined, FileAddOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Tree, type TreeApi, type NodeRendererProps } from 'react-arborist';
 import { useTranslation } from 'react-i18next';
 import type { Note } from '../api/notes';
-import { getEncryptionPassphrase, isEncrypted } from '../crypto';
 
 export interface TreeNode {
   id: string;
   name: string;
   nodeType: 'folder' | 'file' | 'memolist';
-  encrypted?: boolean;
   children?: TreeNode[];
 }
 
@@ -35,7 +33,6 @@ function buildTree(notes: Note[]): TreeNode[] {
       id: note.id,
       name: note.title,
       nodeType: note.node_type,
-      encrypted: note.is_encrypted,
       children: note.node_type === 'folder' ? [] : undefined,
     });
   }
@@ -86,9 +83,9 @@ export default function Sidebar({
   }, []);
 
   const getContextMenuItems = useCallback(
-    (nodeId: string, locked?: boolean) => ({
+    (nodeId: string) => ({
       items: [
-        ...(!locked ? [{
+        {
           key: 'rename',
           label: t('notes.rename'),
           icon: <EditOutlined />,
@@ -97,7 +94,7 @@ export default function Sidebar({
               treeRef.current?.edit(nodeId);
             });
           },
-        }] : []),
+        },
         {
           key: 'delete',
           label: t('notes.delete'),
@@ -112,17 +109,14 @@ export default function Sidebar({
 
   function Node({ node, style, dragHandle }: NodeRendererProps<TreeNode>) {
     const isFolder = node.data.nodeType === 'folder';
-    const locked = node.data.encrypted && (
-      !getEncryptionPassphrase() || isEncrypted(node.data.name)
-    );
     return (
-      <Dropdown menu={getContextMenuItems(node.id, locked)} trigger={['contextMenu']}>
+      <Dropdown menu={getContextMenuItems(node.id)} trigger={['contextMenu']}>
         <div
           className={`tree-node ${node.isSelected ? 'selected' : ''}`}
           style={style}
           ref={dragHandle}
           onClick={() => { node.select(); if (isFolder) node.toggle(); }}
-          onDoubleClick={() => { if (!locked) node.edit(); }}
+          onDoubleClick={() => node.edit()}
         >
           <span className="tree-node-icon">{getNodeIcon(node.data.nodeType, node.isOpen)}</span>
           {node.isEditing ? (
@@ -139,10 +133,7 @@ export default function Sidebar({
               autoFocus
             />
           ) : (
-            <>
-              <span className="tree-node-name">{node.data.name}</span>
-              {node.data.encrypted && <LockOutlined className="tree-node-lock" />}
-            </>
+            <span className="tree-node-name">{node.data.name}</span>
           )}
         </div>
       </Dropdown>

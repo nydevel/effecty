@@ -142,13 +142,6 @@ html {
   outline: none;
 }
 
-.tree-node-lock {
-  font-size: 11px;
-  color: #999;
-  flex-shrink: 0;
-  margin-left: 4px;
-}
-
 /* Main content */
 .main-content {
   flex: 1;

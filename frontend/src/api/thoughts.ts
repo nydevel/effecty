@@ -6,7 +6,7 @@ export interface Thought {
   title: string;
   content: string;
   position: number;
-  is_encrypted: boolean;
+
   created_at: string;
   updated_at: string;
 }
@@ -24,7 +24,7 @@ export interface ThoughtComment {
   thought_id: string;
   user_id: string;
   content: string;
-  is_encrypted: boolean;
+
   created_at: string;
   updated_at: string;
 }
@@ -50,7 +50,7 @@ export async function createThought(data: { title: string }): Promise<Thought> {
 
 export async function updateThought(
   id: string,
-  data: { title?: string; content?: string; is_encrypted?: boolean },
+  data: { title?: string; content?: string },
 ): Promise<Thought> {
   return apiFetch<Thought>(`/thoughts/${id}`, {
     method: 'PUT',
@@ -108,7 +108,7 @@ export async function listComments(thoughtId: string): Promise<ThoughtComment[]>
 
 export async function createComment(
   thoughtId: string,
-  data: { content: string; is_encrypted?: boolean },
+  data: { content: string },
 ): Promise<ThoughtComment> {
   return apiFetch<ThoughtComment>(`/thoughts/${thoughtId}/comments`, {
     method: 'POST',
