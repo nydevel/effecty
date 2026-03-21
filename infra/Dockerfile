@@ -29,14 +29,15 @@ COPY crates/workouts/Cargo.toml ./crates/workouts/
 COPY crates/profile/Cargo.toml ./crates/profile/
 COPY crates/thoughts/Cargo.toml ./crates/thoughts/
 COPY crates/learning/Cargo.toml ./crates/learning/
+COPY crates/data-transfer/Cargo.toml ./crates/data-transfer/
 
 # Create dummy sources for dependency caching
-RUN for crate in core db server cli migration notes tasks workouts profile thoughts learning; do \
+RUN for crate in core db server cli migration notes tasks workouts profile thoughts learning data-transfer; do \
         mkdir -p "crates/$crate/src"; \
     done && \
     echo "fn main() {}" > crates/server/src/main.rs && \
     echo "fn main() {}" > crates/cli/src/main.rs && \
-    for crate in core db migration notes tasks workouts profile thoughts learning; do \
+    for crate in core db migration notes tasks workouts profile thoughts learning data-transfer; do \
         echo "pub fn lib() {}" > "crates/$crate/src/lib.rs"; \
     done
 
@@ -56,6 +57,7 @@ RUN rm -rf crates/ \
     target/release/.fingerprint/profile-* \
     target/release/.fingerprint/thoughts-* \
     target/release/.fingerprint/learning-* \
+    target/release/.fingerprint/data_transfer-* \
     target/release/deps/libcore-* \
     target/release/deps/libdb-* \
     target/release/deps/libserver-* \
@@ -67,7 +69,8 @@ RUN rm -rf crates/ \
     target/release/deps/libprofile-* \
     target/release/deps/libthoughts-* \
     target/release/deps/liblearning-* \
-    target/release/deps/libmigration-*
+    target/release/deps/libmigration-* \
+    target/release/deps/libdata_transfer-*
 
 # Copy real source code and pre-built frontend
 COPY crates ./crates
