@@ -5,7 +5,7 @@ mod auth;
 mod error;
 mod routes;
 
-use std::path::Path;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use anyhow::Result;
@@ -17,6 +17,29 @@ use tracing_subscriber::EnvFilter;
 
 use crate::app_state::AppState;
 
+fn parse_config_path() -> PathBuf {
+    let args: Vec<String> = std::env::args().collect();
+    let mut i = 1;
+    #[allow(unused_labels)]
+    'args: while i < args.len() {
+        match args[i].as_str() {
+            "--config" | "-c" => {
+                if let Some(path) = args.get(i + 1) {
+                    return PathBuf::from(path);
+                }
+                eprintln!("error: --config requires a path argument");
+                std::process::exit(1);
+            }
+            arg if arg.starts_with("--config=") => {
+                return PathBuf::from(arg.trim_start_matches("--config="));
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    PathBuf::from("configuration.toml")
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
@@ -26,7 +49,7 @@ async fn main() -> Result<()> {
         )
         .init();
 
-    let config = Config::load(Path::new("configuration.toml"))?;
+    let config = Config::load(&parse_config_path())?;
     let addr = config.server.addr();
 
     tracing::info!(

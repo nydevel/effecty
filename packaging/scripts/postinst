@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+if ! getent group effecty >/dev/null 2>&1; then
+    addgroup --system effecty
+fi
+
+if ! getent passwd effecty >/dev/null 2>&1; then
+    adduser --system --home /var/lib/effecty --no-create-home \
+        --ingroup effecty --disabled-password --shell /usr/sbin/nologin effecty
+fi
+
+mkdir -p /var/lib/effecty/uploads
+chown -R effecty:effecty /var/lib/effecty
+
+if [ "$1" = "configure" ]; then
+    systemctl daemon-reload || true
+fi
+
+#DEBHELPER#

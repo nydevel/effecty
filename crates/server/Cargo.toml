@@ -2,6 +2,40 @@
 name = "server"
 version.workspace = true
 edition.workspace = true
+description = "effecty — personal productivity platform"
+license = "GPL-2.0"
+homepage = "https://github.com/nydevel/effecty"
+repository = "https://github.com/nydevel/effecty"
+
+[package.metadata.deb]
+name = "effecty"
+maintainer = "nydevel"
+copyright = "2024 nydevel"
+depends = "$auto"
+section = "web"
+priority = "optional"
+extended-description = "Personal productivity platform. Notes, tasks, calendar, workouts, thoughts, and learning materials in one place."
+assets = [
+    ["target/release/server", "usr/bin/effecty", "755"],
+    ["../../packaging/config/configuration.toml", "etc/effecty/configuration.toml", "644"],
+    ["../../frontend/dist/", "usr/share/effecty/frontend/", "644"],
+]
+conf-files = ["/etc/effecty/configuration.toml"]
+systemd-units = { unit-name = "effecty", unit-scripts = "../../packaging/systemd", enable = false }
+maintainer-scripts = "../../packaging/scripts"
+
+[package.metadata.generate-rpm]
+name = "effecty"
+license = "GPL-2.0"
+summary = "Personal productivity platform"
+assets = [
+    { source = "target/release/server", dest = "/usr/bin/effecty", mode = "755" },
+    { source = "packaging/config/configuration.toml", dest = "/etc/effecty/configuration.toml", mode = "644", config = true },
+    { source = "packaging/systemd/effecty.service", dest = "/usr/lib/systemd/system/effecty.service", mode = "644" },
+    { source = "frontend/dist/*", dest = "/usr/share/effecty/frontend/", mode = "644" },
+]
+post_install_script = "packaging/scripts/postinst"
+pre_uninstall_script = "packaging/scripts/prerm"
 
 [dependencies]
 effecty-core.workspace = true

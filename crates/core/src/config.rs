@@ -66,12 +66,15 @@ impl AppConfig {
 pub struct StorageConfig {
     #[serde(default = "StorageConfig::default_upload_dir")]
     pub upload_dir: String,
+    #[serde(default = "StorageConfig::default_frontend_dir")]
+    pub frontend_dir: String,
 }
 
 impl Default for StorageConfig {
     fn default() -> Self {
         Self {
             upload_dir: Self::default_upload_dir(),
+            frontend_dir: Self::default_frontend_dir(),
         }
     }
 }
@@ -79,6 +82,10 @@ impl Default for StorageConfig {
 impl StorageConfig {
     fn default_upload_dir() -> String {
         "uploads".into()
+    }
+
+    fn default_frontend_dir() -> String {
+        "frontend/dist".into()
     }
 }
 

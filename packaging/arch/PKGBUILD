@@ -1,0 +1,15 @@
+pkgname=effecty
+pkgver=${PKGVER:-0.1.0}
+pkgrel=1
+pkgdesc="Personal productivity platform"
+arch=('x86_64')
+url="https://github.com/nydevel/effecty"
+license=('GPL2')
+backup=('etc/effecty/configuration.toml')
+
+package() {
+    cd "$srcdir"
+    install -Dm755 server "$pkgdir/usr/bin/effecty"
+    install -Dm644 configuration.toml "$pkgdir/etc/effecty/configuration.toml"
+    install -Dm644 effecty.service "$pkgdir/usr/lib/systemd/system/effecty.service"
+}

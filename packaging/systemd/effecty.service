@@ -1,0 +1,25 @@
+[Unit]
+Description=effecty personal productivity platform
+Documentation=https://github.com/nydevel/effecty
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/effecty --config /etc/effecty/configuration.toml
+Restart=on-failure
+RestartSec=5
+
+User=effecty
+Group=effecty
+
+StateDirectory=effecty
+RuntimeDirectory=effecty
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/effecty
+
+[Install]
+WantedBy=multi-user.target
