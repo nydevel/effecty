@@ -7,3 +7,5 @@ configuration.toml
 # Frontend
 frontend/node_modules/
 frontend/dist/
+
+uploads
