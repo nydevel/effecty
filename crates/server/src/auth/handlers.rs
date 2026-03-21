@@ -65,27 +65,6 @@ pub async fn login(
     Ok(Json(AuthResponse { token }))
 }
 
-pub async fn register(
-    State(state): State<AppState>,
-    Json(input): Json<LoginRequest>,
-) -> Result<Json<AuthResponse>, AppError> {
-    if !state.config.auth.registration_enabled {
-        return Err(AppError::Forbidden("registration is disabled".into()));
-    }
-
-    let hash = password::hash(&input.password)?;
-
-    let user = db::repo::users::create(&state.pool, &input.email, &hash).await?;
-
-    let token = jwt::create_token(
-        user.id,
-        &state.config.auth.jwt_secret,
-        state.config.auth.jwt_expiration_hours,
-    )?;
-
-    Ok(Json(AuthResponse { token }))
-}
-
 pub async fn me(
     State(state): State<AppState>,
     axum::Extension(user_id): axum::Extension<UserId>,

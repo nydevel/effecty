@@ -28,7 +28,6 @@ pub struct DatabaseConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct AuthConfig {
-    pub registration_enabled: bool,
     pub jwt_secret: String,
     pub jwt_expiration_hours: u64,
 }
@@ -137,7 +136,6 @@ url = "sqlite://data/effecty.db?mode=rwc"
 max_connections = 10
 
 [auth]
-registration_enabled = false
 jwt_secret = "test-secret"
 jwt_expiration_hours = 24
 
@@ -149,7 +147,6 @@ environment = "dev"
         assert_eq!(config.server.port, 3000);
         assert_eq!(config.server.addr(), "127.0.0.1:3000");
         assert_eq!(config.database.max_connections, 10);
-        assert!(!config.auth.registration_enabled);
         assert_eq!(config.auth.jwt_expiration_hours, 24);
         assert!(config.app.is_dev());
         assert_eq!(config.app.environment, Environment::Dev);

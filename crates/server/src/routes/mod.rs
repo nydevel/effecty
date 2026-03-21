@@ -14,8 +14,7 @@ use crate::auth;
 pub fn create_router(state: AppState) -> Router {
     let public_routes = Router::new()
         .route("/health", get(health::check))
-        .route("/api/auth/login", post(auth::handlers::login))
-        .route("/api/auth/register", post(auth::handlers::register));
+        .route("/api/auth/login", post(auth::handlers::login));
 
     let notes_routes = notes::router().with_state(state.pool.clone());
 

@@ -7,7 +7,6 @@ url = "sqlite://data/effecty.db?mode=rwc"
 max_connections = 10
 
 [auth]
-registration_enabled = false
 jwt_secret = "change-me-in-production"
 jwt_expiration_hours = 24
 
