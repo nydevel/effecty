@@ -2,7 +2,8 @@ use anyhow::Result;
 use chrono::{DateTime, NaiveDate, NaiveTime, Utc};
 use effecty_core::types::{TaskId, UserId};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
+use uuid::Uuid;
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
 pub struct Task {
@@ -46,7 +47,7 @@ pub struct MoveTask {
 }
 
 pub async fn get_by_range(
-    pool: &PgPool,
+    pool: &SqlitePool,
     user_id: UserId,
     from: NaiveDate,
     to: NaiveDate,
@@ -54,8 +55,8 @@ pub async fn get_by_range(
     let tasks = sqlx::query_as::<_, Task>(
         r#"
         SELECT * FROM tasks
-        WHERE user_id = $1 AND task_date >= $2 AND task_date <= $3
-        ORDER BY task_date, position, time_start NULLS LAST
+        WHERE user_id = ?1 AND task_date >= ?2 AND task_date <= ?3
+        ORDER BY task_date, position, CASE WHEN time_start IS NULL THEN 1 ELSE 0 END, time_start
         "#,
     )
     .bind(user_id)
@@ -67,8 +68,8 @@ pub async fn get_by_range(
     Ok(tasks)
 }
 
-pub async fn get_by_id(pool: &PgPool, id: TaskId, user_id: UserId) -> Result<Option<Task>> {
-    let task = sqlx::query_as::<_, Task>("SELECT * FROM tasks WHERE id = $1 AND user_id = $2")
+pub async fn get_by_id(pool: &SqlitePool, id: TaskId, user_id: UserId) -> Result<Option<Task>> {
+    let task = sqlx::query_as::<_, Task>("SELECT * FROM tasks WHERE id = ?1 AND user_id = ?2")
         .bind(id)
         .bind(user_id)
         .fetch_optional(pool)
@@ -77,9 +78,9 @@ pub async fn get_by_id(pool: &PgPool, id: TaskId, user_id: UserId) -> Result<Opt
     Ok(task)
 }
 
-pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateTask) -> Result<Task> {
+pub async fn create(pool: &SqlitePool, user_id: UserId, input: &CreateTask) -> Result<Task> {
     let max_pos = sqlx::query_scalar::<_, Option<f64>>(
-        "SELECT MAX(position) FROM tasks WHERE user_id = $1 AND task_date = $2",
+        "SELECT MAX(position) FROM tasks WHERE user_id = ?1 AND task_date = ?2",
     )
     .bind(user_id)
     .bind(input.task_date)
@@ -88,13 +89,15 @@ pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateTask) -> Resul
 
     let position = max_pos.unwrap_or(0.0) + 1.0;
 
+    let id = Uuid::new_v4();
     let task = sqlx::query_as::<_, Task>(
         r#"
-        INSERT INTO tasks (user_id, title, content, priority, task_date, time_start, time_end, position)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        INSERT INTO tasks (id, user_id, title, content, priority, task_date, time_start, time_end, position)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
         RETURNING *
         "#,
     )
+    .bind(id)
     .bind(user_id)
     .bind(&input.title)
     .bind(input.content.as_deref().unwrap_or(""))
@@ -110,7 +113,7 @@ pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateTask) -> Resul
 }
 
 pub async fn update(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: TaskId,
     user_id: UserId,
     input: &UpdateTask,
@@ -118,14 +121,14 @@ pub async fn update(
     let task = sqlx::query_as::<_, Task>(
         r#"
         UPDATE tasks
-        SET title = COALESCE($3, title),
-            content = COALESCE($4, content),
-            priority = COALESCE($5, priority),
-            task_date = COALESCE($6, task_date),
-            time_start = CASE WHEN $7 THEN $8 ELSE time_start END,
-            time_end = CASE WHEN $9 THEN $10 ELSE time_end END,
-            updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
+        SET title = COALESCE(?3, title),
+            content = COALESCE(?4, content),
+            priority = COALESCE(?5, priority),
+            task_date = COALESCE(?6, task_date),
+            time_start = CASE WHEN ?7 THEN ?8 ELSE time_start END,
+            time_end = CASE WHEN ?9 THEN ?10 ELSE time_end END,
+            updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
         RETURNING *
         "#,
     )
@@ -146,7 +149,7 @@ pub async fn update(
 }
 
 pub async fn move_task(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: TaskId,
     user_id: UserId,
     input: &MoveTask,
@@ -154,10 +157,10 @@ pub async fn move_task(
     let task = sqlx::query_as::<_, Task>(
         r#"
         UPDATE tasks
-        SET task_date = $3,
-            position = $4,
-            updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
+        SET task_date = ?3,
+            position = ?4,
+            updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
         RETURNING *
         "#,
     )
@@ -171,8 +174,8 @@ pub async fn move_task(
     Ok(task)
 }
 
-pub async fn delete(pool: &PgPool, id: TaskId, user_id: UserId) -> Result<bool> {
-    let result = sqlx::query("DELETE FROM tasks WHERE id = $1 AND user_id = $2")
+pub async fn delete(pool: &SqlitePool, id: TaskId, user_id: UserId) -> Result<bool> {
+    let result = sqlx::query("DELETE FROM tasks WHERE id = ?1 AND user_id = ?2")
         .bind(id)
         .bind(user_id)
         .execute(pool)

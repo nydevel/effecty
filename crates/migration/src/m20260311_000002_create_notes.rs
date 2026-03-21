@@ -13,13 +13,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Notes::Table)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Notes::Id)
-                            .uuid()
-                            .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
-                    )
+                    .col(ColumnDef::new(Notes::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Notes::UserId).uuid().not_null())
                     .col(ColumnDef::new(Notes::ParentId).uuid())
                     .col(
@@ -48,13 +42,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Notes::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(Notes::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()
@@ -100,13 +94,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Memos::Table)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Memos::Id)
-                            .uuid()
-                            .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
-                    )
+                    .col(ColumnDef::new(Memos::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Memos::NoteId).uuid().not_null())
                     .col(ColumnDef::new(Memos::UserId).uuid().not_null())
                     .col(ColumnDef::new(Memos::Title).text().not_null().default(""))
@@ -121,13 +109,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Memos::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(Memos::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()

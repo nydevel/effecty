@@ -18,8 +18,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Exercises::Id)
                             .uuid()
                             .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
+                            .primary_key(),
                     )
                     .col(ColumnDef::new(Exercises::UserId).uuid().not_null())
                     .col(
@@ -38,13 +37,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Exercises::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(Exercises::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()
@@ -73,13 +72,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Workouts::Table)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Workouts::Id)
-                            .uuid()
-                            .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
-                    )
+                    .col(ColumnDef::new(Workouts::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Workouts::UserId).uuid().not_null())
                     .col(ColumnDef::new(Workouts::WorkoutDate).date().not_null())
                     .col(
@@ -92,13 +85,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Workouts::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(Workouts::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()
@@ -142,8 +135,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(WorkoutExercises::Id)
                             .uuid()
                             .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
+                            .primary_key(),
                     )
                     .col(
                         ColumnDef::new(WorkoutExercises::WorkoutId)
@@ -183,13 +175,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(WorkoutExercises::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(WorkoutExercises::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()

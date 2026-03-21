@@ -17,8 +17,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(UserProfiles::Id)
                             .uuid()
                             .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
+                            .primary_key(),
                     )
                     .col(
                         ColumnDef::new(UserProfiles::UserId)
@@ -36,13 +35,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(UserProfiles::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(UserProfiles::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()

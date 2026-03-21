@@ -3,7 +3,7 @@ use std::path::{Path as StdPath, PathBuf};
 use axum::extract::{Multipart, Path, State};
 use axum::Json;
 use effecty_core::types::{MaterialId, TagId, TopicId, UserId};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 
 use crate::error::LearningError;
 use crate::thumbnail;
@@ -16,7 +16,7 @@ use db::repo::topics::{self, CreateTopic, UpdateTopic};
 // --- Topics ---
 
 pub async fn list_topics(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
 ) -> Result<Json<Vec<topics::Topic>>, LearningError> {
     let list = topics::list(&pool, user_id).await?;
@@ -24,7 +24,7 @@ pub async fn list_topics(
 }
 
 pub async fn create_topic(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Json(input): Json<CreateTopicRequest>,
 ) -> Result<Json<topics::Topic>, LearningError> {
@@ -45,7 +45,7 @@ pub async fn create_topic(
 }
 
 pub async fn update_topic(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<TopicId>,
     Json(input): Json<UpdateTopic>,
@@ -57,7 +57,7 @@ pub async fn update_topic(
 }
 
 pub async fn delete_topic(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<TopicId>,
 ) -> Result<axum::http::StatusCode, LearningError> {
@@ -72,7 +72,7 @@ pub async fn delete_topic(
 // --- Topic Tags ---
 
 pub async fn list_topic_tags(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(topic_id): Path<TopicId>,
 ) -> Result<Json<Vec<topic_tags::TopicTag>>, LearningError> {
@@ -81,7 +81,7 @@ pub async fn list_topic_tags(
 }
 
 pub async fn link_topic_tag(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(topic_id): Path<TopicId>,
     Json(input): Json<LinkTag>,
@@ -93,7 +93,7 @@ pub async fn link_topic_tag(
 }
 
 pub async fn unlink_topic_tag(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path((topic_id, tag_id)): Path<(TopicId, TagId)>,
 ) -> Result<axum::http::StatusCode, LearningError> {
@@ -108,7 +108,7 @@ pub async fn unlink_topic_tag(
 // --- Tags (create inline) ---
 
 pub async fn create_tag(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Json(input): Json<CreateTag>,
 ) -> Result<Json<tags::Tag>, LearningError> {
@@ -117,7 +117,7 @@ pub async fn create_tag(
 }
 
 pub async fn list_tags(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
 ) -> Result<Json<Vec<tags::Tag>>, LearningError> {
     let list = tags::list(&pool, user_id).await?;
@@ -127,7 +127,7 @@ pub async fn list_tags(
 // --- Materials ---
 
 pub async fn list_materials(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
 ) -> Result<Json<Vec<materials::Material>>, LearningError> {
     let list = materials::list(&pool, user_id).await?;
@@ -135,7 +135,7 @@ pub async fn list_materials(
 }
 
 pub async fn list_materials_by_topic(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(topic_id): Path<TopicId>,
 ) -> Result<Json<Vec<materials::Material>>, LearningError> {
@@ -144,7 +144,7 @@ pub async fn list_materials_by_topic(
 }
 
 pub async fn create_material(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     axum::Extension(upload_dir): axum::Extension<PathBuf>,
     Json(input): Json<CreateMaterial>,
@@ -186,7 +186,7 @@ pub async fn create_material(
 }
 
 pub async fn update_material(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<MaterialId>,
     Json(input): Json<UpdateMaterial>,
@@ -198,7 +198,7 @@ pub async fn update_material(
 }
 
 pub async fn toggle_material_done(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<MaterialId>,
 ) -> Result<Json<materials::Material>, LearningError> {
@@ -209,7 +209,7 @@ pub async fn toggle_material_done(
 }
 
 pub async fn delete_material(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<MaterialId>,
 ) -> Result<axum::http::StatusCode, LearningError> {
@@ -224,7 +224,7 @@ pub async fn delete_material(
 // --- Material file upload ---
 
 pub async fn upload_material_file(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     axum::Extension(upload_dir): axum::Extension<PathBuf>,
     Path(id): Path<MaterialId>,
@@ -282,7 +282,7 @@ pub async fn upload_material_file(
 // --- Material Topics ---
 
 pub async fn list_material_topics(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(material_id): Path<MaterialId>,
 ) -> Result<Json<Vec<material_topics::MaterialTopic>>, LearningError> {
@@ -291,7 +291,7 @@ pub async fn list_material_topics(
 }
 
 pub async fn link_material_topic(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(material_id): Path<MaterialId>,
     Json(input): Json<LinkTopic>,
@@ -303,7 +303,7 @@ pub async fn link_material_topic(
 }
 
 pub async fn unlink_material_topic(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path((material_id, topic_id)): Path<(MaterialId, TopicId)>,
 ) -> Result<axum::http::StatusCode, LearningError> {
@@ -349,7 +349,7 @@ pub struct CreateTopicRequest {
 }
 
 async fn generate_link_thumbnail(
-    pool: &PgPool,
+    pool: &SqlitePool,
     material_id: MaterialId,
     user_id: UserId,
     url: &str,
@@ -374,7 +374,7 @@ async fn generate_link_thumbnail(
 }
 
 async fn generate_video_thumbnail(
-    pool: &PgPool,
+    pool: &SqlitePool,
     material_id: MaterialId,
     user_id: UserId,
     url: &str,

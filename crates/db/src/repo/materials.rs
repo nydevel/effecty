@@ -2,7 +2,8 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use effecty_core::types::{MaterialId, TopicId, UserId};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -71,14 +72,14 @@ pub struct UpdateMaterial {
 const SELECT_WITH_STATUS: &str = r#"
     SELECT m.id, m.user_id, m.material_type, m.title, m.url, m.content,
            m.file_path, m.thumbnail_path,
-           COALESCE(um.is_done, FALSE) AS is_done,
+           COALESCE(um.is_done, 0) AS is_done,
            m.created_at, m.updated_at
     FROM materials m
     LEFT JOIN user_materials um ON um.material_id = m.id AND um.user_id = m.user_id
 "#;
 
-pub async fn list(pool: &PgPool, user_id: UserId) -> Result<Vec<Material>> {
-    let query = format!("{SELECT_WITH_STATUS} WHERE m.user_id = $1 ORDER BY m.created_at DESC");
+pub async fn list(pool: &SqlitePool, user_id: UserId) -> Result<Vec<Material>> {
+    let query = format!("{SELECT_WITH_STATUS} WHERE m.user_id = ?1 ORDER BY m.created_at DESC");
     let materials = sqlx::query_as::<_, Material>(&query)
         .bind(user_id)
         .fetch_all(pool)
@@ -88,7 +89,7 @@ pub async fn list(pool: &PgPool, user_id: UserId) -> Result<Vec<Material>> {
 }
 
 pub async fn list_by_topic(
-    pool: &PgPool,
+    pool: &SqlitePool,
     topic_id: TopicId,
     user_id: UserId,
 ) -> Result<Vec<Material>> {
@@ -96,7 +97,7 @@ pub async fn list_by_topic(
         r#"
         {SELECT_WITH_STATUS}
         JOIN material_topics mt ON mt.material_id = m.id
-        WHERE mt.topic_id = $1 AND m.user_id = $2
+        WHERE mt.topic_id = ?1 AND m.user_id = ?2
         ORDER BY m.created_at DESC
         "#
     );
@@ -109,8 +110,8 @@ pub async fn list_by_topic(
     Ok(materials)
 }
 
-pub async fn get(pool: &PgPool, id: MaterialId, user_id: UserId) -> Result<Option<Material>> {
-    let query = format!("{SELECT_WITH_STATUS} WHERE m.id = $1 AND m.user_id = $2");
+pub async fn get(pool: &SqlitePool, id: MaterialId, user_id: UserId) -> Result<Option<Material>> {
+    let query = format!("{SELECT_WITH_STATUS} WHERE m.id = ?1 AND m.user_id = ?2");
     let material = sqlx::query_as::<_, Material>(&query)
         .bind(id)
         .bind(user_id)
@@ -120,57 +121,66 @@ pub async fn get(pool: &PgPool, id: MaterialId, user_id: UserId) -> Result<Optio
     Ok(material)
 }
 
-pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateMaterial) -> Result<Material> {
+pub async fn create(
+    pool: &SqlitePool,
+    user_id: UserId,
+    input: &CreateMaterial,
+) -> Result<Material> {
     let title = input.title.split_whitespace().collect::<Vec<_>>().join(" ");
 
-    let material = sqlx::query_as::<_, Material>(
+    let id = Uuid::new_v4();
+    let mut tx = pool.begin().await?;
+
+    sqlx::query(
         r#"
-        WITH inserted AS (
-            INSERT INTO materials (user_id, material_type, title, url, content)
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING *
-        )
-        SELECT i.id, i.user_id, i.material_type, i.title, i.url, i.content,
-               i.file_path, i.thumbnail_path,
-               FALSE AS is_done,
-               i.created_at, i.updated_at
-        FROM inserted i
+        INSERT INTO materials (id, user_id, material_type, title, url, content)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6)
         "#,
     )
+    .bind(id)
     .bind(user_id)
     .bind(input.material_type.as_str())
     .bind(&title)
     .bind(&input.url)
     .bind(&input.content)
-    .fetch_one(pool)
+    .execute(&mut *tx)
     .await?;
+
+    let material = sqlx::query_as::<_, Material>(
+        r#"
+        SELECT m.id, m.user_id, m.material_type, m.title, m.url, m.content,
+               m.file_path, m.thumbnail_path,
+               0 AS is_done,
+               m.created_at, m.updated_at
+        FROM materials m
+        WHERE m.id = ?1
+        "#,
+    )
+    .bind(id)
+    .fetch_one(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
 
     Ok(material)
 }
 
 pub async fn update(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: MaterialId,
     user_id: UserId,
     input: &UpdateMaterial,
 ) -> Result<Option<Material>> {
-    let material = sqlx::query_as::<_, Material>(
+    let mut tx = pool.begin().await?;
+
+    let result = sqlx::query(
         r#"
-        WITH updated AS (
-            UPDATE materials
-            SET title = COALESCE($3, title),
-                url = COALESCE($4, url),
-                content = COALESCE($5, content),
-                updated_at = NOW()
-            WHERE id = $1 AND user_id = $2
-            RETURNING *
-        )
-        SELECT u.id, u.user_id, u.material_type, u.title, u.url, u.content,
-               u.file_path, u.thumbnail_path,
-               COALESCE(um.is_done, FALSE) AS is_done,
-               u.created_at, u.updated_at
-        FROM updated u
-        LEFT JOIN user_materials um ON um.material_id = u.id AND um.user_id = u.user_id
+        UPDATE materials
+        SET title = COALESCE(?3, title),
+            url = COALESCE(?4, url),
+            content = COALESCE(?5, content),
+            updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
         "#,
     )
     .bind(id)
@@ -178,89 +188,119 @@ pub async fn update(
     .bind(&input.title)
     .bind(&input.url)
     .bind(&input.content)
-    .fetch_optional(pool)
+    .execute(&mut *tx)
     .await?;
+
+    if result.rows_affected() == 0 {
+        tx.commit().await?;
+        return Ok(None);
+    }
+
+    let query = format!("{SELECT_WITH_STATUS} WHERE m.id = ?1 AND m.user_id = ?2");
+    let material = sqlx::query_as::<_, Material>(&query)
+        .bind(id)
+        .bind(user_id)
+        .fetch_optional(&mut *tx)
+        .await?;
+
+    tx.commit().await?;
 
     Ok(material)
 }
 
 pub async fn update_file_path(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: MaterialId,
     user_id: UserId,
     file_path: &str,
 ) -> Result<Option<Material>> {
-    let material = sqlx::query_as::<_, Material>(
+    let mut tx = pool.begin().await?;
+
+    let result = sqlx::query(
         r#"
-        WITH updated AS (
-            UPDATE materials
-            SET file_path = $3, updated_at = NOW()
-            WHERE id = $1 AND user_id = $2
-            RETURNING *
-        )
-        SELECT u.id, u.user_id, u.material_type, u.title, u.url, u.content,
-               u.file_path, u.thumbnail_path,
-               COALESCE(um.is_done, FALSE) AS is_done,
-               u.created_at, u.updated_at
-        FROM updated u
-        LEFT JOIN user_materials um ON um.material_id = u.id AND um.user_id = u.user_id
+        UPDATE materials
+        SET file_path = ?3, updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
         "#,
     )
     .bind(id)
     .bind(user_id)
     .bind(file_path)
-    .fetch_optional(pool)
+    .execute(&mut *tx)
     .await?;
+
+    if result.rows_affected() == 0 {
+        tx.commit().await?;
+        return Ok(None);
+    }
+
+    let query = format!("{SELECT_WITH_STATUS} WHERE m.id = ?1 AND m.user_id = ?2");
+    let material = sqlx::query_as::<_, Material>(&query)
+        .bind(id)
+        .bind(user_id)
+        .fetch_optional(&mut *tx)
+        .await?;
+
+    tx.commit().await?;
 
     Ok(material)
 }
 
 pub async fn update_thumbnail(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: MaterialId,
     user_id: UserId,
     thumbnail_path: &str,
 ) -> Result<Option<Material>> {
-    let material = sqlx::query_as::<_, Material>(
+    let mut tx = pool.begin().await?;
+
+    let result = sqlx::query(
         r#"
-        WITH updated AS (
-            UPDATE materials
-            SET thumbnail_path = $3, updated_at = NOW()
-            WHERE id = $1 AND user_id = $2
-            RETURNING *
-        )
-        SELECT u.id, u.user_id, u.material_type, u.title, u.url, u.content,
-               u.file_path, u.thumbnail_path,
-               COALESCE(um.is_done, FALSE) AS is_done,
-               u.created_at, u.updated_at
-        FROM updated u
-        LEFT JOIN user_materials um ON um.material_id = u.id AND um.user_id = u.user_id
+        UPDATE materials
+        SET thumbnail_path = ?3, updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
         "#,
     )
     .bind(id)
     .bind(user_id)
     .bind(thumbnail_path)
-    .fetch_optional(pool)
+    .execute(&mut *tx)
     .await?;
+
+    if result.rows_affected() == 0 {
+        tx.commit().await?;
+        return Ok(None);
+    }
+
+    let query = format!("{SELECT_WITH_STATUS} WHERE m.id = ?1 AND m.user_id = ?2");
+    let material = sqlx::query_as::<_, Material>(&query)
+        .bind(id)
+        .bind(user_id)
+        .fetch_optional(&mut *tx)
+        .await?;
+
+    tx.commit().await?;
 
     Ok(material)
 }
 
 pub async fn toggle_done(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: MaterialId,
     user_id: UserId,
 ) -> Result<Option<Material>> {
+    let um_id = Uuid::new_v4();
     // Upsert into user_materials, toggling is_done
     sqlx::query(
         r#"
-        INSERT INTO user_materials (user_id, material_id, is_done)
-        VALUES ($1, $2, TRUE)
+        INSERT INTO user_materials (id, user_id, material_id, is_done)
+        VALUES (?1, ?2, ?3, 1)
         ON CONFLICT (user_id, material_id)
         DO UPDATE SET is_done = NOT user_materials.is_done,
-                      updated_at = NOW()
+                      updated_at = datetime('now')
         "#,
     )
+    .bind(um_id)
     .bind(user_id)
     .bind(id)
     .execute(pool)
@@ -269,8 +309,8 @@ pub async fn toggle_done(
     get(pool, id, user_id).await
 }
 
-pub async fn delete(pool: &PgPool, id: MaterialId, user_id: UserId) -> Result<bool> {
-    let result = sqlx::query("DELETE FROM materials WHERE id = $1 AND user_id = $2")
+pub async fn delete(pool: &SqlitePool, id: MaterialId, user_id: UserId) -> Result<bool> {
+    let result = sqlx::query("DELETE FROM materials WHERE id = ?1 AND user_id = ?2")
         .bind(id)
         .bind(user_id)
         .execute(pool)

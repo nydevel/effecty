@@ -1,14 +1,14 @@
 use axum::extract::{Path, State};
 use axum::Json;
 use effecty_core::types::{MemoId, NoteId, UserId};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 
 use crate::error::NotesError;
 use db::repo::memos::{self, CreateMemo, UpdateMemo};
 use db::repo::notes::{self, CreateNote, MoveNote, UpdateNote};
 
 pub async fn get_tree(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
 ) -> Result<Json<Vec<notes::Note>>, NotesError> {
     let tree = notes::get_tree(&pool, user_id).await?;
@@ -16,7 +16,7 @@ pub async fn get_tree(
 }
 
 pub async fn get_note(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<NoteId>,
 ) -> Result<Json<notes::Note>, NotesError> {
@@ -27,7 +27,7 @@ pub async fn get_note(
 }
 
 pub async fn create_note(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Json(input): Json<CreateNote>,
 ) -> Result<Json<notes::Note>, NotesError> {
@@ -41,7 +41,7 @@ pub async fn create_note(
 }
 
 pub async fn update_note(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<NoteId>,
     Json(input): Json<UpdateNote>,
@@ -53,7 +53,7 @@ pub async fn update_note(
 }
 
 pub async fn move_note(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<NoteId>,
     Json(input): Json<MoveNote>,
@@ -65,7 +65,7 @@ pub async fn move_note(
 }
 
 pub async fn delete_note(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<NoteId>,
 ) -> Result<axum::http::StatusCode, NotesError> {
@@ -80,7 +80,7 @@ pub async fn delete_note(
 // --- Memos ---
 
 pub async fn list_memos(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(note_id): Path<NoteId>,
 ) -> Result<Json<Vec<memos::Memo>>, NotesError> {
@@ -89,7 +89,7 @@ pub async fn list_memos(
 }
 
 pub async fn create_memo(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(note_id): Path<NoteId>,
     Json(input): Json<CreateMemo>,
@@ -99,7 +99,7 @@ pub async fn create_memo(
 }
 
 pub async fn update_memo(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path((_note_id, memo_id)): Path<(NoteId, MemoId)>,
     Json(input): Json<UpdateMemo>,
@@ -111,7 +111,7 @@ pub async fn update_memo(
 }
 
 pub async fn delete_memo(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path((_note_id, memo_id)): Path<(NoteId, MemoId)>,
 ) -> Result<axum::http::StatusCode, NotesError> {
@@ -129,7 +129,7 @@ pub struct ReorderMemosRequest {
 }
 
 pub async fn reorder_memos(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(_note_id): Path<NoteId>,
     Json(input): Json<ReorderMemosRequest>,

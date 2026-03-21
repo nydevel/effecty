@@ -6,7 +6,7 @@ use axum::response::IntoResponse;
 use axum::Json;
 use chrono::{DateTime, NaiveDate, NaiveTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 
 use effecty_core::types::*;
 
@@ -173,7 +173,7 @@ pub struct ExportMaterialTopic {
 // ── Export handler ─────────────────────────────────────────────────
 
 pub async fn export_data(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
 ) -> Result<impl IntoResponse, DataTransferError> {
     let notes = sqlx::query_as::<_, ExportNote>(
@@ -333,7 +333,7 @@ pub async fn export_data(
 // ── Import handler ─────────────────────────────────────────────────
 
 pub async fn import_data(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Json(data): Json<ExportData>,
 ) -> Result<Json<ImportResult>, DataTransferError> {

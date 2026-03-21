@@ -3,7 +3,7 @@ use axum::Json;
 use chrono::NaiveDate;
 use effecty_core::types::{TaskId, UserId};
 use serde::Deserialize;
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 
 use crate::error::TasksError;
 use db::repo::tasks::{self, CreateTask, MoveTask, UpdateTask};
@@ -15,7 +15,7 @@ pub struct ListQuery {
 }
 
 pub async fn list_tasks(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Query(query): Query<ListQuery>,
 ) -> Result<Json<Vec<tasks::Task>>, TasksError> {
@@ -24,7 +24,7 @@ pub async fn list_tasks(
 }
 
 pub async fn get_task(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<TaskId>,
 ) -> Result<Json<tasks::Task>, TasksError> {
@@ -35,7 +35,7 @@ pub async fn get_task(
 }
 
 pub async fn create_task(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Json(input): Json<CreateTask>,
 ) -> Result<Json<tasks::Task>, TasksError> {
@@ -49,7 +49,7 @@ pub async fn create_task(
 }
 
 pub async fn update_task(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<TaskId>,
     Json(input): Json<UpdateTask>,
@@ -61,7 +61,7 @@ pub async fn update_task(
 }
 
 pub async fn move_task(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<TaskId>,
     Json(input): Json<MoveTask>,
@@ -73,7 +73,7 @@ pub async fn move_task(
 }
 
 pub async fn delete_task(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<TaskId>,
 ) -> Result<axum::http::StatusCode, TasksError> {

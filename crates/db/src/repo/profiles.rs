@@ -2,7 +2,8 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use effecty_core::types::{UiSettings, UserId};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
+use uuid::Uuid;
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
 pub struct UserProfile {
@@ -20,15 +21,17 @@ pub struct UpdateProfile {
     pub ui_settings: Option<UiSettings>,
 }
 
-pub async fn get_or_create(pool: &PgPool, user_id: UserId) -> Result<UserProfile> {
+pub async fn get_or_create(pool: &SqlitePool, user_id: UserId) -> Result<UserProfile> {
+    let id = Uuid::new_v4();
     let profile = sqlx::query_as::<_, UserProfile>(
         r#"
-        INSERT INTO user_profiles (user_id, locale)
-        VALUES ($1, 'en')
+        INSERT INTO user_profiles (id, user_id, locale)
+        VALUES (?1, ?2, 'en')
         ON CONFLICT (user_id) DO UPDATE SET updated_at = user_profiles.updated_at
         RETURNING id, user_id, locale, ui_settings, created_at, updated_at
         "#,
     )
+    .bind(id)
     .bind(user_id)
     .fetch_one(pool)
     .await?;
@@ -37,7 +40,7 @@ pub async fn get_or_create(pool: &PgPool, user_id: UserId) -> Result<UserProfile
 }
 
 pub async fn update(
-    pool: &PgPool,
+    pool: &SqlitePool,
     user_id: UserId,
     input: &UpdateProfile,
 ) -> Result<Option<UserProfile>> {
@@ -49,10 +52,10 @@ pub async fn update(
     let profile = sqlx::query_as::<_, UserProfile>(
         r#"
         UPDATE user_profiles
-        SET locale = $2,
-            ui_settings = COALESCE($3, ui_settings),
-            updated_at = NOW()
-        WHERE user_id = $1
+        SET locale = ?2,
+            ui_settings = COALESCE(?3, ui_settings),
+            updated_at = datetime('now')
+        WHERE user_id = ?1
         RETURNING id, user_id, locale, ui_settings, created_at, updated_at
         "#,
     )

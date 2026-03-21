@@ -17,8 +17,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(UserMaterials::Id)
                             .uuid()
                             .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
+                            .primary_key(),
                     )
                     .col(ColumnDef::new(UserMaterials::UserId).uuid().not_null())
                     .col(ColumnDef::new(UserMaterials::MaterialId).uuid().not_null())
@@ -32,13 +31,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(UserMaterials::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(UserMaterials::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()

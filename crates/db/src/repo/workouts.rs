@@ -2,7 +2,8 @@ use anyhow::Result;
 use chrono::{DateTime, NaiveDate, Utc};
 use effecty_core::types::{ExerciseId, UserId, WorkoutExerciseId, WorkoutId};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
+use uuid::Uuid;
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
 pub struct Workout {
@@ -60,9 +61,9 @@ pub struct MoveWorkoutExercise {
     pub position: f64,
 }
 
-pub async fn list_workouts(pool: &PgPool, user_id: UserId) -> Result<Vec<Workout>> {
+pub async fn list_workouts(pool: &SqlitePool, user_id: UserId) -> Result<Vec<Workout>> {
     let workouts =
-        sqlx::query_as::<_, Workout>("SELECT * FROM workouts WHERE user_id = $1 ORDER BY position")
+        sqlx::query_as::<_, Workout>("SELECT * FROM workouts WHERE user_id = ?1 ORDER BY position")
             .bind(user_id)
             .fetch_all(pool)
             .await?;
@@ -70,9 +71,13 @@ pub async fn list_workouts(pool: &PgPool, user_id: UserId) -> Result<Vec<Workout
     Ok(workouts)
 }
 
-pub async fn get_workout(pool: &PgPool, id: WorkoutId, user_id: UserId) -> Result<Option<Workout>> {
+pub async fn get_workout(
+    pool: &SqlitePool,
+    id: WorkoutId,
+    user_id: UserId,
+) -> Result<Option<Workout>> {
     let workout =
-        sqlx::query_as::<_, Workout>("SELECT * FROM workouts WHERE id = $1 AND user_id = $2")
+        sqlx::query_as::<_, Workout>("SELECT * FROM workouts WHERE id = ?1 AND user_id = ?2")
             .bind(id)
             .bind(user_id)
             .fetch_optional(pool)
@@ -82,12 +87,12 @@ pub async fn get_workout(pool: &PgPool, id: WorkoutId, user_id: UserId) -> Resul
 }
 
 pub async fn create_workout(
-    pool: &PgPool,
+    pool: &SqlitePool,
     user_id: UserId,
     input: &CreateWorkout,
 ) -> Result<Workout> {
     let max_pos = sqlx::query_scalar::<_, Option<f64>>(
-        "SELECT MAX(position) FROM workouts WHERE user_id = $1",
+        "SELECT MAX(position) FROM workouts WHERE user_id = ?1",
     )
     .bind(user_id)
     .fetch_one(pool)
@@ -95,13 +100,15 @@ pub async fn create_workout(
 
     let position = max_pos.unwrap_or(0.0) + 1.0;
 
+    let id = Uuid::new_v4();
     let workout = sqlx::query_as::<_, Workout>(
         r#"
-        INSERT INTO workouts (user_id, workout_date, position)
-        VALUES ($1, $2, $3)
+        INSERT INTO workouts (id, user_id, workout_date, position)
+        VALUES (?1, ?2, ?3, ?4)
         RETURNING *
         "#,
     )
+    .bind(id)
     .bind(user_id)
     .bind(input.workout_date)
     .bind(position)
@@ -112,7 +119,7 @@ pub async fn create_workout(
 }
 
 pub async fn move_workout(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: WorkoutId,
     user_id: UserId,
     input: &MoveWorkout,
@@ -120,9 +127,9 @@ pub async fn move_workout(
     let workout = sqlx::query_as::<_, Workout>(
         r#"
         UPDATE workouts
-        SET position = $3,
-            updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
+        SET position = ?3,
+            updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
         RETURNING *
         "#,
     )
@@ -136,7 +143,7 @@ pub async fn move_workout(
 }
 
 pub async fn update_workout(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: WorkoutId,
     user_id: UserId,
     input: &UpdateWorkout,
@@ -144,9 +151,9 @@ pub async fn update_workout(
     let workout = sqlx::query_as::<_, Workout>(
         r#"
         UPDATE workouts
-        SET workout_date = COALESCE($3, workout_date),
-            updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
+        SET workout_date = COALESCE(?3, workout_date),
+            updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
         RETURNING *
         "#,
     )
@@ -159,8 +166,8 @@ pub async fn update_workout(
     Ok(workout)
 }
 
-pub async fn delete_workout(pool: &PgPool, id: WorkoutId, user_id: UserId) -> Result<bool> {
-    let result = sqlx::query("DELETE FROM workouts WHERE id = $1 AND user_id = $2")
+pub async fn delete_workout(pool: &SqlitePool, id: WorkoutId, user_id: UserId) -> Result<bool> {
+    let result = sqlx::query("DELETE FROM workouts WHERE id = ?1 AND user_id = ?2")
         .bind(id)
         .bind(user_id)
         .execute(pool)
@@ -170,7 +177,7 @@ pub async fn delete_workout(pool: &PgPool, id: WorkoutId, user_id: UserId) -> Re
 }
 
 pub async fn list_workout_exercises(
-    pool: &PgPool,
+    pool: &SqlitePool,
     workout_id: WorkoutId,
     user_id: UserId,
 ) -> Result<Vec<WorkoutExerciseWithName>> {
@@ -181,7 +188,7 @@ pub async fn list_workout_exercises(
         FROM workout_exercises we
         JOIN exercises e ON e.id = we.exercise_id
         JOIN workouts w ON w.id = we.workout_id
-        WHERE we.workout_id = $1 AND w.user_id = $2
+        WHERE we.workout_id = ?1 AND w.user_id = ?2
         ORDER BY we.position
         "#,
     )
@@ -194,12 +201,12 @@ pub async fn list_workout_exercises(
 }
 
 pub async fn add_exercise(
-    pool: &PgPool,
+    pool: &SqlitePool,
     workout_id: WorkoutId,
     exercise_id: ExerciseId,
 ) -> Result<WorkoutExerciseWithName> {
     let max_pos = sqlx::query_scalar::<_, Option<f64>>(
-        "SELECT MAX(position) FROM workout_exercises WHERE workout_id = $1",
+        "SELECT MAX(position) FROM workout_exercises WHERE workout_id = ?1",
     )
     .bind(workout_id)
     .fetch_one(pool)
@@ -207,18 +214,30 @@ pub async fn add_exercise(
 
     let position = max_pos.unwrap_or(0.0) + 1.0;
 
-    let we = sqlx::query_as::<_, WorkoutExerciseWithName>(
+    let id = Uuid::new_v4();
+    sqlx::query(
         r#"
-        INSERT INTO workout_exercises (workout_id, exercise_id, position)
-        VALUES ($1, $2, $3)
-        RETURNING id, workout_id, exercise_id,
-                  (SELECT name FROM exercises WHERE id = $2) AS exercise_name,
-                  sets, reps, weight, position, created_at, updated_at
+        INSERT INTO workout_exercises (id, workout_id, exercise_id, position)
+        VALUES (?1, ?2, ?3, ?4)
         "#,
     )
+    .bind(id)
     .bind(workout_id)
     .bind(exercise_id)
     .bind(position)
+    .execute(pool)
+    .await?;
+
+    let we = sqlx::query_as::<_, WorkoutExerciseWithName>(
+        r#"
+        SELECT we.id, we.workout_id, we.exercise_id, e.name AS exercise_name,
+               we.sets, we.reps, we.weight, we.position, we.created_at, we.updated_at
+        FROM workout_exercises we
+        JOIN exercises e ON e.id = we.exercise_id
+        WHERE we.id = ?1
+        "#,
+    )
+    .bind(id)
     .fetch_one(pool)
     .await?;
 
@@ -226,24 +245,21 @@ pub async fn add_exercise(
 }
 
 pub async fn update_exercise_stats(
-    pool: &PgPool,
+    pool: &SqlitePool,
     we_id: WorkoutExerciseId,
     workout_id: WorkoutId,
     user_id: UserId,
     input: &UpdateWorkoutExercise,
 ) -> Result<Option<WorkoutExerciseWithName>> {
-    let we = sqlx::query_as::<_, WorkoutExerciseWithName>(
+    let result = sqlx::query(
         r#"
-        UPDATE workout_exercises we
-        SET sets = COALESCE($4, we.sets),
-            reps = COALESCE($5, we.reps),
-            weight = COALESCE($6, we.weight),
-            updated_at = NOW()
-        FROM workouts w, exercises e
-        WHERE we.id = $1 AND we.workout_id = $2 AND w.id = we.workout_id
-              AND w.user_id = $3 AND e.id = we.exercise_id
-        RETURNING we.id, we.workout_id, we.exercise_id, e.name AS exercise_name,
-                  we.sets, we.reps, we.weight, we.position, we.created_at, we.updated_at
+        UPDATE workout_exercises
+        SET sets = COALESCE(?4, sets),
+            reps = COALESCE(?5, reps),
+            weight = COALESCE(?6, weight),
+            updated_at = datetime('now')
+        WHERE id = ?1 AND workout_id = ?2
+              AND EXISTS(SELECT 1 FROM workouts WHERE id = ?2 AND user_id = ?3)
         "#,
     )
     .bind(we_id)
@@ -252,6 +268,23 @@ pub async fn update_exercise_stats(
     .bind(&input.sets)
     .bind(&input.reps)
     .bind(&input.weight)
+    .execute(pool)
+    .await?;
+
+    if result.rows_affected() == 0 {
+        return Ok(None);
+    }
+
+    let we = sqlx::query_as::<_, WorkoutExerciseWithName>(
+        r#"
+        SELECT we.id, we.workout_id, we.exercise_id, e.name AS exercise_name,
+               we.sets, we.reps, we.weight, we.position, we.created_at, we.updated_at
+        FROM workout_exercises we
+        JOIN exercises e ON e.id = we.exercise_id
+        WHERE we.id = ?1
+        "#,
+    )
+    .bind(we_id)
     .fetch_optional(pool)
     .await?;
 
@@ -259,28 +292,42 @@ pub async fn update_exercise_stats(
 }
 
 pub async fn move_exercise(
-    pool: &PgPool,
+    pool: &SqlitePool,
     we_id: WorkoutExerciseId,
     workout_id: WorkoutId,
     user_id: UserId,
     input: &MoveWorkoutExercise,
 ) -> Result<Option<WorkoutExerciseWithName>> {
-    let we = sqlx::query_as::<_, WorkoutExerciseWithName>(
+    let result = sqlx::query(
         r#"
-        UPDATE workout_exercises we
-        SET position = $4,
-            updated_at = NOW()
-        FROM workouts w, exercises e
-        WHERE we.id = $1 AND we.workout_id = $2 AND w.id = we.workout_id
-              AND w.user_id = $3 AND e.id = we.exercise_id
-        RETURNING we.id, we.workout_id, we.exercise_id, e.name AS exercise_name,
-                  we.sets, we.reps, we.weight, we.position, we.created_at, we.updated_at
+        UPDATE workout_exercises
+        SET position = ?4,
+            updated_at = datetime('now')
+        WHERE id = ?1 AND workout_id = ?2
+              AND EXISTS(SELECT 1 FROM workouts WHERE id = ?2 AND user_id = ?3)
         "#,
     )
     .bind(we_id)
     .bind(workout_id)
     .bind(user_id)
     .bind(input.position)
+    .execute(pool)
+    .await?;
+
+    if result.rows_affected() == 0 {
+        return Ok(None);
+    }
+
+    let we = sqlx::query_as::<_, WorkoutExerciseWithName>(
+        r#"
+        SELECT we.id, we.workout_id, we.exercise_id, e.name AS exercise_name,
+               we.sets, we.reps, we.weight, we.position, we.created_at, we.updated_at
+        FROM workout_exercises we
+        JOIN exercises e ON e.id = we.exercise_id
+        WHERE we.id = ?1
+        "#,
+    )
+    .bind(we_id)
     .fetch_optional(pool)
     .await?;
 
@@ -288,17 +335,16 @@ pub async fn move_exercise(
 }
 
 pub async fn remove_exercise(
-    pool: &PgPool,
+    pool: &SqlitePool,
     we_id: WorkoutExerciseId,
     workout_id: WorkoutId,
     user_id: UserId,
 ) -> Result<bool> {
     let result = sqlx::query(
         r#"
-        DELETE FROM workout_exercises we
-        USING workouts w
-        WHERE we.id = $1 AND we.workout_id = $2
-              AND w.id = we.workout_id AND w.user_id = $3
+        DELETE FROM workout_exercises
+        WHERE id = ?1 AND workout_id = ?2
+              AND EXISTS(SELECT 1 FROM workouts WHERE id = ?2 AND user_id = ?3)
         "#,
     )
     .bind(we_id)

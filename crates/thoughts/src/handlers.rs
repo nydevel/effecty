@@ -1,7 +1,7 @@
 use axum::extract::{Path, State};
 use axum::Json;
 use effecty_core::types::{TagId, ThoughtCommentId, ThoughtId, UserId};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 
 use crate::error::ThoughtsError;
 use db::repo::tags::{self, CreateTag};
@@ -12,7 +12,7 @@ use db::repo::thoughts::{self, CreateThought, MoveThought, UpdateThought};
 // --- Thoughts ---
 
 pub async fn list_thoughts(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
 ) -> Result<Json<Vec<thoughts::Thought>>, ThoughtsError> {
     let list = thoughts::list(&pool, user_id).await?;
@@ -20,7 +20,7 @@ pub async fn list_thoughts(
 }
 
 pub async fn create_thought(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Json(input): Json<CreateThought>,
 ) -> Result<Json<thoughts::Thought>, ThoughtsError> {
@@ -29,7 +29,7 @@ pub async fn create_thought(
 }
 
 pub async fn update_thought(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<ThoughtId>,
     Json(input): Json<UpdateThought>,
@@ -41,7 +41,7 @@ pub async fn update_thought(
 }
 
 pub async fn move_thought(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<ThoughtId>,
     Json(input): Json<MoveThought>,
@@ -53,7 +53,7 @@ pub async fn move_thought(
 }
 
 pub async fn delete_thought(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<ThoughtId>,
 ) -> Result<axum::http::StatusCode, ThoughtsError> {
@@ -68,7 +68,7 @@ pub async fn delete_thought(
 // --- Tags ---
 
 pub async fn list_tags(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
 ) -> Result<Json<Vec<tags::Tag>>, ThoughtsError> {
     let list = tags::list(&pool, user_id).await?;
@@ -76,7 +76,7 @@ pub async fn list_tags(
 }
 
 pub async fn create_tag(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Json(input): Json<CreateTag>,
 ) -> Result<Json<tags::Tag>, ThoughtsError> {
@@ -85,7 +85,7 @@ pub async fn create_tag(
 }
 
 pub async fn delete_tag(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<TagId>,
 ) -> Result<axum::http::StatusCode, ThoughtsError> {
@@ -100,7 +100,7 @@ pub async fn delete_tag(
 // --- Thought Tags ---
 
 pub async fn list_thought_tags(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(thought_id): Path<ThoughtId>,
 ) -> Result<Json<Vec<thought_tags::ThoughtTag>>, ThoughtsError> {
@@ -109,7 +109,7 @@ pub async fn list_thought_tags(
 }
 
 pub async fn link_tag(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(thought_id): Path<ThoughtId>,
     Json(input): Json<LinkTag>,
@@ -121,7 +121,7 @@ pub async fn link_tag(
 }
 
 pub async fn unlink_tag(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path((thought_id, tag_id)): Path<(ThoughtId, TagId)>,
 ) -> Result<axum::http::StatusCode, ThoughtsError> {
@@ -136,7 +136,7 @@ pub async fn unlink_tag(
 // --- Thought Comments ---
 
 pub async fn list_comments(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(thought_id): Path<ThoughtId>,
 ) -> Result<Json<Vec<thought_comments::ThoughtComment>>, ThoughtsError> {
@@ -145,7 +145,7 @@ pub async fn list_comments(
 }
 
 pub async fn create_comment(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(thought_id): Path<ThoughtId>,
     Json(input): Json<CreateComment>,
@@ -160,7 +160,7 @@ pub async fn create_comment(
 }
 
 pub async fn delete_comment(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path((_thought_id, comment_id)): Path<(ThoughtId, ThoughtCommentId)>,
 ) -> Result<axum::http::StatusCode, ThoughtsError> {

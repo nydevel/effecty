@@ -2,7 +2,8 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use effecty_core::types::{ExerciseId, UserId};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
+use uuid::Uuid;
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
 pub struct Exercise {
@@ -27,9 +28,9 @@ pub struct UpdateExercise {
     pub muscle_group: Option<String>,
 }
 
-pub async fn list(pool: &PgPool, user_id: UserId) -> Result<Vec<Exercise>> {
+pub async fn list(pool: &SqlitePool, user_id: UserId) -> Result<Vec<Exercise>> {
     let exercises = sqlx::query_as::<_, Exercise>(
-        "SELECT * FROM exercises WHERE user_id = $1 ORDER BY sort_order",
+        "SELECT * FROM exercises WHERE user_id = ?1 ORDER BY sort_order",
     )
     .bind(user_id)
     .fetch_all(pool)
@@ -38,9 +39,13 @@ pub async fn list(pool: &PgPool, user_id: UserId) -> Result<Vec<Exercise>> {
     Ok(exercises)
 }
 
-pub async fn get_by_id(pool: &PgPool, id: ExerciseId, user_id: UserId) -> Result<Option<Exercise>> {
+pub async fn get_by_id(
+    pool: &SqlitePool,
+    id: ExerciseId,
+    user_id: UserId,
+) -> Result<Option<Exercise>> {
     let exercise =
-        sqlx::query_as::<_, Exercise>("SELECT * FROM exercises WHERE id = $1 AND user_id = $2")
+        sqlx::query_as::<_, Exercise>("SELECT * FROM exercises WHERE id = ?1 AND user_id = ?2")
             .bind(id)
             .bind(user_id)
             .fetch_optional(pool)
@@ -50,12 +55,12 @@ pub async fn get_by_id(pool: &PgPool, id: ExerciseId, user_id: UserId) -> Result
 }
 
 pub async fn find_or_create_by_name(
-    pool: &PgPool,
+    pool: &SqlitePool,
     user_id: UserId,
     name: &str,
 ) -> Result<Exercise> {
     let existing =
-        sqlx::query_as::<_, Exercise>("SELECT * FROM exercises WHERE user_id = $1 AND name = $2")
+        sqlx::query_as::<_, Exercise>("SELECT * FROM exercises WHERE user_id = ?1 AND name = ?2")
             .bind(user_id)
             .bind(name)
             .fetch_optional(pool)
@@ -76,9 +81,13 @@ pub async fn find_or_create_by_name(
     .await
 }
 
-pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateExercise) -> Result<Exercise> {
+pub async fn create(
+    pool: &SqlitePool,
+    user_id: UserId,
+    input: &CreateExercise,
+) -> Result<Exercise> {
     let max_pos = sqlx::query_scalar::<_, Option<f64>>(
-        "SELECT MAX(sort_order) FROM exercises WHERE user_id = $1",
+        "SELECT MAX(sort_order) FROM exercises WHERE user_id = ?1",
     )
     .bind(user_id)
     .fetch_one(pool)
@@ -86,13 +95,15 @@ pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateExercise) -> R
 
     let sort_order = max_pos.unwrap_or(0.0) + 1.0;
 
+    let id = Uuid::new_v4();
     let exercise = sqlx::query_as::<_, Exercise>(
         r#"
-        INSERT INTO exercises (user_id, name, muscle_group, sort_order)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO exercises (id, user_id, name, muscle_group, sort_order)
+        VALUES (?1, ?2, ?3, ?4, ?5)
         RETURNING *
         "#,
     )
+    .bind(id)
     .bind(user_id)
     .bind(&input.name)
     .bind(&input.muscle_group)
@@ -104,7 +115,7 @@ pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateExercise) -> R
 }
 
 pub async fn update(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: ExerciseId,
     user_id: UserId,
     input: &UpdateExercise,
@@ -112,10 +123,10 @@ pub async fn update(
     let exercise = sqlx::query_as::<_, Exercise>(
         r#"
         UPDATE exercises
-        SET name = COALESCE($3, name),
-            muscle_group = COALESCE($4, muscle_group),
-            updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
+        SET name = COALESCE(?3, name),
+            muscle_group = COALESCE(?4, muscle_group),
+            updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
         RETURNING *
         "#,
     )
@@ -129,8 +140,8 @@ pub async fn update(
     Ok(exercise)
 }
 
-pub async fn delete(pool: &PgPool, id: ExerciseId, user_id: UserId) -> Result<bool> {
-    let result = sqlx::query("DELETE FROM exercises WHERE id = $1 AND user_id = $2")
+pub async fn delete(pool: &SqlitePool, id: ExerciseId, user_id: UserId) -> Result<bool> {
+    let result = sqlx::query("DELETE FROM exercises WHERE id = ?1 AND user_id = ?2")
         .bind(id)
         .bind(user_id)
         .execute(pool)

@@ -1,7 +1,7 @@
 use anyhow::Result;
 use effecty_core::types::{TagId, TopicId, UserId};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 use uuid::Uuid;
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
@@ -17,14 +17,14 @@ pub struct LinkTag {
     pub tag_id: TagId,
 }
 
-pub async fn list(pool: &PgPool, topic_id: TopicId, user_id: UserId) -> Result<Vec<TopicTag>> {
+pub async fn list(pool: &SqlitePool, topic_id: TopicId, user_id: UserId) -> Result<Vec<TopicTag>> {
     let tags = sqlx::query_as::<_, TopicTag>(
         r#"
         SELECT tt.id, tt.topic_id, tt.tag_id, t.name AS tag_name
         FROM topic_tags tt
         JOIN tags t ON t.id = tt.tag_id
         JOIN topics tp ON tp.id = tt.topic_id
-        WHERE tt.topic_id = $1 AND tp.user_id = $2
+        WHERE tt.topic_id = ?1 AND tp.user_id = ?2
         ORDER BY t.name
         "#,
     )
@@ -37,13 +37,13 @@ pub async fn list(pool: &PgPool, topic_id: TopicId, user_id: UserId) -> Result<V
 }
 
 pub async fn link(
-    pool: &PgPool,
+    pool: &SqlitePool,
     topic_id: TopicId,
     tag_id: TagId,
     user_id: UserId,
 ) -> Result<Option<TopicTag>> {
     let topic_exists = sqlx::query_scalar::<_, bool>(
-        "SELECT EXISTS(SELECT 1 FROM topics WHERE id = $1 AND user_id = $2)",
+        "SELECT EXISTS(SELECT 1 FROM topics WHERE id = ?1 AND user_id = ?2)",
     )
     .bind(topic_id)
     .bind(user_id)
@@ -55,7 +55,7 @@ pub async fn link(
     }
 
     let tag_exists = sqlx::query_scalar::<_, bool>(
-        "SELECT EXISTS(SELECT 1 FROM tags WHERE id = $1 AND user_id = $2)",
+        "SELECT EXISTS(SELECT 1 FROM tags WHERE id = ?1 AND user_id = ?2)",
     )
     .bind(tag_id)
     .bind(user_id)
@@ -66,13 +66,26 @@ pub async fn link(
         return Ok(None);
     }
 
+    let id = Uuid::new_v4();
+    sqlx::query(
+        r#"
+        INSERT INTO topic_tags (id, topic_id, tag_id)
+        VALUES (?1, ?2, ?3)
+        ON CONFLICT (topic_id, tag_id) DO NOTHING
+        "#,
+    )
+    .bind(id)
+    .bind(topic_id)
+    .bind(tag_id)
+    .execute(pool)
+    .await?;
+
     let tt = sqlx::query_as::<_, TopicTag>(
         r#"
-        INSERT INTO topic_tags (topic_id, tag_id)
-        VALUES ($1, $2)
-        ON CONFLICT (topic_id, tag_id) DO NOTHING
-        RETURNING id, topic_id, tag_id,
-                  (SELECT name FROM tags WHERE id = $2) AS tag_name
+        SELECT tt.id, tt.topic_id, tt.tag_id, t.name AS tag_name
+        FROM topic_tags tt
+        JOIN tags t ON t.id = tt.tag_id
+        WHERE tt.topic_id = ?1 AND tt.tag_id = ?2
         "#,
     )
     .bind(topic_id)
@@ -84,17 +97,16 @@ pub async fn link(
 }
 
 pub async fn unlink(
-    pool: &PgPool,
+    pool: &SqlitePool,
     topic_id: TopicId,
     tag_id: TagId,
     user_id: UserId,
 ) -> Result<bool> {
     let result = sqlx::query(
         r#"
-        DELETE FROM topic_tags tt
-        USING topics tp
-        WHERE tt.topic_id = $1 AND tt.tag_id = $2
-              AND tp.id = tt.topic_id AND tp.user_id = $3
+        DELETE FROM topic_tags
+        WHERE topic_id = ?1 AND tag_id = ?2
+              AND EXISTS(SELECT 1 FROM topics WHERE id = ?1 AND user_id = ?3)
         "#,
     )
     .bind(topic_id)

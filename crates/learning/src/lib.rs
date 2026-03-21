@@ -6,9 +6,9 @@ pub mod thumbnail;
 
 use axum::routing::{delete, get, patch, post, put};
 use axum::Router;
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 
-pub fn router() -> Router<PgPool> {
+pub fn router() -> Router<SqlitePool> {
     Router::new()
         // Topics
         .route("/api/topics", get(handlers::list_topics))

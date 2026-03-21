@@ -1,7 +1,7 @@
 use axum::extract::{Path, State};
 use axum::Json;
 use effecty_core::types::{ExerciseId, UserId, WorkoutExerciseId, WorkoutId};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 
 use crate::error::WorkoutsError;
 use db::repo::exercises::{self, CreateExercise, UpdateExercise};
@@ -13,7 +13,7 @@ use db::repo::workouts::{
 // --- Workouts ---
 
 pub async fn list_workouts(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
 ) -> Result<Json<Vec<workouts::Workout>>, WorkoutsError> {
     let list = workouts::list_workouts(&pool, user_id).await?;
@@ -21,7 +21,7 @@ pub async fn list_workouts(
 }
 
 pub async fn create_workout(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Json(input): Json<CreateWorkout>,
 ) -> Result<Json<workouts::Workout>, WorkoutsError> {
@@ -30,7 +30,7 @@ pub async fn create_workout(
 }
 
 pub async fn move_workout(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<WorkoutId>,
     Json(input): Json<MoveWorkout>,
@@ -42,7 +42,7 @@ pub async fn move_workout(
 }
 
 pub async fn update_workout(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<WorkoutId>,
     Json(input): Json<UpdateWorkout>,
@@ -54,7 +54,7 @@ pub async fn update_workout(
 }
 
 pub async fn delete_workout(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<WorkoutId>,
 ) -> Result<axum::http::StatusCode, WorkoutsError> {
@@ -69,7 +69,7 @@ pub async fn delete_workout(
 // --- Workout Exercises ---
 
 pub async fn list_workout_exercises(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(workout_id): Path<WorkoutId>,
 ) -> Result<Json<Vec<workouts::WorkoutExerciseWithName>>, WorkoutsError> {
@@ -78,7 +78,7 @@ pub async fn list_workout_exercises(
 }
 
 pub async fn add_exercise(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(workout_id): Path<WorkoutId>,
     Json(input): Json<AddExercise>,
@@ -96,7 +96,7 @@ pub async fn add_exercise(
 }
 
 pub async fn update_exercise_stats(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path((workout_id, we_id)): Path<(WorkoutId, WorkoutExerciseId)>,
     Json(input): Json<UpdateWorkoutExercise>,
@@ -108,7 +108,7 @@ pub async fn update_exercise_stats(
 }
 
 pub async fn move_exercise(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path((workout_id, we_id)): Path<(WorkoutId, WorkoutExerciseId)>,
     Json(input): Json<MoveWorkoutExercise>,
@@ -120,7 +120,7 @@ pub async fn move_exercise(
 }
 
 pub async fn remove_exercise(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path((workout_id, we_id)): Path<(WorkoutId, WorkoutExerciseId)>,
 ) -> Result<axum::http::StatusCode, WorkoutsError> {
@@ -135,7 +135,7 @@ pub async fn remove_exercise(
 // --- Exercise Catalog ---
 
 pub async fn list_exercises(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
 ) -> Result<Json<Vec<exercises::Exercise>>, WorkoutsError> {
     let list = exercises::list(&pool, user_id).await?;
@@ -143,7 +143,7 @@ pub async fn list_exercises(
 }
 
 pub async fn create_exercise(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Json(input): Json<CreateExercise>,
 ) -> Result<Json<exercises::Exercise>, WorkoutsError> {
@@ -152,7 +152,7 @@ pub async fn create_exercise(
 }
 
 pub async fn update_exercise(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<ExerciseId>,
     Json(input): Json<UpdateExercise>,
@@ -164,7 +164,7 @@ pub async fn update_exercise(
 }
 
 pub async fn delete_exercise(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<ExerciseId>,
 ) -> Result<axum::http::StatusCode, WorkoutsError> {

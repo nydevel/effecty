@@ -2,7 +2,8 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use effecty_core::types::{MemoId, NoteId, UserId};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
+use uuid::Uuid;
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
 pub struct Memo {
@@ -28,9 +29,9 @@ pub struct UpdateMemo {
     pub content: Option<String>,
 }
 
-pub async fn list(pool: &PgPool, note_id: NoteId, user_id: UserId) -> Result<Vec<Memo>> {
+pub async fn list(pool: &SqlitePool, note_id: NoteId, user_id: UserId) -> Result<Vec<Memo>> {
     let memos = sqlx::query_as::<_, Memo>(
-        "SELECT * FROM memos WHERE note_id = $1 AND user_id = $2 ORDER BY sort_order, created_at",
+        "SELECT * FROM memos WHERE note_id = ?1 AND user_id = ?2 ORDER BY sort_order, created_at",
     )
     .bind(note_id)
     .bind(user_id)
@@ -40,8 +41,8 @@ pub async fn list(pool: &PgPool, note_id: NoteId, user_id: UserId) -> Result<Vec
     Ok(memos)
 }
 
-pub async fn get(pool: &PgPool, id: MemoId, user_id: UserId) -> Result<Option<Memo>> {
-    let memo = sqlx::query_as::<_, Memo>("SELECT * FROM memos WHERE id = $1 AND user_id = $2")
+pub async fn get(pool: &SqlitePool, id: MemoId, user_id: UserId) -> Result<Option<Memo>> {
+    let memo = sqlx::query_as::<_, Memo>("SELECT * FROM memos WHERE id = ?1 AND user_id = ?2")
         .bind(id)
         .bind(user_id)
         .fetch_optional(pool)
@@ -51,13 +52,13 @@ pub async fn get(pool: &PgPool, id: MemoId, user_id: UserId) -> Result<Option<Me
 }
 
 pub async fn create(
-    pool: &PgPool,
+    pool: &SqlitePool,
     note_id: NoteId,
     user_id: UserId,
     input: &CreateMemo,
 ) -> Result<Memo> {
     let max_sort = sqlx::query_scalar::<_, Option<f64>>(
-        "SELECT MAX(sort_order) FROM memos WHERE note_id = $1 AND user_id = $2",
+        "SELECT MAX(sort_order) FROM memos WHERE note_id = ?1 AND user_id = ?2",
     )
     .bind(note_id)
     .bind(user_id)
@@ -66,13 +67,15 @@ pub async fn create(
 
     let sort_order = max_sort.unwrap_or(0.0) + 1.0;
 
+    let id = Uuid::new_v4();
     let memo = sqlx::query_as::<_, Memo>(
         r#"
-        INSERT INTO memos (note_id, user_id, title, content, sort_order)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO memos (id, note_id, user_id, title, content, sort_order)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6)
         RETURNING *
         "#,
     )
+    .bind(id)
     .bind(note_id)
     .bind(user_id)
     .bind(&input.title)
@@ -85,7 +88,7 @@ pub async fn create(
 }
 
 pub async fn update(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: MemoId,
     user_id: UserId,
     input: &UpdateMemo,
@@ -93,10 +96,10 @@ pub async fn update(
     let memo = sqlx::query_as::<_, Memo>(
         r#"
         UPDATE memos
-        SET title = COALESCE($3, title),
-            content = COALESCE($4, content),
-            updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
+        SET title = COALESCE(?3, title),
+            content = COALESCE(?4, content),
+            updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
         RETURNING *
         "#,
     )
@@ -110,11 +113,11 @@ pub async fn update(
     Ok(memo)
 }
 
-pub async fn reorder(pool: &PgPool, user_id: UserId, ids: &[MemoId]) -> Result<()> {
+pub async fn reorder(pool: &SqlitePool, user_id: UserId, ids: &[MemoId]) -> Result<()> {
     let mut tx = pool.begin().await?;
     'reorder: for (i, id) in ids.iter().enumerate() {
         sqlx::query(
-            "UPDATE memos SET sort_order = $1, updated_at = NOW() WHERE id = $2 AND user_id = $3",
+            "UPDATE memos SET sort_order = ?1, updated_at = datetime('now') WHERE id = ?2 AND user_id = ?3",
         )
         .bind(i as f64)
         .bind(id)
@@ -129,8 +132,8 @@ pub async fn reorder(pool: &PgPool, user_id: UserId, ids: &[MemoId]) -> Result<(
     Ok(())
 }
 
-pub async fn delete(pool: &PgPool, id: MemoId, user_id: UserId) -> Result<bool> {
-    let result = sqlx::query("DELETE FROM memos WHERE id = $1 AND user_id = $2")
+pub async fn delete(pool: &SqlitePool, id: MemoId, user_id: UserId) -> Result<bool> {
+    let result = sqlx::query("DELETE FROM memos WHERE id = ?1 AND user_id = ?2")
         .bind(id)
         .bind(user_id)
         .execute(pool)

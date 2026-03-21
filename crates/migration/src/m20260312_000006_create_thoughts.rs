@@ -14,26 +14,20 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Tags::Table)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Tags::Id)
-                            .uuid()
-                            .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
-                    )
+                    .col(ColumnDef::new(Tags::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Tags::UserId).uuid().not_null())
                     .col(ColumnDef::new(Tags::Name).text().not_null().default(""))
                     .col(
                         ColumnDef::new(Tags::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(Tags::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()
@@ -61,13 +55,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Thoughts::Table)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Thoughts::Id)
-                            .uuid()
-                            .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
-                    )
+                    .col(ColumnDef::new(Thoughts::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Thoughts::UserId).uuid().not_null())
                     .col(
                         ColumnDef::new(Thoughts::Title)
@@ -91,13 +79,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Thoughts::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(Thoughts::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()
@@ -129,8 +117,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(ThoughtComments::Id)
                             .uuid()
                             .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
+                            .primary_key(),
                     )
                     .col(ColumnDef::new(ThoughtComments::ThoughtId).uuid().not_null())
                     .col(ColumnDef::new(ThoughtComments::UserId).uuid().not_null())
@@ -139,13 +126,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(ThoughtComments::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(ThoughtComments::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()
@@ -183,8 +170,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(ThoughtTags::Id)
                             .uuid()
                             .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
+                            .primary_key(),
                     )
                     .col(ColumnDef::new(ThoughtTags::ThoughtId).uuid().not_null())
                     .col(ColumnDef::new(ThoughtTags::TagId).uuid().not_null())

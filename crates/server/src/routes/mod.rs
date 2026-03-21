@@ -45,7 +45,7 @@ pub fn create_router(state: AppState) -> Router {
         .merge(learning_routes)
         .merge(data_transfer_routes)
         .nest_service("/uploads", ServeDir::new(&upload_dir))
-        // Clone is cheap: PgPool is Arc-based, config is Arc<Config>
+        // Clone is cheap: SqlitePool is Arc-based, config is Arc<Config>
         .layer(middleware::from_fn_with_state(
             state.clone(),
             auth::middleware::require_auth,

@@ -11,26 +11,20 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Users::Table)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Users::Id)
-                            .uuid()
-                            .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
-                    )
+                    .col(ColumnDef::new(Users::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Users::Email).text().not_null().unique_key())
                     .col(ColumnDef::new(Users::PasswordHash).text().not_null())
                     .col(
                         ColumnDef::new(Users::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(Users::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .to_owned(),
             )

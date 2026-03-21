@@ -13,13 +13,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Tasks::Table)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Tasks::Id)
-                            .uuid()
-                            .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
-                    )
+                    .col(ColumnDef::new(Tasks::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Tasks::UserId).uuid().not_null())
                     .col(ColumnDef::new(Tasks::Title).text().not_null().default(""))
                     .col(ColumnDef::new(Tasks::Content).text().not_null().default(""))
@@ -47,13 +41,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Tasks::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(Tasks::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()

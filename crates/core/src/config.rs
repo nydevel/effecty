@@ -99,6 +99,9 @@ impl ServerConfig {
 impl DatabaseConfig {
     /// Returns the database URL with the password masked for safe logging.
     pub fn url_masked(&self) -> String {
+        if self.url.starts_with("sqlite://") {
+            return self.url.clone();
+        }
         if let Some(at_pos) = self.url.find('@') {
             if let Some(colon_pos) = self.url[..at_pos].rfind(':') {
                 let scheme_end = self.url.find("://").map_or(0, |p| p + 3);
@@ -123,7 +126,7 @@ host = "127.0.0.1"
 port = 3000
 
 [database]
-url = "postgres://effecty:effecty@localhost:5432/effecty"
+url = "sqlite://data/effecty.db?mode=rwc"
 max_connections = 10
 
 [auth]

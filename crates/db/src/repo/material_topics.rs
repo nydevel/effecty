@@ -1,7 +1,7 @@
 use anyhow::Result;
 use effecty_core::types::{MaterialId, TopicId, UserId};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 use uuid::Uuid;
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
@@ -18,7 +18,7 @@ pub struct LinkTopic {
 }
 
 pub async fn list(
-    pool: &PgPool,
+    pool: &SqlitePool,
     material_id: MaterialId,
     user_id: UserId,
 ) -> Result<Vec<MaterialTopic>> {
@@ -28,7 +28,7 @@ pub async fn list(
         FROM material_topics mt
         JOIN topics tp ON tp.id = mt.topic_id
         JOIN materials m ON m.id = mt.material_id
-        WHERE mt.material_id = $1 AND m.user_id = $2
+        WHERE mt.material_id = ?1 AND m.user_id = ?2
         ORDER BY tp.name
         "#,
     )
@@ -41,13 +41,13 @@ pub async fn list(
 }
 
 pub async fn link(
-    pool: &PgPool,
+    pool: &SqlitePool,
     material_id: MaterialId,
     topic_id: TopicId,
     user_id: UserId,
 ) -> Result<Option<MaterialTopic>> {
     let material_exists = sqlx::query_scalar::<_, bool>(
-        "SELECT EXISTS(SELECT 1 FROM materials WHERE id = $1 AND user_id = $2)",
+        "SELECT EXISTS(SELECT 1 FROM materials WHERE id = ?1 AND user_id = ?2)",
     )
     .bind(material_id)
     .bind(user_id)
@@ -59,7 +59,7 @@ pub async fn link(
     }
 
     let topic_exists = sqlx::query_scalar::<_, bool>(
-        "SELECT EXISTS(SELECT 1 FROM topics WHERE id = $1 AND user_id = $2)",
+        "SELECT EXISTS(SELECT 1 FROM topics WHERE id = ?1 AND user_id = ?2)",
     )
     .bind(topic_id)
     .bind(user_id)
@@ -70,13 +70,26 @@ pub async fn link(
         return Ok(None);
     }
 
+    let id = Uuid::new_v4();
+    sqlx::query(
+        r#"
+        INSERT INTO material_topics (id, material_id, topic_id)
+        VALUES (?1, ?2, ?3)
+        ON CONFLICT (material_id, topic_id) DO NOTHING
+        "#,
+    )
+    .bind(id)
+    .bind(material_id)
+    .bind(topic_id)
+    .execute(pool)
+    .await?;
+
     let mt = sqlx::query_as::<_, MaterialTopic>(
         r#"
-        INSERT INTO material_topics (material_id, topic_id)
-        VALUES ($1, $2)
-        ON CONFLICT (material_id, topic_id) DO NOTHING
-        RETURNING id, material_id, topic_id,
-                  (SELECT name FROM topics WHERE id = $2) AS topic_name
+        SELECT mt.id, mt.material_id, mt.topic_id, tp.name AS topic_name
+        FROM material_topics mt
+        JOIN topics tp ON tp.id = mt.topic_id
+        WHERE mt.material_id = ?1 AND mt.topic_id = ?2
         "#,
     )
     .bind(material_id)
@@ -88,17 +101,16 @@ pub async fn link(
 }
 
 pub async fn unlink(
-    pool: &PgPool,
+    pool: &SqlitePool,
     material_id: MaterialId,
     topic_id: TopicId,
     user_id: UserId,
 ) -> Result<bool> {
     let result = sqlx::query(
         r#"
-        DELETE FROM material_topics mt
-        USING materials m
-        WHERE mt.material_id = $1 AND mt.topic_id = $2
-              AND m.id = mt.material_id AND m.user_id = $3
+        DELETE FROM material_topics
+        WHERE material_id = ?1 AND topic_id = ?2
+              AND EXISTS(SELECT 1 FROM materials WHERE id = ?1 AND user_id = ?3)
         "#,
     )
     .bind(material_id)

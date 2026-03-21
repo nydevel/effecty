@@ -5,11 +5,11 @@ pub mod repo;
 
 use anyhow::Result;
 use effecty_core::config::DatabaseConfig;
-use sqlx::postgres::PgPoolOptions;
-use sqlx::PgPool;
+use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::SqlitePool;
 
-pub async fn create_pool(config: &DatabaseConfig) -> Result<PgPool> {
-    let pool = PgPoolOptions::new()
+pub async fn create_pool(config: &DatabaseConfig) -> Result<SqlitePool> {
+    let pool = SqlitePoolOptions::new()
         .max_connections(config.max_connections)
         .connect(&config.url)
         .await?;

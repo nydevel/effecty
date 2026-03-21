@@ -1,13 +1,13 @@
 use axum::extract::State;
 use axum::Json;
 use effecty_core::types::UserId;
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 
 use crate::error::ProfileError;
 use db::repo::profiles::{self, UpdateProfile};
 
 pub async fn get_profile(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
 ) -> Result<Json<profiles::UserProfile>, ProfileError> {
     let profile = profiles::get_or_create(&pool, user_id).await?;
@@ -15,7 +15,7 @@ pub async fn get_profile(
 }
 
 pub async fn update_profile(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Json(input): Json<UpdateProfile>,
 ) -> Result<Json<profiles::UserProfile>, ProfileError> {

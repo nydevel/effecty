@@ -5,9 +5,9 @@ mod handlers;
 
 use axum::routing::{delete, get, patch, post, put};
 use axum::Router;
-use sqlx::PgPool;
+use sqlx::SqlitePool;
 
-pub fn router() -> Router<PgPool> {
+pub fn router() -> Router<SqlitePool> {
     Router::new()
         .route("/api/notes", get(handlers::get_tree))
         .route("/api/notes", post(handlers::create_note))

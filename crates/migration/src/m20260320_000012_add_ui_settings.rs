@@ -12,7 +12,7 @@ impl MigrationTrait for Migration {
                     .table(UserProfiles::Table)
                     .add_column(
                         ColumnDef::new(UserProfiles::UiSettings)
-                            .json_binary()
+                            .text()
                             .not_null()
                             .default("{}"),
                     )

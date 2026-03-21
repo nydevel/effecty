@@ -2,7 +2,8 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use effecty_core::types::{ThoughtCommentId, ThoughtId, UserId};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
+use uuid::Uuid;
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
 pub struct ThoughtComment {
@@ -20,7 +21,7 @@ pub struct CreateComment {
 }
 
 pub async fn list(
-    pool: &PgPool,
+    pool: &SqlitePool,
     thought_id: ThoughtId,
     user_id: UserId,
 ) -> Result<Vec<ThoughtComment>> {
@@ -29,7 +30,7 @@ pub async fn list(
         SELECT tc.*
         FROM thought_comments tc
         JOIN thoughts t ON t.id = tc.thought_id
-        WHERE tc.thought_id = $1 AND t.user_id = $2
+        WHERE tc.thought_id = ?1 AND t.user_id = ?2
         ORDER BY tc.created_at
         "#,
     )
@@ -42,18 +43,20 @@ pub async fn list(
 }
 
 pub async fn create(
-    pool: &PgPool,
+    pool: &SqlitePool,
     thought_id: ThoughtId,
     user_id: UserId,
     input: &CreateComment,
 ) -> Result<ThoughtComment> {
+    let id = Uuid::new_v4();
     let comment = sqlx::query_as::<_, ThoughtComment>(
         r#"
-        INSERT INTO thought_comments (thought_id, user_id, content)
-        VALUES ($1, $2, $3)
+        INSERT INTO thought_comments (id, thought_id, user_id, content)
+        VALUES (?1, ?2, ?3, ?4)
         RETURNING *
         "#,
     )
+    .bind(id)
     .bind(thought_id)
     .bind(user_id)
     .bind(&input.content)
@@ -63,8 +66,8 @@ pub async fn create(
     Ok(comment)
 }
 
-pub async fn delete(pool: &PgPool, id: ThoughtCommentId, user_id: UserId) -> Result<bool> {
-    let result = sqlx::query("DELETE FROM thought_comments WHERE id = $1 AND user_id = $2")
+pub async fn delete(pool: &SqlitePool, id: ThoughtCommentId, user_id: UserId) -> Result<bool> {
+    let result = sqlx::query("DELETE FROM thought_comments WHERE id = ?1 AND user_id = ?2")
         .bind(id)
         .bind(user_id)
         .execute(pool)

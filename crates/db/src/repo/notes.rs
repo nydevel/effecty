@@ -2,7 +2,8 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use effecty_core::types::{NoteId, UserId};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::SqlitePool;
+use uuid::Uuid;
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
 pub struct Note {
@@ -36,16 +37,16 @@ pub struct MoveNote {
     pub sort_order: f64,
 }
 
-pub async fn get_tree(pool: &PgPool, user_id: UserId) -> Result<Vec<Note>> {
+pub async fn get_tree(pool: &SqlitePool, user_id: UserId) -> Result<Vec<Note>> {
     let notes = sqlx::query_as::<_, Note>(
         r#"
         WITH RECURSIVE tree AS (
-            SELECT * FROM notes WHERE user_id = $1 AND parent_id IS NULL
+            SELECT * FROM notes WHERE user_id = ?1 AND parent_id IS NULL
             UNION ALL
             SELECT n.* FROM notes n
             JOIN tree t ON n.parent_id = t.id
         )
-        SELECT * FROM tree ORDER BY parent_id NULLS FIRST, sort_order
+        SELECT * FROM tree ORDER BY parent_id IS NOT NULL, parent_id, sort_order
         "#,
     )
     .bind(user_id)
@@ -55,8 +56,8 @@ pub async fn get_tree(pool: &PgPool, user_id: UserId) -> Result<Vec<Note>> {
     Ok(notes)
 }
 
-pub async fn get_by_id(pool: &PgPool, id: NoteId, user_id: UserId) -> Result<Option<Note>> {
-    let note = sqlx::query_as::<_, Note>("SELECT * FROM notes WHERE id = $1 AND user_id = $2")
+pub async fn get_by_id(pool: &SqlitePool, id: NoteId, user_id: UserId) -> Result<Option<Note>> {
+    let note = sqlx::query_as::<_, Note>("SELECT * FROM notes WHERE id = ?1 AND user_id = ?2")
         .bind(id)
         .bind(user_id)
         .fetch_optional(pool)
@@ -65,9 +66,9 @@ pub async fn get_by_id(pool: &PgPool, id: NoteId, user_id: UserId) -> Result<Opt
     Ok(note)
 }
 
-pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateNote) -> Result<Note> {
+pub async fn create(pool: &SqlitePool, user_id: UserId, input: &CreateNote) -> Result<Note> {
     let max_sort = sqlx::query_scalar::<_, Option<f64>>(
-        "SELECT MAX(sort_order) FROM notes WHERE user_id = $1 AND parent_id IS NOT DISTINCT FROM $2",
+        "SELECT MAX(sort_order) FROM notes WHERE user_id = ?1 AND parent_id IS ?2",
     )
     .bind(user_id)
     .bind(input.parent_id)
@@ -76,13 +77,15 @@ pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateNote) -> Resul
 
     let sort_order = max_sort.unwrap_or(0.0) + 1.0;
 
+    let id = Uuid::new_v4();
     let note = sqlx::query_as::<_, Note>(
         r#"
-        INSERT INTO notes (user_id, parent_id, title, node_type, sort_order)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO notes (id, user_id, parent_id, title, node_type, sort_order)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6)
         RETURNING *
         "#,
     )
+    .bind(id)
     .bind(user_id)
     .bind(input.parent_id)
     .bind(&input.title)
@@ -95,7 +98,7 @@ pub async fn create(pool: &PgPool, user_id: UserId, input: &CreateNote) -> Resul
 }
 
 pub async fn update(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: NoteId,
     user_id: UserId,
     input: &UpdateNote,
@@ -103,10 +106,10 @@ pub async fn update(
     let note = sqlx::query_as::<_, Note>(
         r#"
         UPDATE notes
-        SET title = COALESCE($3, title),
-            content = COALESCE($4, content),
-            updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
+        SET title = COALESCE(?3, title),
+            content = COALESCE(?4, content),
+            updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
         RETURNING *
         "#,
     )
@@ -121,7 +124,7 @@ pub async fn update(
 }
 
 pub async fn move_note(
-    pool: &PgPool,
+    pool: &SqlitePool,
     id: NoteId,
     user_id: UserId,
     input: &MoveNote,
@@ -129,10 +132,10 @@ pub async fn move_note(
     let note = sqlx::query_as::<_, Note>(
         r#"
         UPDATE notes
-        SET parent_id = $3,
-            sort_order = $4,
-            updated_at = NOW()
-        WHERE id = $1 AND user_id = $2
+        SET parent_id = ?3,
+            sort_order = ?4,
+            updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
         RETURNING *
         "#,
     )
@@ -146,8 +149,8 @@ pub async fn move_note(
     Ok(note)
 }
 
-pub async fn delete(pool: &PgPool, id: NoteId, user_id: UserId) -> Result<bool> {
-    let result = sqlx::query("DELETE FROM notes WHERE id = $1 AND user_id = $2")
+pub async fn delete(pool: &SqlitePool, id: NoteId, user_id: UserId) -> Result<bool> {
+    let result = sqlx::query("DELETE FROM notes WHERE id = ?1 AND user_id = ?2")
         .bind(id)
         .bind(user_id)
         .execute(pool)

@@ -15,26 +15,20 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Topics::Table)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Topics::Id)
-                            .uuid()
-                            .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
-                    )
+                    .col(ColumnDef::new(Topics::Id).uuid().not_null().primary_key())
                     .col(ColumnDef::new(Topics::UserId).uuid().not_null())
                     .col(ColumnDef::new(Topics::Name).text().not_null().default(""))
                     .col(
                         ColumnDef::new(Topics::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(Topics::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()
@@ -66,8 +60,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(TopicTags::Id)
                             .uuid()
                             .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
+                            .primary_key(),
                     )
                     .col(ColumnDef::new(TopicTags::TopicId).uuid().not_null())
                     .col(ColumnDef::new(TopicTags::TagId).uuid().not_null())
@@ -109,8 +102,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Materials::Id)
                             .uuid()
                             .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
+                            .primary_key(),
                     )
                     .col(ColumnDef::new(Materials::UserId).uuid().not_null())
                     .col(ColumnDef::new(Materials::MaterialType).text().not_null())
@@ -128,13 +120,13 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Materials::CreatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .col(
                         ColumnDef::new(Materials::UpdatedAt)
                             .timestamp_with_time_zone()
                             .not_null()
-                            .extra("DEFAULT NOW()"),
+                            .extra("DEFAULT (datetime('now'))"),
                     )
                     .foreign_key(
                         ForeignKey::create()
@@ -166,8 +158,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(MaterialTopics::Id)
                             .uuid()
                             .not_null()
-                            .primary_key()
-                            .extra("DEFAULT gen_random_uuid()"),
+                            .primary_key(),
                     )
                     .col(ColumnDef::new(MaterialTopics::MaterialId).uuid().not_null())
                     .col(ColumnDef::new(MaterialTopics::TopicId).uuid().not_null())
