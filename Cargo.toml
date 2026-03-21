@@ -18,8 +18,7 @@ members = [
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-license = "MIT"
-repository = "https://gitlab.com/shifu.corp/effecty/effecty.org"
+license = "GPL-2.0"
 
 [workspace.dependencies]
 effecty-core = { path = "crates/core", package = "core" }
