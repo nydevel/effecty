@@ -17,6 +17,7 @@ priority = "optional"
 extended-description = "Personal productivity platform. Notes, tasks, calendar, workouts, thoughts, and learning materials in one place."
 assets = [
     ["target/release/server", "usr/bin/effecty", "755"],
+    ["target/release/effecty-cli", "usr/bin/effecty-cli", "755"],
     ["../../packaging/config/configuration.toml", "etc/effecty/configuration.toml", "644"],
     ["../../frontend/dist/", "usr/share/effecty/frontend/", "644"],
 ]
@@ -30,6 +31,7 @@ license = "GPL-2.0"
 summary = "Personal productivity platform"
 assets = [
     { source = "target/release/server", dest = "/usr/bin/effecty", mode = "755" },
+    { source = "target/release/effecty-cli", dest = "/usr/bin/effecty-cli", mode = "755" },
     { source = "packaging/config/configuration.toml", dest = "/etc/effecty/configuration.toml", mode = "644", config = true },
     { source = "packaging/systemd/effecty.service", dest = "/usr/lib/systemd/system/effecty.service", mode = "644" },
     { source = "frontend/dist/*", dest = "/usr/share/effecty/frontend/", mode = "644" },
@@ -58,12 +60,8 @@ data-transfer.workspace = true
 sqlx.workspace = true
 uuid.workspace = true
 chrono.workspace = true
-argon2.workspace = true
 jsonwebtoken.workspace = true
 thiserror.workspace = true
-
-[target.'cfg(unix)'.dependencies]
-libc = "0.2"
 
 [features]
 default = []
