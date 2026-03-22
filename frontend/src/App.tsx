@@ -5,6 +5,7 @@ import enUS from 'antd/locale/en_US';
 import ruRU from 'antd/locale/ru_RU';
 import { useTranslation } from 'react-i18next';
 import { isAuthenticated, clearToken } from './api/client';
+import { getMe } from './api/auth';
 import { getProfile } from './api/profile';
 import type { UserProfile } from './api/profile';
 import IconBar from './components/IconBar';
@@ -100,7 +101,14 @@ export default function App() {
 
   useEffect(() => {
     if (!loggedIn) return;
-    loadProfile();
+
+    // Validate token with backend before loading app
+    getMe()
+      .then(() => loadProfile())
+      .catch(() => {
+        clearToken();
+        setLoggedIn(false);
+      });
   }, [loggedIn, loadProfile]);
 
   const handleLogin = () => {
