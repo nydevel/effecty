@@ -12,6 +12,7 @@ const REMOTE_CONFIG: &str = "/etc/effecty/configuration.toml";
 
 struct Args {
     config_path: PathBuf,
+    config_explicit: bool,
     remote: Option<String>,
     command: Option<String>,
     extra: Vec<String>,
@@ -20,6 +21,7 @@ struct Args {
 fn parse_args() -> Args {
     let args: Vec<String> = std::env::args().collect();
     let mut config_path = PathBuf::from("configuration.toml");
+    let mut config_explicit = false;
     let mut remote = None;
     let mut command = None;
     let mut extra = Vec::new();
@@ -31,6 +33,7 @@ fn parse_args() -> Args {
             "--config" | "-c" => {
                 if let Some(path) = args.get(i + 1) {
                     config_path = PathBuf::from(path);
+                    config_explicit = true;
                     i += 2;
                     continue;
                 }
@@ -39,6 +42,7 @@ fn parse_args() -> Args {
             }
             arg if arg.starts_with("--config=") => {
                 config_path = PathBuf::from(arg.trim_start_matches("--config="));
+                config_explicit = true;
             }
             "--remote" | "-r" => {
                 if let Some(host) = args.get(i + 1) {
@@ -69,6 +73,7 @@ fn parse_args() -> Args {
 
     Args {
         config_path,
+        config_explicit,
         remote,
         command,
         extra,
@@ -95,6 +100,7 @@ fn print_usage() {
     eprintln!("  effecty-cli create-user admin                          # local");
     eprintln!("  effecty-cli -r root@server create-user admin           # remote via SSH");
     eprintln!("  effecty-cli deploy root@server                         # build and deploy");
+    eprintln!("  effecty-cli -c prod.toml deploy root@server             # deploy with config");
 }
 
 #[tokio::main]
@@ -114,7 +120,14 @@ async fn main() -> Result<()> {
 
     match args.command.as_deref() {
         Some("create-user") => create_user(&args.config_path, &args.extra).await,
-        Some("deploy") => deploy(&args.extra),
+        Some("deploy") => {
+            let config = if args.config_explicit {
+                Some(args.config_path.as_path())
+            } else {
+                None
+            };
+            deploy(&args.extra, config)
+        }
         Some(cmd) => bail!("unknown command: {cmd}\nRun 'effecty-cli --help' for usage"),
         None => {
             print_usage();
@@ -246,12 +259,18 @@ fn read_line_no_echo() -> Result<String> {
 
 // --- deploy ---
 
-fn deploy(extra: &[String]) -> Result<()> {
+fn deploy(extra: &[String], config: Option<&Path>) -> Result<()> {
     let target = extra.first().ok_or_else(|| {
         anyhow::anyhow!(
             "Usage: effecty-cli deploy <user@host>\nExample: effecty-cli deploy root@192.168.1.10"
         )
     })?;
+
+    if let Some(cfg) = config {
+        if !cfg.exists() {
+            bail!("config file not found: {}", cfg.display());
+        }
+    }
 
     tracing::info!("deploying to {target}");
 
@@ -292,7 +311,17 @@ fn deploy(extra: &[String]) -> Result<()> {
         ],
     )?;
 
-    // 6. Verify
+    // 6. Upload config if specified
+    if let Some(cfg) = config {
+        let cfg_str = cfg.to_string_lossy();
+        tracing::info!(config = %cfg_str, "uploading config to {target}...");
+        run_cmd("scp", &[&cfg_str, &format!("{target}:{REMOTE_CONFIG}")])?;
+
+        tracing::info!("restarting service with new config...");
+        run_cmd("ssh", &[target, "systemctl restart effecty"])?;
+    }
+
+    // 7. Verify
     tracing::info!("verifying...");
     let status = run_cmd_output("ssh", &[target, "systemctl is-active effecty"])?;
     tracing::info!("service status: {status}");

@@ -67,55 +67,13 @@ effecty-cli deploy root@your-server
 
 ---
 
-## Способ 2: Docker
-
-### Требования
-
-- Docker + Docker Compose
-- Nginx (в составе общей инфраструктуры)
-- Внешняя сеть Docker `infra-network`
-
-### Структура
-
-```
-infra/
-  Dockerfile                  # Многоступенчатая сборка (node + rust + runtime)
-  docker-compose.prod.yml     # Продакшен compose
-  entrypoint.sh               # Миграции + запуск сервера
-```
-
-### Сборка и запуск
-
-```bash
-cd infra
-docker compose -f docker-compose.prod.yml up -d --build
-```
-
-### Создание конфига
-
-```bash
-sudo mkdir -p /opt/effecty
-sudo cp configuration.example.toml /opt/effecty/configuration.toml
-sudo chmod 600 /opt/effecty/configuration.toml
-```
-
-### Обновление
-
-```bash
-cd infra
-git pull
-docker compose -f docker-compose.prod.yml up -d --build
-```
-
----
-
 ## Конфигурация
 
 Вся конфигурация через файл `configuration.toml`:
 
 | Параметр | Описание |
 |---|---|
-| `server.host` | Bind адрес (в Docker: `0.0.0.0`) |
+| `server.host` | Bind адрес |
 | `server.port` | Порт сервера |
 | `database.url` | SQLite connection string |
 | `database.max_connections` | Размер пула соединений |
@@ -124,40 +82,3 @@ docker compose -f docker-compose.prod.yml up -d --build
 | `auth.registration_enabled` | Открытая регистрация (`false`) |
 | `app.environment` | `dev` / `prod` / `test` |
 | `storage.upload_dir` | Директория загрузок |
-
-## Настройка Nginx
-
-Пример конфигурации:
-
-```nginx
-server {
-    listen 80;
-    server_name effecty.org;
-
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-
-    location / {
-        return 301 https://$host$request_uri;
-    }
-}
-
-server {
-    listen 443 ssl;
-    http2 on;
-    server_name effecty.org;
-
-    ssl_certificate /etc/letsencrypt/live/effecty.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/effecty.org/privkey.pem;
-
-    location / {
-        proxy_pass http://127.0.0.1:8400;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
