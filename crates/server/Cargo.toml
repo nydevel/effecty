@@ -19,7 +19,7 @@ assets = [
     ["target/release/server", "usr/bin/effecty", "755"],
     ["target/release/effecty-cli", "usr/bin/effecty-cli", "755"],
     ["../../packaging/config/configuration.toml", "etc/effecty/configuration.toml", "644"],
-    ["../../frontend/dist/", "usr/share/effecty/frontend/", "644"],
+    ["../../frontend/dist/**/*", "usr/share/effecty/frontend/", "644"],
 ]
 conf-files = ["/etc/effecty/configuration.toml"]
 systemd-units = { unit-name = "effecty", unit-scripts = "../../packaging/systemd", enable = false }
