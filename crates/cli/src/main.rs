@@ -307,7 +307,7 @@ fn deploy(extra: &[String], config: Option<&Path>) -> Result<()> {
         "ssh",
         &[
             target,
-            "DEBIAN_FRONTEND=noninteractive dpkg --force-confold -i /tmp/effecty.deb && systemctl restart effecty && rm /tmp/effecty.deb",
+            "DEBIAN_FRONTEND=noninteractive dpkg --force-confold -i /tmp/effecty.deb && rm /tmp/effecty.deb",
         ],
     )?;
 
@@ -316,12 +316,25 @@ fn deploy(extra: &[String], config: Option<&Path>) -> Result<()> {
         let cfg_str = cfg.to_string_lossy();
         tracing::info!(config = %cfg_str, "uploading config to {target}...");
         run_cmd("scp", &[&cfg_str, &format!("{target}:{REMOTE_CONFIG}")])?;
-
-        tracing::info!("restarting service with new config...");
-        run_cmd("ssh", &[target, "systemctl restart effecty"])?;
     }
 
-    // 7. Verify
+    // 7. Generate jwt_secret if it's still the default placeholder
+    tracing::info!("checking jwt_secret...");
+    let generate_secret_cmd = format!(
+        "grep -q 'jwt_secret = \"change-me-in-production\"' {REMOTE_CONFIG} && \
+         sed -i 's/jwt_secret = \"change-me-in-production\"/jwt_secret = \"'$(openssl rand -base64 32)'\"/' {REMOTE_CONFIG} && \
+         echo GENERATED || echo OK"
+    );
+    let secret_status = run_cmd_output("ssh", &[target, &generate_secret_cmd])?;
+    if secret_status == "GENERATED" {
+        tracing::info!("jwt_secret generated on {target}");
+    }
+
+    // 8. Restart service
+    tracing::info!("restarting service...");
+    run_cmd("ssh", &[target, "systemctl restart effecty"])?;
+
+    // 9. Verify
     tracing::info!("verifying...");
     let status = run_cmd_output("ssh", &[target, "systemctl is-active effecty"])?;
     tracing::info!("service status: {status}");
