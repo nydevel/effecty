@@ -955,3 +955,255 @@ html {
 .roadmap-node:hover .roadmap-node-actions {
   opacity: 1;
 }
+
+/* ===== Medical ===== */
+
+.medical-sidebar {
+  min-width: 200px;
+  max-width: 220px;
+}
+
+.medical-sidebar .sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 8px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.specialty-add-row {
+  padding: 0 12px 8px;
+}
+
+.specialty-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 6px;
+  margin: 0 6px;
+  transition: background-color 0.15s;
+}
+
+.specialty-item:hover {
+  background-color: #e8e8ec;
+}
+
+.specialty-item.selected {
+  background-color: #d9d9e0;
+  font-weight: 600;
+}
+
+.specialty-delete-btn {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.specialty-item:hover .specialty-delete-btn {
+  opacity: 1;
+}
+
+.medical-main {
+  flex: 1;
+  min-width: 280px;
+  max-width: 400px;
+  border-right: 1px solid #e8e8e8;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.medical-tabs {
+  padding: 12px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.visit-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.visit-list-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.visit-list-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.visit-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f5f5f5;
+  transition: background-color 0.15s;
+  position: relative;
+}
+
+.visit-list-item:hover {
+  background-color: #f5f5f7;
+}
+
+.visit-list-item.selected {
+  background-color: #e6e6f0;
+}
+
+.visit-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.visit-doctor {
+  display: block;
+  font-weight: 500;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.visit-specialty {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.visit-item-meta {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.visit-date {
+  display: block;
+  font-size: 12px;
+  color: #666;
+}
+
+.visit-clinic {
+  display: block;
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+}
+
+.visit-delete-btn {
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.visit-list-item:hover .visit-delete-btn {
+  opacity: 1;
+}
+
+.empty-state-small {
+  padding: 24px;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+}
+
+.medical-detail {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.visit-detail {
+  padding: 20px 24px;
+}
+
+.visit-detail-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.visit-detail-row label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.visit-detail-notes {
+  margin-bottom: 20px;
+}
+
+.visit-detail-notes label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.visit-detail-image label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.visit-image-actions {
+  margin-bottom: 12px;
+}
+
+.visit-image-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.visit-image-delete-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  opacity: 0;
+  background: rgba(255, 255, 255, 0.85);
+  transition: opacity 0.15s;
+}
+
+.visit-image-wrapper:hover .visit-image-delete-btn {
+  opacity: 1;
+}
+
+.visit-result-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #e8e8e8;
+  transition: opacity 0.15s;
+}
+
+.visit-result-image:hover {
+  opacity: 0.85;
+}
+
+.medical-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.medical-form label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 2px;
+}

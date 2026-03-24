@@ -1,3 +1,5 @@
+pub mod analyses;
+pub mod doctor_visits;
 pub mod exercises;
 pub mod material_topics;
 pub mod materials;
@@ -5,6 +7,7 @@ pub mod memos;
 pub mod notes;
 pub mod profiles;
 pub mod roadmap_nodes;
+pub mod specialties;
 pub mod tags;
 pub mod tasks;
 pub mod thought_comments;

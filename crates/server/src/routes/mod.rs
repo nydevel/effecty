@@ -33,6 +33,10 @@ pub fn create_router(state: AppState) -> Router {
         .layer(axum::Extension(upload_dir.clone()))
         .with_state(state.pool.clone());
 
+    let medical_routes = medical::router()
+        .layer(axum::Extension(upload_dir.clone()))
+        .with_state(state.pool.clone());
+
     let protected_routes = Router::new()
         .route("/api/auth/me", get(auth::handlers::me))
         .route("/api/auth/password", put(auth::handlers::change_password))
@@ -43,6 +47,7 @@ pub fn create_router(state: AppState) -> Router {
         .merge(thoughts_routes)
         .merge(learning_routes)
         .merge(data_transfer_routes)
+        .merge(medical_routes)
         .nest_service("/uploads", ServeDir::new(&upload_dir))
         // Clone is cheap: SqlitePool is Arc-based, config is Arc<Config>
         .layer(middleware::from_fn_with_state(

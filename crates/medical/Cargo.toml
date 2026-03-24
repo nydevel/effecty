@@ -1,0 +1,18 @@
+[package]
+name = "medical"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+effecty-core.workspace = true
+db.workspace = true
+anyhow.workspace = true
+axum = { workspace = true, features = ["multipart"] }
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+tokio.workspace = true

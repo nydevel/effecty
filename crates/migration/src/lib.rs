@@ -14,6 +14,7 @@ mod m20260315_000009_add_materials_is_done;
 mod m20260320_000012_add_ui_settings;
 mod m20260320_000013_add_muscle_group;
 mod m20260321_000014_create_roadmap_nodes;
+mod m20260323_000015_create_medical;
 
 pub struct Migrator;
 
@@ -33,6 +34,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260320_000012_add_ui_settings::Migration),
             Box::new(m20260320_000013_add_muscle_group::Migration),
             Box::new(m20260321_000014_create_roadmap_nodes::Migration),
+            Box::new(m20260323_000015_create_medical::Migration),
         ]
     }
 }

@@ -57,6 +57,7 @@ profile.workspace = true
 thoughts.workspace = true
 learning.workspace = true
 data-transfer.workspace = true
+medical.workspace = true
 sqlx.workspace = true
 uuid.workspace = true
 chrono.workspace = true
