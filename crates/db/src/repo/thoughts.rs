@@ -16,7 +16,9 @@ pub struct Thought {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct CreateThought {}
+pub struct CreateThought {
+    pub content: Option<String>,
+}
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateThought {
@@ -53,7 +55,7 @@ pub async fn get(pool: &SqlitePool, id: ThoughtId, user_id: UserId) -> Result<Op
     Ok(thought)
 }
 
-pub async fn create(pool: &SqlitePool, user_id: UserId, _input: &CreateThought) -> Result<Thought> {
+pub async fn create(pool: &SqlitePool, user_id: UserId, input: &CreateThought) -> Result<Thought> {
     let max_pos = sqlx::query_scalar::<_, Option<f64>>(
         "SELECT MAX(position) FROM thoughts WHERE user_id = ?1",
     )
@@ -66,13 +68,14 @@ pub async fn create(pool: &SqlitePool, user_id: UserId, _input: &CreateThought) 
     let id = Uuid::new_v4();
     let thought = sqlx::query_as::<_, Thought>(
         r#"
-        INSERT INTO thoughts (id, user_id, position)
-        VALUES (?1, ?2, ?3)
+        INSERT INTO thoughts (id, user_id, content, position)
+        VALUES (?1, ?2, ?3, ?4)
         RETURNING id, user_id, content, position, created_at, updated_at
         "#,
     )
     .bind(id)
     .bind(user_id)
+    .bind(input.content.as_deref().unwrap_or(""))
     .bind(position)
     .fetch_one(pool)
     .await?;

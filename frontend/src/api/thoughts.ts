@@ -40,10 +40,10 @@ export async function listThoughts(): Promise<Thought[]> {
   return apiFetch<Thought[]>('/thoughts');
 }
 
-export async function createThought(): Promise<Thought> {
+export async function createThought(data: { content: string }): Promise<Thought> {
   return apiFetch<Thought>('/thoughts', {
     method: 'POST',
-    body: JSON.stringify({}),
+    body: JSON.stringify(data),
   });
 }
 

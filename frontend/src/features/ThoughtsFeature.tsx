@@ -68,8 +68,7 @@ export default function ThoughtsFeature() {
   const handleCreate = async () => {
     const content = newThoughtContent.trim();
     if (!content) return;
-    const thought = await thoughtsApi.createThought();
-    await thoughtsApi.updateThought(thought.id, { content });
+    const thought = await thoughtsApi.createThought({ content });
     await loadThoughts();
     setNewThoughtContent('');
     setAddingThought(false);
