@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react';
-import { Button, Input, Select } from 'antd';
+import { Button, DatePicker, Input, Select } from 'antd';
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
+import dayjs from 'dayjs';
 import type { DoctorVisit, Specialty, MedicalImage } from '../api/medical';
 import { useAuthImages } from '../hooks/useAuthImages';
 
@@ -79,12 +80,14 @@ export default function VisitDetail({ visit, specialties, images, onUpdate, onUp
         </div>
         <div className="visit-detail-row">
           <label>{t('medical.visitDate')}</label>
-          <Input
-            defaultValue={visit.visit_date}
+          <DatePicker
+            value={visit.visit_date ? dayjs(visit.visit_date) : null}
             key={`date-${visit.id}`}
-            onBlur={(e) => {
-              if (e.target.value !== visit.visit_date) {
-                onUpdate({ visit_date: e.target.value });
+            style={{ width: '100%' }}
+            onChange={(d) => {
+              const val = d ? d.format('YYYY-MM-DD') : '';
+              if (val !== visit.visit_date) {
+                onUpdate({ visit_date: val });
               }
             }}
           />
