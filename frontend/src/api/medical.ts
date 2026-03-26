@@ -63,10 +63,6 @@ export async function listVisits(specialtyId?: string): Promise<DoctorVisit[]> {
   return apiFetch<DoctorVisit[]>(`/doctor-visits${query}`);
 }
 
-export async function getVisit(id: string): Promise<DoctorVisit> {
-  return apiFetch<DoctorVisit>(`/doctor-visits/${id}`);
-}
-
 export async function createVisit(data: {
   specialty_id: string;
   doctor_name: string;
@@ -102,10 +98,6 @@ export async function deleteVisit(id: string): Promise<void> {
 // Analyses
 export async function listAnalyses(): Promise<Analysis[]> {
   return apiFetch<Analysis[]>('/analyses');
-}
-
-export async function getAnalysis(id: string): Promise<Analysis> {
-  return apiFetch<Analysis>(`/analyses/${id}`);
 }
 
 export async function createAnalysis(data: {

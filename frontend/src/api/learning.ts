@@ -11,13 +11,6 @@ export interface Topic {
   updated_at: string;
 }
 
-export interface TopicTag {
-  id: string;
-  topic_id: string;
-  tag_id: string;
-  tag_name: string;
-}
-
 export interface Material {
   id: string;
   user_id: string;
@@ -32,13 +25,6 @@ export interface Material {
   updated_at: string;
 }
 
-export interface MaterialTopic {
-  id: string;
-  material_id: string;
-  topic_id: string;
-  topic_name: string;
-}
-
 // Topics
 export async function listTopics(): Promise<Topic[]> {
   return apiFetch<Topic[]>('/topics');
@@ -51,31 +37,8 @@ export async function createTopic(data: { name: string; tag_ids: string[] }): Pr
   });
 }
 
-export async function updateTopic(id: string, data: { name?: string }): Promise<Topic> {
-  return apiFetch<Topic>(`/topics/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
-}
-
 export async function deleteTopic(id: string): Promise<void> {
   return apiFetch<void>(`/topics/${id}`, { method: 'DELETE' });
-}
-
-// Topic tags
-export async function listTopicTags(topicId: string): Promise<TopicTag[]> {
-  return apiFetch<TopicTag[]>(`/topics/${topicId}/tags`);
-}
-
-export async function linkTopicTag(topicId: string, data: { tag_id: string }): Promise<TopicTag> {
-  return apiFetch<TopicTag>(`/topics/${topicId}/tags`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-export async function unlinkTopicTag(topicId: string, tagId: string): Promise<void> {
-  return apiFetch<void>(`/topics/${topicId}/tags/${tagId}`, { method: 'DELETE' });
 }
 
 // Tags (shared)
@@ -117,16 +80,6 @@ export async function createMaterial(data: {
 }): Promise<Material> {
   return apiFetch<Material>('/materials', {
     method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-export async function updateMaterial(
-  id: string,
-  data: { title?: string; url?: string; content?: string },
-): Promise<Material> {
-  return apiFetch<Material>(`/materials/${id}`, {
-    method: 'PUT',
     body: JSON.stringify(data),
   });
 }
@@ -205,21 +158,3 @@ export async function deleteRoadmapNode(id: string): Promise<void> {
   return apiFetch<void>(`/roadmap/nodes/${id}`, { method: 'DELETE' });
 }
 
-// Material topics
-export async function listMaterialTopics(materialId: string): Promise<MaterialTopic[]> {
-  return apiFetch<MaterialTopic[]>(`/materials/${materialId}/topics`);
-}
-
-export async function linkMaterialTopic(
-  materialId: string,
-  data: { topic_id: string },
-): Promise<MaterialTopic> {
-  return apiFetch<MaterialTopic>(`/materials/${materialId}/topics`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-export async function unlinkMaterialTopic(materialId: string, topicId: string): Promise<void> {
-  return apiFetch<void>(`/materials/${materialId}/topics/${topicId}`, { method: 'DELETE' });
-}

@@ -18,10 +18,6 @@ export async function listTasks(from: string, to: string): Promise<Task[]> {
   return apiFetch<Task[]>(`/tasks?from=${from}&to=${to}`);
 }
 
-export async function getTask(id: string): Promise<Task> {
-  return apiFetch<Task>(`/tasks/${id}`);
-}
-
 export async function createTask(data: {
   title: string;
   content?: string;

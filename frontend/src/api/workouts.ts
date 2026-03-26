@@ -55,13 +55,6 @@ export async function updateWorkout(id: string, data: { workout_date?: string })
   });
 }
 
-export async function moveWorkout(id: string, data: { position: number }): Promise<Workout> {
-  return apiFetch<Workout>(`/workouts/${id}/move`, {
-    method: 'PATCH',
-    body: JSON.stringify(data),
-  });
-}
-
 export async function deleteWorkout(id: string): Promise<void> {
   return apiFetch<void>(`/workouts/${id}`, { method: 'DELETE' });
 }
@@ -88,17 +81,6 @@ export async function updateWorkoutExercise(
 ): Promise<WorkoutExercise> {
   return apiFetch<WorkoutExercise>(`/workouts/${workoutId}/exercises/${weId}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
-  });
-}
-
-export async function moveWorkoutExercise(
-  workoutId: string,
-  weId: string,
-  data: { position: number },
-): Promise<WorkoutExercise> {
-  return apiFetch<WorkoutExercise>(`/workouts/${workoutId}/exercises/${weId}/move`, {
-    method: 'PATCH',
     body: JSON.stringify(data),
   });
 }

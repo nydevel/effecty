@@ -81,10 +81,6 @@ export async function createTag(data: { name: string }): Promise<Tag> {
   });
 }
 
-export async function deleteTag(id: string): Promise<void> {
-  return apiFetch<void>(`/tags/${id}`, { method: 'DELETE' });
-}
-
 // Thought tags
 export async function listThoughtTags(thoughtId: string): Promise<ThoughtTag[]> {
   return apiFetch<ThoughtTag[]>(`/thoughts/${thoughtId}/tags`);
