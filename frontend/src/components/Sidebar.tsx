@@ -143,26 +143,35 @@ export default function Sidebar({
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <Button
-          size="small"
-          icon={<FolderAddOutlined />}
-          onClick={onCreateFolder}
-          title={t('notes.newFolder')}
-        />
-        <Button
-          size="small"
-          icon={<FileAddOutlined />}
-          onClick={onCreateFile}
-          title={t('notes.newFile')}
-        />
-        {onCreateMemolist && (
+        <div className="sidebar-title">{t('iconBar.notes')}</div>
+        <div className="sidebar-header-actions">
           <Button
+            type="text"
+            className="sidebar-tool-btn"
             size="small"
-            icon={<UnorderedListOutlined />}
-            onClick={onCreateMemolist}
-            title={t('notes.newMemolist')}
+            icon={<FolderAddOutlined />}
+            onClick={onCreateFolder}
+            title={t('notes.newFolder')}
           />
-        )}
+          <Button
+            type="text"
+            className="sidebar-tool-btn"
+            size="small"
+            icon={<FileAddOutlined />}
+            onClick={onCreateFile}
+            title={t('notes.newFile')}
+          />
+          {onCreateMemolist && (
+            <Button
+              type="text"
+              className="sidebar-tool-btn"
+              size="small"
+              icon={<UnorderedListOutlined />}
+              onClick={onCreateMemolist}
+              title={t('notes.newMemolist')}
+            />
+          )}
+        </div>
       </div>
       <div
         ref={containerRef}

@@ -17,8 +17,10 @@ export default function TopicSidebar({ topics, selectedId, onSelect, onCreate, o
   return (
     <div className="sidebar">
       <div className="sidebar-header">
+        <div className="sidebar-title">{t('iconBar.learning')}</div>
         <Button
           type="text"
+          className="sidebar-add-btn"
           icon={<PlusOutlined />}
           size="small"
           onClick={onCreate}

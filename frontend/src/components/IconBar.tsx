@@ -1,25 +1,16 @@
-import { Button, Tooltip } from 'antd';
-import Icon, {
-  DashboardOutlined,
-  FileTextOutlined,
-  CalendarOutlined,
-  BulbOutlined,
-  ReadOutlined,
-  MedicineBoxOutlined,
-  ProjectOutlined,
-  SettingOutlined,
-  LogoutOutlined,
-} from '@ant-design/icons';
-
-const DumbbellSvg = () => (
-  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
-    <path d="M6.5 6a1.5 1.5 0 0 0-1.5 1.5v2H4a1.5 1.5 0 0 0-1.5 1.5v2A1.5 1.5 0 0 0 4 14.5h1v2A1.5 1.5 0 0 0 6.5 18h1A1.5 1.5 0 0 0 9 16.5v-4h6v4a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5v-2h1a1.5 1.5 0 0 0 1.5-1.5v-2A1.5 1.5 0 0 0 20 9.5h-1v-2A1.5 1.5 0 0 0 17.5 6h-1A1.5 1.5 0 0 0 15 7.5v4H9v-4A1.5 1.5 0 0 0 7.5 6h-1Z" />
-  </svg>
-);
-
-const DumbbellOutlined = (props: Record<string, unknown>) => (
-  <Icon component={DumbbellSvg} {...props} />
-);
+import { Tooltip } from 'antd';
+import {
+  LayoutDashboard,
+  FileText,
+  CalendarDays,
+  Dumbbell,
+  Lightbulb,
+  BookOpen,
+  HeartPulse,
+  KanbanSquare,
+  Settings,
+  LogOut,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 type Feature = 'dashboard' | 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'learning' | 'medical' | 'projects' | 'settings';
@@ -32,90 +23,101 @@ interface Props {
 
 export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Props) {
   const { t } = useTranslation();
+  const iconProps = { size: 22, strokeWidth: 2 } as const;
 
   return (
     <div className="icon-bar">
       <Tooltip title={t('iconBar.dashboard')} placement="right">
-        <Button
-          type="text"
-          icon={<DashboardOutlined />}
+        <button
+          type="button"
           className={`icon-btn ${activeFeature === 'dashboard' ? 'active' : ''}`}
           onClick={() => onSelectFeature('dashboard')}
-        />
+        >
+          <LayoutDashboard {...iconProps} />
+        </button>
       </Tooltip>
       <div className="icon-bar-divider" />
       <Tooltip title={t('iconBar.notes')} placement="right">
-        <Button
-          type="text"
-          icon={<FileTextOutlined />}
+        <button
+          type="button"
           className={`icon-btn ${activeFeature === 'notes' ? 'active' : ''}`}
           onClick={() => onSelectFeature('notes')}
-        />
+        >
+          <FileText {...iconProps} />
+        </button>
       </Tooltip>
       <Tooltip title={t('iconBar.calendar')} placement="right">
-        <Button
-          type="text"
-          icon={<CalendarOutlined />}
+        <button
+          type="button"
           className={`icon-btn ${activeFeature === 'calendar' ? 'active' : ''}`}
           onClick={() => onSelectFeature('calendar')}
-        />
+        >
+          <CalendarDays {...iconProps} />
+        </button>
       </Tooltip>
       <Tooltip title={t('iconBar.workouts')} placement="right">
-        <Button
-          type="text"
-          icon={<DumbbellOutlined />}
+        <button
+          type="button"
           className={`icon-btn ${activeFeature === 'workouts' ? 'active' : ''}`}
           onClick={() => onSelectFeature('workouts')}
-        />
+        >
+          <Dumbbell {...iconProps} />
+        </button>
       </Tooltip>
       <Tooltip title={t('iconBar.thoughts')} placement="right">
-        <Button
-          type="text"
-          icon={<BulbOutlined />}
+        <button
+          type="button"
           className={`icon-btn ${activeFeature === 'thoughts' ? 'active' : ''}`}
           onClick={() => onSelectFeature('thoughts')}
-        />
+        >
+          <Lightbulb {...iconProps} />
+        </button>
       </Tooltip>
       <Tooltip title={t('iconBar.learning')} placement="right">
-        <Button
-          type="text"
-          icon={<ReadOutlined />}
+        <button
+          type="button"
           className={`icon-btn ${activeFeature === 'learning' ? 'active' : ''}`}
           onClick={() => onSelectFeature('learning')}
-        />
+        >
+          <BookOpen {...iconProps} />
+        </button>
       </Tooltip>
       <Tooltip title={t('iconBar.medical')} placement="right">
-        <Button
-          type="text"
-          icon={<MedicineBoxOutlined />}
+        <button
+          type="button"
           className={`icon-btn ${activeFeature === 'medical' ? 'active' : ''}`}
           onClick={() => onSelectFeature('medical')}
-        />
+        >
+          <HeartPulse {...iconProps} />
+        </button>
       </Tooltip>
       <Tooltip title={t('iconBar.projects')} placement="right">
-        <Button
-          type="text"
-          icon={<ProjectOutlined />}
+        <button
+          type="button"
           className={`icon-btn ${activeFeature === 'projects' ? 'active' : ''}`}
           onClick={() => onSelectFeature('projects')}
-        />
+        >
+          <KanbanSquare {...iconProps} />
+        </button>
       </Tooltip>
       <div className="icon-bar-spacer" />
       <Tooltip title={t('iconBar.settings')} placement="right">
-        <Button
-          type="text"
-          icon={<SettingOutlined />}
+        <button
+          type="button"
           className={`icon-btn ${activeFeature === 'settings' ? 'active' : ''}`}
           onClick={() => onSelectFeature('settings')}
-        />
+        >
+          <Settings {...iconProps} />
+        </button>
       </Tooltip>
       <Tooltip title={t('iconBar.logout')} placement="right">
-        <Button
-          type="text"
-          icon={<LogoutOutlined />}
+        <button
+          type="button"
           className="icon-btn"
           onClick={onLogout}
-        />
+        >
+          <LogOut {...iconProps} />
+        </button>
       </Tooltip>
     </div>
   );

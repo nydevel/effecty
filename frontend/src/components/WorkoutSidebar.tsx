@@ -34,7 +34,8 @@ export default function WorkoutSidebar({
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <Button size="small" icon={<PlusOutlined />} onClick={onCreate}>
+        <div className="sidebar-title">{t('iconBar.workouts')}</div>
+        <Button type="text" className="sidebar-add-btn" size="small" icon={<PlusOutlined />} onClick={onCreate}>
           {t('workouts.newWorkout')}
         </Button>
       </div>

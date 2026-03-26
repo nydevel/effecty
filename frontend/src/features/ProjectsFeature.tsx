@@ -96,8 +96,10 @@ export default function ProjectsFeature() {
       {/* Sidebar - project list */}
       <div className="sidebar">
         <div className="sidebar-header">
+          <div className="sidebar-title">{t('iconBar.projects')}</div>
           <Button
-            type="primary"
+            type="text"
+            className="sidebar-add-btn"
             icon={<PlusOutlined />}
             size="small"
             onClick={() => setProjectModalOpen(true)}
