@@ -16,7 +16,6 @@ export interface DoctorVisit {
   clinic: string;
   visit_date: string;
   notes: string;
-  image_path: string | null;
   created_at: string;
   updated_at: string;
   specialty_name: string;
@@ -28,9 +27,18 @@ export interface Analysis {
   title: string;
   analysis_date: string;
   notes: string;
-  image_path: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface MedicalImage {
+  id: string;
+  user_id: string;
+  owner_type: string;
+  owner_id: string;
+  file_path: string;
+  position: number;
+  created_at: string;
 }
 
 // Specialties
@@ -91,29 +99,6 @@ export async function deleteVisit(id: string): Promise<void> {
   return apiFetch<void>(`/doctor-visits/${id}`, { method: 'DELETE' });
 }
 
-export async function uploadVisitImage(id: string, file: File): Promise<DoctorVisit> {
-  const token = localStorage.getItem('token');
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const res = await fetch(`/api/doctor-visits/${id}/image`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token ?? ''}` },
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Upload failed: ${res.status}`);
-  }
-
-  return res.json();
-}
-
-export async function deleteVisitImage(id: string): Promise<DoctorVisit> {
-  return apiFetch<DoctorVisit>(`/doctor-visits/${id}/image`, { method: 'DELETE' });
-}
-
 // Analyses
 export async function listAnalyses(): Promise<Analysis[]> {
   return apiFetch<Analysis[]>('/analyses');
@@ -151,20 +136,30 @@ export async function deleteAnalysis(id: string): Promise<void> {
   return apiFetch<void>(`/analyses/${id}`, { method: 'DELETE' });
 }
 
-export async function deleteAnalysisImage(id: string): Promise<Analysis> {
-  return apiFetch<Analysis>(`/analyses/${id}/image`, { method: 'DELETE' });
+// Medical images
+export async function listImages(ownerType: string, ownerId: string): Promise<MedicalImage[]> {
+  return apiFetch<MedicalImage[]>(
+    `/medical-images?owner_type=${ownerType}&owner_id=${ownerId}`,
+  );
 }
 
-export async function uploadAnalysisImage(id: string, file: File): Promise<Analysis> {
+export async function uploadImage(
+  ownerType: string,
+  ownerId: string,
+  file: File,
+): Promise<MedicalImage> {
   const token = localStorage.getItem('token');
   const formData = new FormData();
   formData.append('file', file);
 
-  const res = await fetch(`/api/analyses/${id}/image`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token ?? ''}` },
-    body: formData,
-  });
+  const res = await fetch(
+    `/api/medical-images?owner_type=${ownerType}&owner_id=${ownerId}`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token ?? ''}` },
+      body: formData,
+    },
+  );
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -172,4 +167,8 @@ export async function uploadAnalysisImage(id: string, file: File): Promise<Analy
   }
 
   return res.json();
+}
+
+export async function deleteImage(imageId: string): Promise<void> {
+  return apiFetch<void>(`/medical-images/${imageId}`, { method: 'DELETE' });
 }

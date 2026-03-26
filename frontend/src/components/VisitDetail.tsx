@@ -5,14 +5,15 @@ import { useTranslation } from 'react-i18next';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
-import type { DoctorVisit, Specialty } from '../api/medical';
-import { useAuthImage } from '../hooks/useAuthImage';
+import type { DoctorVisit, Specialty, MedicalImage } from '../api/medical';
+import { useAuthImages } from '../hooks/useAuthImages';
 
 const { TextArea } = Input;
 
 interface Props {
   visit: DoctorVisit;
   specialties: Specialty[];
+  images: MedicalImage[];
   onUpdate: (data: {
     specialty_id?: string;
     doctor_name?: string;
@@ -21,20 +22,23 @@ interface Props {
     notes?: string;
   }) => Promise<void>;
   onUploadImage: (file: File) => Promise<void>;
-  onDeleteImage: () => Promise<void>;
+  onDeleteImage: (imageId: string) => Promise<void>;
 }
 
-export default function VisitDetail({ visit, specialties, onUpdate, onUploadImage, onDeleteImage }: Props) {
+export default function VisitDetail({ visit, specialties, images, onUpdate, onUploadImage, onDeleteImage }: Props) {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const imageUrl = useAuthImage(visit.image_path);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const imageUrls = useAuthImages(images);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+    const files = e.target.files;
+    if (!files) return;
+    for (const file of Array.from(files)) {
       await onUploadImage(file);
     }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
@@ -116,18 +120,22 @@ export default function VisitDetail({ visit, specialties, onUpdate, onUploadImag
             ref={fileInputRef}
             type="file"
             accept="image/*"
+            multiple
             style={{ display: 'none' }}
             onChange={handleFileChange}
           />
         </div>
-        {imageUrl && (
-          <>
-            <div className="visit-image-wrapper">
+        <div className="visit-images-grid">
+          {imageUrls.map((img, idx) => (
+            <div key={img.id} className="visit-image-wrapper">
               <img
-                src={imageUrl}
+                src={img.url}
                 alt={t('medical.results')}
                 className="visit-result-image"
-                onClick={() => setLightboxOpen(true)}
+                onClick={() => {
+                  setLightboxIndex(idx);
+                  setLightboxOpen(true);
+                }}
               />
               <Button
                 type="text"
@@ -135,25 +143,23 @@ export default function VisitDetail({ visit, specialties, onUpdate, onUploadImag
                 size="small"
                 icon={<DeleteOutlined />}
                 className="visit-image-delete-btn"
-                onClick={onDeleteImage}
+                onClick={() => onDeleteImage(img.id)}
               />
             </div>
-            <Lightbox
-              open={lightboxOpen}
-              close={() => setLightboxOpen(false)}
-              slides={[{ src: imageUrl }]}
-              plugins={[Zoom]}
-              carousel={{ finite: true }}
-              render={{
-                buttonPrev: () => null,
-                buttonNext: () => null,
-              }}
-              zoom={{
-                maxZoomPixelRatio: 3,
-                scrollToZoom: true,
-              }}
-            />
-          </>
+          ))}
+        </div>
+        {imageUrls.length > 0 && (
+          <Lightbox
+            open={lightboxOpen}
+            close={() => setLightboxOpen(false)}
+            index={lightboxIndex}
+            slides={imageUrls.map((img) => ({ src: img.url }))}
+            plugins={[Zoom]}
+            zoom={{
+              maxZoomPixelRatio: 3,
+              scrollToZoom: true,
+            }}
+          />
         )}
       </div>
     </div>

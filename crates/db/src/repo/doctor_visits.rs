@@ -14,7 +14,6 @@ pub struct DoctorVisit {
     pub clinic: String,
     pub visit_date: String,
     pub notes: String,
-    pub image_path: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -28,11 +27,12 @@ pub struct DoctorVisitWithSpecialty {
     pub clinic: String,
     pub visit_date: String,
     pub notes: String,
-    pub image_path: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub specialty_name: String,
 }
+
+const VISIT_COLUMNS: &str = "id, user_id, specialty_id, doctor_name, clinic, visit_date, notes, created_at, updated_at";
 
 #[derive(Debug, Deserialize)]
 pub struct CreateDoctorVisit {
@@ -59,7 +59,9 @@ pub async fn list(
     let rows = if let Some(sid) = specialty_id {
         sqlx::query_as::<_, DoctorVisitWithSpecialty>(
             r#"
-            SELECT dv.*, ms.name AS specialty_name
+            SELECT dv.id, dv.user_id, dv.specialty_id, dv.doctor_name, dv.clinic,
+                   dv.visit_date, dv.notes, dv.created_at, dv.updated_at,
+                   ms.name AS specialty_name
             FROM doctor_visits dv
             JOIN medical_specialties ms ON ms.id = dv.specialty_id
             WHERE dv.user_id = ?1 AND dv.specialty_id = ?2
@@ -73,7 +75,9 @@ pub async fn list(
     } else {
         sqlx::query_as::<_, DoctorVisitWithSpecialty>(
             r#"
-            SELECT dv.*, ms.name AS specialty_name
+            SELECT dv.id, dv.user_id, dv.specialty_id, dv.doctor_name, dv.clinic,
+                   dv.visit_date, dv.notes, dv.created_at, dv.updated_at,
+                   ms.name AS specialty_name
             FROM doctor_visits dv
             JOIN medical_specialties ms ON ms.id = dv.specialty_id
             WHERE dv.user_id = ?1
@@ -95,7 +99,9 @@ pub async fn get(
 ) -> Result<Option<DoctorVisitWithSpecialty>> {
     let row = sqlx::query_as::<_, DoctorVisitWithSpecialty>(
         r#"
-        SELECT dv.*, ms.name AS specialty_name
+        SELECT dv.id, dv.user_id, dv.specialty_id, dv.doctor_name, dv.clinic,
+               dv.visit_date, dv.notes, dv.created_at, dv.updated_at,
+               ms.name AS specialty_name
         FROM doctor_visits dv
         JOIN medical_specialties ms ON ms.id = dv.specialty_id
         WHERE dv.id = ?1 AND dv.user_id = ?2
@@ -115,21 +121,22 @@ pub async fn create(
     input: &CreateDoctorVisit,
 ) -> Result<DoctorVisit> {
     let id = Uuid::new_v4();
-    let row = sqlx::query_as::<_, DoctorVisit>(
+    let query = format!(
         r#"
         INSERT INTO doctor_visits (id, user_id, specialty_id, doctor_name, clinic, visit_date)
         VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-        RETURNING *
+        RETURNING {VISIT_COLUMNS}
         "#,
-    )
-    .bind(id)
-    .bind(user_id)
-    .bind(input.specialty_id)
-    .bind(&input.doctor_name)
-    .bind(&input.clinic)
-    .bind(&input.visit_date)
-    .fetch_one(pool)
-    .await?;
+    );
+    let row = sqlx::query_as::<_, DoctorVisit>(&query)
+        .bind(id)
+        .bind(user_id)
+        .bind(input.specialty_id)
+        .bind(&input.doctor_name)
+        .bind(&input.clinic)
+        .bind(&input.visit_date)
+        .fetch_one(pool)
+        .await?;
 
     Ok(row)
 }
@@ -140,7 +147,7 @@ pub async fn update(
     user_id: UserId,
     input: &UpdateDoctorVisit,
 ) -> Result<Option<DoctorVisit>> {
-    let row = sqlx::query_as::<_, DoctorVisit>(
+    let query = format!(
         r#"
         UPDATE doctor_visits
         SET specialty_id = COALESCE(?3, specialty_id),
@@ -150,64 +157,19 @@ pub async fn update(
             notes = COALESCE(?7, notes),
             updated_at = datetime('now')
         WHERE id = ?1 AND user_id = ?2
-        RETURNING *
+        RETURNING {VISIT_COLUMNS}
         "#,
-    )
-    .bind(id)
-    .bind(user_id)
-    .bind(input.specialty_id)
-    .bind(&input.doctor_name)
-    .bind(&input.clinic)
-    .bind(&input.visit_date)
-    .bind(&input.notes)
-    .fetch_optional(pool)
-    .await?;
-
-    Ok(row)
-}
-
-pub async fn update_image(
-    pool: &SqlitePool,
-    id: DoctorVisitId,
-    user_id: UserId,
-    image_path: &str,
-) -> Result<Option<DoctorVisit>> {
-    let row = sqlx::query_as::<_, DoctorVisit>(
-        r#"
-        UPDATE doctor_visits
-        SET image_path = ?3,
-            updated_at = datetime('now')
-        WHERE id = ?1 AND user_id = ?2
-        RETURNING *
-        "#,
-    )
-    .bind(id)
-    .bind(user_id)
-    .bind(image_path)
-    .fetch_optional(pool)
-    .await?;
-
-    Ok(row)
-}
-
-pub async fn delete_image(
-    pool: &SqlitePool,
-    id: DoctorVisitId,
-    user_id: UserId,
-) -> Result<Option<DoctorVisit>> {
-    let row = sqlx::query_as::<_, DoctorVisit>(
-        r#"
-        UPDATE doctor_visits
-        SET image_path = NULL,
-            updated_at = datetime('now')
-        WHERE id = ?1 AND user_id = ?2
-        RETURNING *
-        "#,
-    )
-    .bind(id)
-    .bind(user_id)
-    .fetch_optional(pool)
-    .await?;
+    );
+    let row = sqlx::query_as::<_, DoctorVisit>(&query)
+        .bind(id)
+        .bind(user_id)
+        .bind(input.specialty_id)
+        .bind(&input.doctor_name)
+        .bind(&input.clinic)
+        .bind(&input.visit_date)
+        .bind(&input.notes)
+        .fetch_optional(pool)
+        .await?;
 
     Ok(row)
 }

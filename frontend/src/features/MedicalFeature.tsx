@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Segmented } from 'antd';
 import * as medicalApi from '../api/medical';
-import type { Specialty, DoctorVisit, Analysis } from '../api/medical';
+import type { Specialty, DoctorVisit, Analysis, MedicalImage } from '../api/medical';
 import SpecialtySidebar from '../components/SpecialtySidebar';
 import VisitList from '../components/VisitList';
 import VisitDetail from '../components/VisitDetail';
@@ -22,6 +22,7 @@ export default function MedicalFeature() {
   const [selectedSpecialtyId, setSelectedSpecialtyId] = useState<string | null>(null);
   const [visits, setVisits] = useState<DoctorVisit[]>([]);
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
+  const [images, setImages] = useState<MedicalImage[]>([]);
 
   const setSelectedId = (id: string | null) => {
     if (id) {
@@ -61,6 +62,15 @@ export default function MedicalFeature() {
     }
   }, []);
 
+  const loadImages = useCallback(async (ownerType: string, ownerId: string) => {
+    try {
+      const list = await medicalApi.listImages(ownerType, ownerId);
+      setImages(list);
+    } catch (err) {
+      console.error('Failed to load images:', err);
+    }
+  }, []);
+
   useEffect(() => {
     loadSpecialties();
   }, [loadSpecialties]);
@@ -72,6 +82,15 @@ export default function MedicalFeature() {
       loadAnalyses();
     }
   }, [tab, selectedSpecialtyId, loadVisits, loadAnalyses]);
+
+  useEffect(() => {
+    if (selectedId) {
+      const ownerType = tab === 'visits' ? 'visit' : 'analysis';
+      loadImages(ownerType, selectedId);
+    } else {
+      setImages([]);
+    }
+  }, [selectedId, tab, loadImages]);
 
   // --- Specialty handlers ---
   const handleCreateSpecialty = async (name: string) => {
@@ -122,14 +141,17 @@ export default function MedicalFeature() {
     await loadVisits(selectedSpecialtyId ?? undefined);
   };
 
-  const handleUploadVisitImage = async (id: string, file: File) => {
-    await medicalApi.uploadVisitImage(id, file);
-    await loadVisits(selectedSpecialtyId ?? undefined);
+  const handleUploadImage = async (ownerType: string, ownerId: string, file: File) => {
+    await medicalApi.uploadImage(ownerType, ownerId, file);
+    await loadImages(ownerType, ownerId);
   };
 
-  const handleDeleteVisitImage = async (id: string) => {
-    await medicalApi.deleteVisitImage(id);
-    await loadVisits(selectedSpecialtyId ?? undefined);
+  const handleDeleteImage = async (imageId: string) => {
+    await medicalApi.deleteImage(imageId);
+    if (selectedId) {
+      const ownerType = tab === 'visits' ? 'visit' : 'analysis';
+      await loadImages(ownerType, selectedId);
+    }
   };
 
   // --- Analysis handlers ---
@@ -151,16 +173,6 @@ export default function MedicalFeature() {
   const handleDeleteAnalysis = async (id: string) => {
     await medicalApi.deleteAnalysis(id);
     if (selectedId === id) setSelectedId(null);
-    await loadAnalyses();
-  };
-
-  const handleUploadAnalysisImage = async (id: string, file: File) => {
-    await medicalApi.uploadAnalysisImage(id, file);
-    await loadAnalyses();
-  };
-
-  const handleDeleteAnalysisImage = async (id: string) => {
-    await medicalApi.deleteAnalysisImage(id);
     await loadAnalyses();
   };
 
@@ -213,16 +225,18 @@ export default function MedicalFeature() {
           <VisitDetail
             visit={selectedVisit}
             specialties={specialties}
+            images={images}
             onUpdate={(data) => handleUpdateVisit(selectedVisit.id, data)}
-            onUploadImage={(file) => handleUploadVisitImage(selectedVisit.id, file)}
-            onDeleteImage={() => handleDeleteVisitImage(selectedVisit.id)}
+            onUploadImage={(file) => handleUploadImage('visit', selectedVisit.id, file)}
+            onDeleteImage={handleDeleteImage}
           />
         ) : tab === 'analyses' && selectedAnalysis ? (
           <AnalysisDetail
             analysis={selectedAnalysis}
+            images={images}
             onUpdate={(data) => handleUpdateAnalysis(selectedAnalysis.id, data)}
-            onUploadImage={(file) => handleUploadAnalysisImage(selectedAnalysis.id, file)}
-            onDeleteImage={() => handleDeleteAnalysisImage(selectedAnalysis.id)}
+            onUploadImage={(file) => handleUploadImage('analysis', selectedAnalysis.id, file)}
+            onDeleteImage={handleDeleteImage}
           />
         ) : (
           <div className="empty-state">{t('medical.emptyState')}</div>

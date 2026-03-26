@@ -19,18 +19,19 @@ pub fn router() -> Router<SqlitePool> {
         .route("/api/doctor-visits/{id}", get(handlers::get_visit))
         .route("/api/doctor-visits/{id}", put(handlers::update_visit))
         .route("/api/doctor-visits/{id}", delete(handlers::delete_visit))
-        .route(
-            "/api/doctor-visits/{id}/image",
-            post(handlers::upload_visit_image).delete(handlers::delete_visit_image),
-        )
         // Analyses
         .route("/api/analyses", get(handlers::list_analyses))
         .route("/api/analyses", post(handlers::create_analysis))
         .route("/api/analyses/{id}", get(handlers::get_analysis))
         .route("/api/analyses/{id}", put(handlers::update_analysis))
         .route("/api/analyses/{id}", delete(handlers::delete_analysis))
+        // Medical images (shared)
         .route(
-            "/api/analyses/{id}/image",
-            post(handlers::upload_analysis_image).delete(handlers::delete_analysis_image),
+            "/api/medical-images",
+            get(handlers::list_images).post(handlers::upload_image),
+        )
+        .route(
+            "/api/medical-images/{id}",
+            delete(handlers::delete_image),
         )
 }
