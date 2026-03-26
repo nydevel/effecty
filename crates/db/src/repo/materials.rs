@@ -48,7 +48,8 @@ pub struct Material {
     pub content: Option<String>,
     pub file_path: Option<String>,
     pub thumbnail_path: Option<String>,
-    pub is_done: bool,
+    pub status: String,
+    pub topic_names: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -72,7 +73,8 @@ pub struct UpdateMaterial {
 const SELECT_WITH_STATUS: &str = r#"
     SELECT m.id, m.user_id, m.material_type, m.title, m.url, m.content,
            m.file_path, m.thumbnail_path,
-           COALESCE(um.is_done, 0) AS is_done,
+           COALESCE(um.status, 'not_started') AS status,
+           COALESCE((SELECT GROUP_CONCAT(t.name, ', ') FROM material_topics mt2 JOIN topics t ON t.id = mt2.topic_id WHERE mt2.material_id = m.id), '') AS topic_names,
            m.created_at, m.updated_at
     FROM materials m
     LEFT JOIN user_materials um ON um.material_id = m.id AND um.user_id = m.user_id
@@ -150,7 +152,8 @@ pub async fn create(
         r#"
         SELECT m.id, m.user_id, m.material_type, m.title, m.url, m.content,
                m.file_path, m.thumbnail_path,
-               0 AS is_done,
+               'not_started' AS status,
+               '' AS topic_names,
                m.created_at, m.updated_at
         FROM materials m
         WHERE m.id = ?1
@@ -284,29 +287,47 @@ pub async fn update_thumbnail(
     Ok(material)
 }
 
-pub async fn toggle_done(
+pub async fn set_status(
     pool: &SqlitePool,
     id: MaterialId,
     user_id: UserId,
+    status: &str,
 ) -> Result<Option<Material>> {
     let um_id = Uuid::new_v4();
-    // Upsert into user_materials, toggling is_done
+    let is_done = status == "completed";
     sqlx::query(
         r#"
-        INSERT INTO user_materials (id, user_id, material_id, is_done)
-        VALUES (?1, ?2, ?3, 1)
+        INSERT INTO user_materials (id, user_id, material_id, is_done, status)
+        VALUES (?1, ?2, ?3, ?4, ?5)
         ON CONFLICT (user_id, material_id)
-        DO UPDATE SET is_done = NOT user_materials.is_done,
+        DO UPDATE SET status = ?5,
+                      is_done = ?4,
                       updated_at = datetime('now')
         "#,
     )
     .bind(um_id)
     .bind(user_id)
     .bind(id)
+    .bind(is_done)
+    .bind(status)
     .execute(pool)
     .await?;
 
     get(pool, id, user_id).await
+}
+
+pub async fn search(pool: &SqlitePool, user_id: UserId, query: &str) -> Result<Vec<Material>> {
+    let pattern = format!("%{query}%");
+    let sql = format!(
+        "{SELECT_WITH_STATUS} WHERE m.user_id = ?1 AND m.title LIKE ?2 ORDER BY m.created_at DESC LIMIT 20"
+    );
+    let results = sqlx::query_as::<_, Material>(&sql)
+        .bind(user_id)
+        .bind(&pattern)
+        .fetch_all(pool)
+        .await?;
+
+    Ok(results)
 }
 
 pub async fn delete(pool: &SqlitePool, id: MaterialId, user_id: UserId) -> Result<bool> {

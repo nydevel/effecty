@@ -37,9 +37,10 @@ pub fn router() -> Router<SqlitePool> {
         .route("/api/materials/{id}", put(handlers::update_material))
         .route("/api/materials/{id}", delete(handlers::delete_material))
         .route(
-            "/api/materials/{id}/toggle-done",
-            patch(handlers::toggle_material_done),
+            "/api/materials/{id}/status",
+            patch(handlers::set_material_status),
         )
+        .route("/api/materials/search", get(handlers::search_materials))
         .route(
             "/api/materials/{id}/upload",
             post(handlers::upload_material_file),
@@ -56,6 +57,29 @@ pub fn router() -> Router<SqlitePool> {
         .route(
             "/api/materials/{id}/topics/{topic_id}",
             delete(handlers::unlink_material_topic),
+        )
+        // Material comments
+        .route(
+            "/api/materials/{id}/comments",
+            get(handlers::list_material_comments),
+        )
+        .route(
+            "/api/materials/{id}/comments",
+            post(handlers::create_material_comment),
+        )
+        .route(
+            "/api/materials/{id}/comments/{comment_id}",
+            delete(handlers::delete_material_comment),
+        )
+        // Material links
+        .route(
+            "/api/materials/{id}/links",
+            get(handlers::list_material_links),
+        )
+        .route("/api/materials/{id}/links", post(handlers::link_material))
+        .route(
+            "/api/materials/{id}/links/{target_id}",
+            delete(handlers::unlink_material),
         )
         // Roadmap nodes
         .route("/api/roadmap/nodes", get(handlers::list_roadmap_nodes))

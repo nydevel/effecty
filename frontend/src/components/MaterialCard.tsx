@@ -70,7 +70,7 @@ export default function MaterialCard({ material, onEdit, onDelete, onToggleDone 
       }}
       trigger={['contextMenu']}
     >
-      <div className={`material-card${material.is_done ? ' material-card--done' : ''}`}>
+      <div className={`material-card${material.status === 'completed' ? ' material-card--done' : ''}`}>
         <div className="material-card-thumb">
           {showThumbnail ? (
             <img src={thumbUrl} alt={material.title} />
@@ -88,14 +88,14 @@ export default function MaterialCard({ material, onEdit, onDelete, onToggleDone 
         </div>
         <div className="material-card-actions">
           <button
-            className={`material-done-btn${material.is_done ? ' material-done-btn--checked' : ''}`}
+            className={`material-done-btn${material.status === 'completed' ? ' material-done-btn--checked' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
               onToggleDone(material.id);
             }}
-            title={material.is_done ? t('learning.mark_undone') : t('learning.mark_done')}
+            title={material.status === 'completed' ? t('learning.mark_undone') : t('learning.mark_done')}
           >
-            {material.is_done && <CheckOutlined />}
+            {material.status === 'completed' && <CheckOutlined />}
           </button>
           <Button
             type="text"

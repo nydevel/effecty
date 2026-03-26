@@ -1,6 +1,8 @@
 pub mod analyses;
 pub mod doctor_visits;
 pub mod exercises;
+pub mod material_comments;
+pub mod material_links;
 pub mod material_topics;
 pub mod materials;
 pub mod medical_images;

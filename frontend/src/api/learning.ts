@@ -2,6 +2,7 @@ import { apiFetch } from './client';
 import type { Tag } from './thoughts';
 
 export type MaterialType = 'article_link' | 'video_link' | 'text' | 'image' | 'document';
+export type MaterialStatus = 'not_started' | 'in_progress' | 'completed';
 
 export interface Topic {
   id: string;
@@ -20,9 +21,29 @@ export interface Material {
   content: string | null;
   file_path: string | null;
   thumbnail_path: string | null;
-  is_done: boolean;
+  status: MaterialStatus;
+  topic_names: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface MaterialComment {
+  id: string;
+  material_id: string;
+  user_id: string;
+  comment_type: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MaterialLink {
+  id: string;
+  source_material_id: string;
+  target_material_id: string;
+  target_title: string;
+  target_material_type: string;
+  created_at: string;
 }
 
 // Topics
@@ -84,8 +105,11 @@ export async function createMaterial(data: {
   });
 }
 
-export async function toggleMaterialDone(id: string): Promise<Material> {
-  return apiFetch<Material>(`/materials/${id}/toggle-done`, { method: 'PATCH' });
+export async function setMaterialStatus(id: string, status: MaterialStatus): Promise<Material> {
+  return apiFetch<Material>(`/materials/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
 }
 
 export async function deleteMaterial(id: string): Promise<void> {
@@ -109,6 +133,52 @@ export async function uploadMaterialFile(id: string, file: File): Promise<Materi
   }
 
   return res.json();
+}
+
+export async function searchMaterials(query: string): Promise<Material[]> {
+  return apiFetch<Material[]>(`/materials/search?q=${encodeURIComponent(query)}`);
+}
+
+// Material comments
+export async function listMaterialComments(materialId: string): Promise<MaterialComment[]> {
+  return apiFetch<MaterialComment[]>(`/materials/${materialId}/comments`);
+}
+
+export async function createMaterialComment(
+  materialId: string,
+  content: string,
+  commentType?: string,
+): Promise<MaterialComment> {
+  return apiFetch<MaterialComment>(`/materials/${materialId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ content, comment_type: commentType }),
+  });
+}
+
+export async function deleteMaterialComment(
+  materialId: string,
+  commentId: string,
+): Promise<void> {
+  return apiFetch<void>(`/materials/${materialId}/comments/${commentId}`, { method: 'DELETE' });
+}
+
+// Material links
+export async function listMaterialLinks(materialId: string): Promise<MaterialLink[]> {
+  return apiFetch<MaterialLink[]>(`/materials/${materialId}/links`);
+}
+
+export async function linkMaterial(
+  materialId: string,
+  targetMaterialId: string,
+): Promise<MaterialLink> {
+  return apiFetch<MaterialLink>(`/materials/${materialId}/links`, {
+    method: 'POST',
+    body: JSON.stringify({ target_material_id: targetMaterialId }),
+  });
+}
+
+export async function unlinkMaterial(materialId: string, targetId: string): Promise<void> {
+  return apiFetch<void>(`/materials/${materialId}/links/${targetId}`, { method: 'DELETE' });
 }
 
 // Roadmap nodes
@@ -157,4 +227,3 @@ export async function updateRoadmapNode(
 export async function deleteRoadmapNode(id: string): Promise<void> {
   return apiFetch<void>(`/roadmap/nodes/${id}`, { method: 'DELETE' });
 }
-

@@ -97,6 +97,16 @@ pub struct AnalysisId(pub Uuid);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
 #[serde(transparent)]
 #[sqlx(transparent)]
+pub struct MaterialCommentId(pub Uuid);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
+#[serde(transparent)]
+#[sqlx(transparent)]
+pub struct MaterialLinkId(pub Uuid);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
+#[serde(transparent)]
+#[sqlx(transparent)]
 pub struct MedicalImageId(pub Uuid);
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
@@ -201,6 +211,18 @@ impl std::fmt::Display for DoctorVisitId {
 }
 
 impl std::fmt::Display for AnalysisId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::fmt::Display for MaterialCommentId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::fmt::Display for MaterialLinkId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
     }

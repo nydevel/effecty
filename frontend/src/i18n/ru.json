@@ -181,7 +181,19 @@
     "roadmapAddRoot": "Добавить корневой узел",
     "roadmapAddChild": "Добавить дочерний узел",
     "roadmapNewNode": "Новый узел",
-    "roadmapDeleteConfirm": "Удалить этот узел и все дочерние?"
+    "roadmapDeleteConfirm": "Удалить этот узел и все дочерние?",
+    "status": "Статус",
+    "type": "Тип",
+    "topic": "Тематика",
+    "statusNotStarted": "Не начато",
+    "statusInProgress": "В процессе",
+    "statusCompleted": "Завершено",
+    "comments": "Комментарии",
+    "noComments": "Нет комментариев",
+    "commentPlaceholder": "Написать комментарий...",
+    "addComment": "Отправить",
+    "linkedMaterials": "Связанные материалы",
+    "searchMaterials": "Найти материал для привязки..."
   },
   "medical": {
     "visits": "Посещение врача",

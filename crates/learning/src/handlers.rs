@@ -2,11 +2,13 @@ use std::path::{Path as StdPath, PathBuf};
 
 use axum::extract::{Multipart, Path, State};
 use axum::Json;
-use effecty_core::types::{MaterialId, RoadmapNodeId, TagId, TopicId, UserId};
+use effecty_core::types::{MaterialCommentId, MaterialId, RoadmapNodeId, TagId, TopicId, UserId};
 use sqlx::SqlitePool;
 
 use crate::error::LearningError;
 use crate::thumbnail;
+use db::repo::material_comments;
+use db::repo::material_links;
 use db::repo::material_topics::{self, LinkTopic};
 use db::repo::materials::{self, CreateMaterial, MaterialType, UpdateMaterial};
 use db::repo::roadmap_nodes::{self, CreateRoadmapNode, UpdateRoadmapNode};
@@ -198,15 +200,29 @@ pub async fn update_material(
     Ok(Json(material))
 }
 
-pub async fn toggle_material_done(
+pub async fn set_material_status(
     State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
     Path(id): Path<MaterialId>,
+    Json(input): Json<SetStatusRequest>,
 ) -> Result<Json<materials::Material>, LearningError> {
-    let material = materials::toggle_done(&pool, id, user_id)
+    let valid = ["not_started", "in_progress", "completed"];
+    if !valid.contains(&input.status.as_str()) {
+        return Err(LearningError::BadRequest(format!(
+            "invalid status: {}, expected one of: {}",
+            input.status,
+            valid.join(", ")
+        )));
+    }
+    let material = materials::set_status(&pool, id, user_id, &input.status)
         .await?
         .ok_or(LearningError::NotFound)?;
     Ok(Json(material))
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct SetStatusRequest {
+    pub status: String,
 }
 
 pub async fn delete_material(
@@ -314,6 +330,111 @@ pub async fn unlink_material_topic(
     } else {
         Err(LearningError::NotFound)
     }
+}
+
+// --- Material search ---
+
+pub async fn search_materials(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    axum::extract::Query(params): axum::extract::Query<SearchQuery>,
+) -> Result<Json<Vec<materials::Material>>, LearningError> {
+    let list = materials::search(&pool, user_id, &params.q).await?;
+    Ok(Json(list))
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct SearchQuery {
+    pub q: String,
+}
+
+// --- Material comments ---
+
+pub async fn list_material_comments(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path(material_id): Path<MaterialId>,
+) -> Result<Json<Vec<material_comments::MaterialComment>>, LearningError> {
+    let list = material_comments::list(&pool, material_id, user_id).await?;
+    Ok(Json(list))
+}
+
+pub async fn create_material_comment(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path(material_id): Path<MaterialId>,
+    Json(input): Json<CreateCommentRequest>,
+) -> Result<Json<material_comments::MaterialComment>, LearningError> {
+    if input.content.trim().is_empty() {
+        return Err(LearningError::BadRequest("content cannot be empty".into()));
+    }
+    let comment_type = input.comment_type.as_deref().unwrap_or("text");
+    let comment =
+        material_comments::create(&pool, material_id, user_id, comment_type, &input.content)
+            .await?;
+    Ok(Json(comment))
+}
+
+pub async fn delete_material_comment(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path((_material_id, comment_id)): Path<(MaterialId, MaterialCommentId)>,
+) -> Result<axum::http::StatusCode, LearningError> {
+    let deleted = material_comments::delete(&pool, comment_id, user_id).await?;
+    if deleted {
+        Ok(axum::http::StatusCode::NO_CONTENT)
+    } else {
+        Err(LearningError::NotFound)
+    }
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct CreateCommentRequest {
+    pub content: String,
+    pub comment_type: Option<String>,
+}
+
+// --- Material links ---
+
+pub async fn list_material_links(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path(material_id): Path<MaterialId>,
+) -> Result<Json<Vec<material_links::MaterialLink>>, LearningError> {
+    let list = material_links::list(&pool, material_id, user_id).await?;
+    Ok(Json(list))
+}
+
+pub async fn link_material(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path(material_id): Path<MaterialId>,
+    Json(input): Json<LinkMaterialRequest>,
+) -> Result<Json<material_links::MaterialLink>, LearningError> {
+    let link = material_links::link(&pool, material_id, input.target_material_id, user_id)
+        .await?
+        .ok_or(LearningError::BadRequest(
+            "cannot link material to itself".into(),
+        ))?;
+    Ok(Json(link))
+}
+
+pub async fn unlink_material(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path((material_id, target_id)): Path<(MaterialId, MaterialId)>,
+) -> Result<axum::http::StatusCode, LearningError> {
+    let deleted = material_links::unlink(&pool, material_id, target_id, user_id).await?;
+    if deleted {
+        Ok(axum::http::StatusCode::NO_CONTENT)
+    } else {
+        Err(LearningError::NotFound)
+    }
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct LinkMaterialRequest {
+    pub target_material_id: MaterialId,
 }
 
 // --- URL metadata ---

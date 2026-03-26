@@ -181,7 +181,19 @@
     "roadmapAddRoot": "Add root node",
     "roadmapAddChild": "Add child node",
     "roadmapNewNode": "New node",
-    "roadmapDeleteConfirm": "Delete this node and all children?"
+    "roadmapDeleteConfirm": "Delete this node and all children?",
+    "status": "Status",
+    "type": "Type",
+    "topic": "Topic",
+    "statusNotStarted": "Not started",
+    "statusInProgress": "In progress",
+    "statusCompleted": "Completed",
+    "comments": "Comments",
+    "noComments": "No comments",
+    "commentPlaceholder": "Write a comment...",
+    "addComment": "Send",
+    "linkedMaterials": "Linked materials",
+    "searchMaterials": "Search materials to link..."
   },
   "medical": {
     "visits": "Doctor Visits",

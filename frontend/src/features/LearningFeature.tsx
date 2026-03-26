@@ -4,11 +4,12 @@ import { Button, Segmented } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import * as learningApi from '../api/learning';
-import type { Topic, Material } from '../api/learning';
+import type { Topic, Material, MaterialStatus } from '../api/learning';
 import type { Tag } from '../api/thoughts';
 import TopicSidebar from '../components/TopicSidebar';
 import TopicModal from '../components/TopicModal';
-import MaterialCard from '../components/MaterialCard';
+import MaterialTable from '../components/MaterialTable';
+import MaterialDetail from '../components/MaterialDetail';
 import MaterialForm from '../components/MaterialForm';
 import RoadmapCanvas from '../components/RoadmapCanvas';
 
@@ -22,6 +23,7 @@ export default function LearningFeature() {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
+  const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null);
 
   const setSelectedTopicId = (id: string | null) => {
     if (id) {
@@ -29,9 +31,12 @@ export default function LearningFeature() {
     } else {
       navigate('/app/learning');
     }
+    setSelectedMaterialId(null);
   };
   const [topicModalOpen, setTopicModalOpen] = useState(false);
   const [materialFormOpen, setMaterialFormOpen] = useState(false);
+
+  const selectedMaterial = materials.find((m) => m.id === selectedMaterialId) ?? null;
 
   const loadTopics = useCallback(async () => {
     try {
@@ -125,21 +130,17 @@ export default function LearningFeature() {
 
   const handleDeleteMaterial = async (id: string) => {
     await learningApi.deleteMaterial(id);
+    if (selectedMaterialId === id) setSelectedMaterialId(null);
     await loadMaterials();
   };
 
-  const handleToggleDone = async (id: string) => {
+  const handleStatusChange = async (id: string, status: MaterialStatus) => {
     try {
-      const updated = await learningApi.toggleMaterialDone(id);
+      const updated = await learningApi.setMaterialStatus(id, status);
       setMaterials((prev) => prev.map((m) => (m.id === id ? updated : m)));
     } catch (err) {
-      console.error('Failed to toggle material done:', err);
+      console.error('Failed to update status:', err);
     }
-  };
-
-  const handleEditMaterial = (id: string) => {
-    // TODO: open edit form
-    console.log('Edit material:', id);
   };
 
   return (
@@ -176,21 +177,26 @@ export default function LearningFeature() {
                 </Button>
               </div>
               {materials.length > 0 ? (
-                <div className="materials-grid">
-                  {materials.map((m) => (
-                    <MaterialCard
-                      key={m.id}
-                      material={m}
-                      onEdit={handleEditMaterial}
-                      onDelete={handleDeleteMaterial}
-                      onToggleDone={handleToggleDone}
-                    />
-                  ))}
-                </div>
+                <MaterialTable
+                  materials={materials}
+                  selectedId={selectedMaterialId}
+                  showTopics={!selectedTopicId}
+                  onSelect={setSelectedMaterialId}
+                  onDelete={handleDeleteMaterial}
+                  onStatusChange={handleStatusChange}
+                />
               ) : (
                 <div className="empty-state">{t('learning.emptyState')}</div>
               )}
             </main>
+            {selectedMaterial && (
+              <div className="medical-detail">
+                <MaterialDetail
+                  material={selectedMaterial}
+                  onSelectMaterial={setSelectedMaterialId}
+                />
+              </div>
+            )}
           </>
         )}
         {tab === 'roadmap' && (
