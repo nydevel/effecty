@@ -47,6 +47,13 @@ export async function updateThought(id: string, data: { content?: string }): Pro
   });
 }
 
+export async function moveThought(id: string, data: { position: number }): Promise<Thought> {
+  return apiFetch<Thought>(`/thoughts/${id}/move`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
 export async function deleteThought(id: string): Promise<void> {
   return apiFetch<void>(`/thoughts/${id}`, { method: 'DELETE' });
 }
@@ -62,6 +69,17 @@ export async function createComment(
 ): Promise<ThoughtComment> {
   return apiFetch<ThoughtComment>(`/thoughts/${thoughtId}/comments`, {
     method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateComment(
+  thoughtId: string,
+  commentId: string,
+  data: { content: string },
+): Promise<ThoughtComment> {
+  return apiFetch<ThoughtComment>(`/thoughts/${thoughtId}/comments/${commentId}`, {
+    method: 'PUT',
     body: JSON.stringify(data),
   });
 }

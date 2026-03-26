@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Input, Typography } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
@@ -8,10 +8,11 @@ import type { Thought, ThoughtComment } from '../api/thoughts';
 import ThoughtCommentsSidebar from '../components/ThoughtCommentsSidebar';
 import UniversalListItem from '../components/UniversalListItem';
 
-function sortByNewest(thoughts: Thought[]): Thought[] {
-  return [...thoughts].sort(
-    (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
-  );
+function sortThoughts(thoughts: Thought[]): Thought[] {
+  return [...thoughts].sort((a, b) => {
+    if (a.position !== b.position) return a.position - b.position;
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+  });
 }
 
 export default function ThoughtsFeature() {
@@ -24,6 +25,8 @@ export default function ThoughtsFeature() {
   const [newThoughtContent, setNewThoughtContent] = useState('');
   const [editingThoughtId, setEditingThoughtId] = useState<string | null>(null);
   const [editingThoughtContent, setEditingThoughtContent] = useState('');
+  const dragIdx = useRef<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   const setSelectedId = (id: string | null) => {
     if (id) {
@@ -38,7 +41,7 @@ export default function ThoughtsFeature() {
   const loadThoughts = useCallback(async () => {
     try {
       const list = await thoughtsApi.listThoughts();
-      setThoughts(sortByNewest(list));
+      setThoughts(sortThoughts(list));
     } catch (err) {
       console.error('Failed to load thoughts:', err);
     }
@@ -87,7 +90,58 @@ export default function ThoughtsFeature() {
 
   const handleContentChange = async (thoughtId: string, content: string) => {
     const updated = await thoughtsApi.updateThought(thoughtId, { content });
-    setThoughts((prev) => sortByNewest(prev.map((th) => (th.id === thoughtId ? updated : th))));
+    setThoughts((prev) => sortThoughts(prev.map((th) => (th.id === thoughtId ? updated : th))));
+  };
+
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    dragIdx.current = idx;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(idx));
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIdx(idx);
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetIdx: number) => {
+    e.preventDefault();
+    const fromIdx = dragIdx.current;
+    dragIdx.current = null;
+    setDragOverIdx(null);
+    if (fromIdx === null || fromIdx === targetIdx) return;
+
+    const updated = [...thoughts];
+    const [moved] = updated.splice(fromIdx, 1);
+    updated.splice(targetIdx, 0, moved);
+
+    setThoughts(updated);
+
+    const prevPos = targetIdx > 0 ? updated[targetIdx - 1].position : null;
+    const nextPos = targetIdx < updated.length - 1 ? updated[targetIdx + 1].position : null;
+
+    const newPosition = (() => {
+      if (prevPos === null && nextPos === null) return moved.position;
+      if (prevPos === null) return nextPos! - 1;
+      if (nextPos === null) return prevPos + 1;
+      return (prevPos + nextPos) / 2;
+    })();
+
+    try {
+      const movedUpdated = await thoughtsApi.moveThought(moved.id, { position: newPosition });
+      setThoughts((prev) =>
+        sortThoughts(prev.map((th) => (th.id === moved.id ? movedUpdated : th))),
+      );
+    } catch (err) {
+      console.error('Failed to reorder thoughts:', err);
+      await loadThoughts();
+    }
+  };
+
+  const handleDragEnd = () => {
+    dragIdx.current = null;
+    setDragOverIdx(null);
   };
 
   const handleStartEdit = (thoughtId: string, content: string) => {
@@ -115,6 +169,12 @@ export default function ThoughtsFeature() {
   const handleDeleteComment = async (commentId: string) => {
     if (!selectedId) return;
     await thoughtsApi.deleteComment(selectedId, commentId);
+    await loadComments(selectedId);
+  };
+
+  const handleUpdateComment = async (commentId: string, content: string) => {
+    if (!selectedId) return;
+    await thoughtsApi.updateComment(selectedId, commentId, { content });
     await loadComments(selectedId);
   };
 
@@ -165,12 +225,18 @@ export default function ThoughtsFeature() {
           )}
         </div>
         <div className="thoughts-list">
-          {thoughts.length > 0 ? thoughts.map((thought) => (
+          {thoughts.length > 0 ? thoughts.map((thought, idx) => (
             <UniversalListItem
               key={thought.id}
               className="thought-item"
               selected={selectedId === thought.id}
               clickable
+              dragOver={dragOverIdx === idx}
+              draggable={editingThoughtId !== thought.id}
+              onDragStart={(e) => handleDragStart(e, idx)}
+              onDragOver={(e) => handleDragOver(e, idx)}
+              onDrop={(e) => handleDrop(e, idx)}
+              onDragEnd={handleDragEnd}
               onClick={() => setSelectedId(thought.id)}
               meta={(
                 <Typography.Text type="secondary" className="thought-item-meta">
@@ -233,6 +299,7 @@ export default function ThoughtsFeature() {
           thought={selectedThought}
           comments={comments}
           onAddComment={handleAddComment}
+          onUpdateComment={handleUpdateComment}
           onDeleteComment={handleDeleteComment}
           onClose={() => setSelectedId(null)}
         />

@@ -20,6 +20,11 @@ pub struct CreateComment {
     pub content: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct UpdateComment {
+    pub content: String,
+}
+
 pub async fn list(
     pool: &SqlitePool,
     thought_id: ThoughtId,
@@ -31,7 +36,7 @@ pub async fn list(
         FROM thought_comments tc
         JOIN thoughts t ON t.id = tc.thought_id
         WHERE tc.thought_id = ?1 AND t.user_id = ?2
-        ORDER BY tc.created_at
+        ORDER BY tc.created_at DESC
         "#,
     )
     .bind(thought_id)
@@ -61,6 +66,32 @@ pub async fn create(
     .bind(user_id)
     .bind(&input.content)
     .fetch_one(pool)
+    .await?;
+
+    Ok(comment)
+}
+
+pub async fn update(
+    pool: &SqlitePool,
+    thought_id: ThoughtId,
+    id: ThoughtCommentId,
+    user_id: UserId,
+    input: &UpdateComment,
+) -> Result<Option<ThoughtComment>> {
+    let comment = sqlx::query_as::<_, ThoughtComment>(
+        r#"
+        UPDATE thought_comments
+        SET content = ?4,
+            updated_at = datetime('now')
+        WHERE thought_id = ?1 AND id = ?2 AND user_id = ?3
+        RETURNING *
+        "#,
+    )
+    .bind(thought_id)
+    .bind(id)
+    .bind(user_id)
+    .bind(&input.content)
+    .fetch_optional(pool)
     .await?;
 
     Ok(comment)

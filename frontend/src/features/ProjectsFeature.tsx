@@ -117,11 +117,11 @@ export default function ProjectsFeature() {
                 type="text"
                 size="small"
                 danger
+                className="sidebar-item-delete"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDeleteProject(p.id);
                 }}
-                style={{ fontSize: 11, padding: '0 4px' }}
               >
                 ×
               </Button>

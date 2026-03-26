@@ -4,8 +4,8 @@ use effecty_core::types::{ThoughtCommentId, ThoughtId, UserId};
 use sqlx::SqlitePool;
 
 use crate::error::ThoughtsError;
-use db::repo::thought_comments::{self, CreateComment};
-use db::repo::thoughts::{self, CreateThought, UpdateThought};
+use db::repo::thought_comments::{self, CreateComment, UpdateComment};
+use db::repo::thoughts::{self, CreateThought, MoveThought, UpdateThought};
 
 // --- Thoughts ---
 
@@ -51,6 +51,18 @@ pub async fn delete_thought(
     }
 }
 
+pub async fn move_thought(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path(id): Path<ThoughtId>,
+    Json(input): Json<MoveThought>,
+) -> Result<Json<thoughts::Thought>, ThoughtsError> {
+    let thought = thoughts::move_thought(&pool, id, user_id, &input)
+        .await?
+        .ok_or(ThoughtsError::NotFound)?;
+    Ok(Json(thought))
+}
+
 // --- Thought Comments ---
 
 pub async fn list_comments(
@@ -74,6 +86,18 @@ pub async fn create_comment(
         .ok_or(ThoughtsError::NotFound)?;
 
     let comment = thought_comments::create(&pool, thought_id, user_id, &input).await?;
+    Ok(Json(comment))
+}
+
+pub async fn update_comment(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path((thought_id, comment_id)): Path<(ThoughtId, ThoughtCommentId)>,
+    Json(input): Json<UpdateComment>,
+) -> Result<Json<thought_comments::ThoughtComment>, ThoughtsError> {
+    let comment = thought_comments::update(&pool, thought_id, comment_id, user_id, &input)
+        .await?
+        .ok_or(ThoughtsError::NotFound)?;
     Ok(Json(comment))
 }
 

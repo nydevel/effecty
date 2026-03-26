@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Input, Typography } from 'antd';
-import { CloseOutlined, SendOutlined } from '@ant-design/icons';
+import { CloseOutlined, EditOutlined, SendOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { Thought, ThoughtComment } from '../api/thoughts';
 
@@ -8,6 +8,7 @@ interface Props {
   thought: Thought;
   comments: ThoughtComment[];
   onAddComment: (content: string) => void;
+  onUpdateComment: (commentId: string, content: string) => void;
   onDeleteComment: (commentId: string) => void;
   onClose: () => void;
 }
@@ -23,17 +24,38 @@ export default function ThoughtCommentsSidebar({
   thought,
   comments,
   onAddComment,
+  onUpdateComment,
   onDeleteComment,
   onClose,
 }: Props) {
   const { t } = useTranslation();
   const [commentText, setCommentText] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
 
   const handleAddComment = () => {
     const text = commentText.trim();
     if (!text) return;
     onAddComment(text);
     setCommentText('');
+  };
+
+  const handleStartEdit = (comment: ThoughtComment) => {
+    setEditingCommentId(comment.id);
+    setEditingCommentText(comment.content);
+  };
+
+  const handleSaveEdit = async (commentId: string) => {
+    const text = editingCommentText.trim();
+    if (!text) return;
+    await onUpdateComment(commentId, text);
+    setEditingCommentId(null);
+    setEditingCommentText('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditingCommentText('');
   };
 
   return (
@@ -73,19 +95,50 @@ export default function ThoughtCommentsSidebar({
       <div className="exercise-catalog-list thoughts-comments-list">
         {comments.length > 0 ? comments.map((comment) => (
           <div key={comment.id} className="thought-comment">
-            <div className="thought-comment-content">{comment.content}</div>
-            <div className="thought-comment-meta">
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                {new Date(comment.created_at).toLocaleString()}
-              </Typography.Text>
-              <Button
-                type="text"
-                size="small"
-                icon={<CloseOutlined />}
-                className="thought-comment-delete"
-                onClick={() => onDeleteComment(comment.id)}
-              />
-            </div>
+            {editingCommentId === comment.id ? (
+              <div className="thought-comment-edit">
+                <Input.TextArea
+                  value={editingCommentText}
+                  onChange={(e) => setEditingCommentText(e.target.value)}
+                  autoSize={{ minRows: 2, maxRows: 6 }}
+                  placeholder={t('thoughts.commentPlaceholder')}
+                  autoFocus
+                />
+                <div className="thought-comment-edit-actions">
+                  <Button size="small" type="primary" onClick={() => handleSaveEdit(comment.id)}>
+                    {t('thoughts.saveComment')}
+                  </Button>
+                  <Button size="small" onClick={handleCancelEdit}>
+                    {t('thoughts.cancel')}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="thought-comment-content">{comment.content}</div>
+                <div className="thought-comment-meta">
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    {new Date(comment.created_at).toLocaleString()}
+                  </Typography.Text>
+                  <div className="thought-comment-actions">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<EditOutlined />}
+                      onClick={() => handleStartEdit(comment)}
+                      title={t('thoughts.editComment')}
+                    />
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<CloseOutlined />}
+                      className="thought-comment-delete"
+                      onClick={() => onDeleteComment(comment.id)}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )) : (
           <div className="thoughts-comments-empty">{t('thoughts.noComments')}</div>
