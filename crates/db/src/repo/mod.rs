@@ -17,7 +17,6 @@ pub mod specialties;
 pub mod tags;
 pub mod tasks;
 pub mod thought_comments;
-pub mod thought_tags;
 pub mod thoughts;
 pub mod topic_tags;
 pub mod topics;

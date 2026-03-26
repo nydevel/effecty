@@ -137,16 +137,11 @@
     "deleteExercise": "Удалить"
   },
   "thoughts": {
-    "newThought": "Новая мысль",
     "addThought": "Добавить мысль",
     "saveThought": "Сохранить мысль",
     "cancel": "Отмена",
-    "delete": "Удалить",
-    "untitled": "Без названия",
+    "emptyThought": "Пустая мысль",
     "emptyState": "Выберите или создайте мысль",
-    "tags": "Теги",
-    "newTag": "Новый тег...",
-    "dragTagHint": "Перетащите теги сюда",
     "contentPlaceholder": "Запишите свои мысли...",
     "comments": "Комментарии",
     "noComments": "Комментариев пока нет",

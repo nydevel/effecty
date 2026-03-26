@@ -137,17 +137,11 @@
     "deleteExercise": "Delete"
   },
   "thoughts": {
-    "newThought": "New thought",
     "addThought": "Add thought",
     "saveThought": "Save thought",
     "cancel": "Cancel",
-    "delete": "Delete",
-    "untitled": "Untitled",
     "emptyThought": "Empty thought",
     "emptyState": "Select or create a thought",
-    "tags": "Tags",
-    "newTag": "New tag...",
-    "dragTagHint": "Drop tags here",
     "contentPlaceholder": "Write your thoughts...",
     "comments": "Comments",
     "noComments": "No comments yet",

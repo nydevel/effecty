@@ -25,11 +25,6 @@ pub struct UpdateThought {
     pub content: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct MoveThought {
-    pub position: f64,
-}
-
 pub async fn list(pool: &SqlitePool, user_id: UserId) -> Result<Vec<Thought>> {
     let thoughts = sqlx::query_as::<_, Thought>(
         "SELECT id, user_id, content, position, created_at, updated_at \
@@ -101,30 +96,6 @@ pub async fn update(
     .bind(id)
     .bind(user_id)
     .bind(&input.content)
-    .fetch_optional(pool)
-    .await?;
-
-    Ok(thought)
-}
-
-pub async fn move_thought(
-    pool: &SqlitePool,
-    id: ThoughtId,
-    user_id: UserId,
-    input: &MoveThought,
-) -> Result<Option<Thought>> {
-    let thought = sqlx::query_as::<_, Thought>(
-        r#"
-        UPDATE thoughts
-        SET position = ?3,
-            updated_at = datetime('now')
-        WHERE id = ?1 AND user_id = ?2
-        RETURNING id, user_id, content, position, created_at, updated_at
-        "#,
-    )
-    .bind(id)
-    .bind(user_id)
-    .bind(input.position)
     .fetch_optional(pool)
     .await?;
 

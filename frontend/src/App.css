@@ -590,34 +590,6 @@ html {
   border-top: 1px solid #e0e0e4;
 }
 
-/* Thought Editor */
-.thought-editor {
-  padding: 16px 24px;
-  height: 100%;
-  overflow-y: auto;
-}
-
-.thought-tags-zone {
-  min-height: 36px;
-  border: 2px dashed #d9d9d9;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 6px 10px;
-  margin-top: 8px;
-}
-
-.thought-tags-zone.active {
-  border-color: #4a90d9;
-  background: #f0f4ff;
-}
-
-.thought-comments-section {
-  margin-top: 8px;
-}
-
 .thought-comment {
   background: #f5f5f7;
   border-radius: 8px;
@@ -645,10 +617,6 @@ html {
 .thought-comment-delete:hover {
   opacity: 1;
   color: #ff4d4f;
-}
-
-.thought-comment-form {
-  margin-top: 12px;
 }
 
 .thoughts-feature-layout {
@@ -1132,100 +1100,6 @@ html {
 
 .material-search-results .ant-list-item:hover {
   background: #f5f5f7;
-}
-
-/* Legacy card styles kept for potential reuse */
-.materials-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
-  padding: 16px;
-}
-
-.material-card {
-  border: 1px solid #e0e0e4;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: box-shadow 0.2s;
-}
-
-.material-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.material-card-thumb {
-  height: 140px;
-  background: #f5f5f7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.material-card-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.material-card-body {
-  padding: 8px 12px;
-}
-
-.material-card-title {
-  font-weight: 500;
-  font-size: 14px;
-  color: #333;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.material-card-type {
-  font-size: 12px;
-  color: #888;
-  margin-top: 2px;
-}
-
-.material-card--done {
-  opacity: 0.65;
-}
-
-.material-card-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 4px 8px;
-  border-top: 1px solid #f0f0f0;
-  gap: 2px;
-}
-
-.material-done-btn {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid #d9d9d9;
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  margin-right: auto;
-  font-size: 12px;
-  color: transparent;
-  transition: all 0.2s;
-}
-
-.material-done-btn:hover {
-  border-color: #52c41a;
-}
-
-.material-done-btn--checked {
-  border-color: #52c41a;
-  background: #52c41a;
-  color: #fff;
 }
 
 /* Memo List Editor */
