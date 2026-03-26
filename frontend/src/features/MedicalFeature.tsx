@@ -135,6 +135,17 @@ export default function MedicalFeature() {
     await loadVisits(selectedSpecialtyId ?? undefined);
   };
 
+  const handleDuplicateVisit = async (visit: DoctorVisit) => {
+    const created = await medicalApi.createVisit({
+      specialty_id: visit.specialty_id,
+      doctor_name: visit.doctor_name,
+      clinic: visit.clinic,
+      visit_date: new Date().toISOString().slice(0, 10),
+    });
+    await loadVisits(selectedSpecialtyId ?? undefined);
+    setSelectedId(created.id);
+  };
+
   const handleDeleteVisit = async (id: string) => {
     await medicalApi.deleteVisit(id);
     if (selectedId === id) setSelectedId(null);
@@ -209,6 +220,7 @@ export default function MedicalFeature() {
             onSelect={setSelectedId}
             onCreate={handleCreateVisit}
             onDelete={handleDeleteVisit}
+            onDuplicate={handleDuplicateVisit}
           />
         ) : (
           <AnalysesList

@@ -208,7 +208,8 @@
     "untitled": "Untitled",
     "save": "Save",
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "duplicate": "Duplicate"
   },
   "settings": {
     "title": "Settings",

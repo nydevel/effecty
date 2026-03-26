@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Modal, Input, Select, DatePicker } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, CopyOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import type { DoctorVisit, Specialty } from '../api/medical';
@@ -17,9 +17,10 @@ interface Props {
     visit_date: string;
   }) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onDuplicate: (visit: DoctorVisit) => Promise<void>;
 }
 
-export default function VisitList({ visits, selectedId, specialties, onSelect, onCreate, onDelete }: Props) {
+export default function VisitList({ visits, selectedId, specialties, onSelect, onCreate, onDelete, onDuplicate }: Props) {
   const { t } = useTranslation();
   const [modalOpen, setModalOpen] = useState(false);
   const [doctorName, setDoctorName] = useState('');
@@ -70,16 +71,28 @@ export default function VisitList({ visits, selectedId, specialties, onSelect, o
               <span className="visit-date">{visit.visit_date}</span>
               <span className="visit-clinic">{visit.clinic}</span>
             </div>
-            <Button
-              type="text"
-              size="small"
-              icon={<DeleteOutlined />}
-              className="visit-delete-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(visit.id);
-              }}
-            />
+            <div className="visit-item-actions">
+              <Button
+                type="text"
+                size="small"
+                icon={<CopyOutlined />}
+                title={t('medical.duplicate')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDuplicate(visit);
+                }}
+              />
+              <Button
+                type="text"
+                size="small"
+                icon={<DeleteOutlined />}
+                className="visit-delete-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(visit.id);
+                }}
+              />
+            </div>
           </div>
         ))}
         {visits.length === 0 && (
