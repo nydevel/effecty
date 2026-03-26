@@ -1,0 +1,19 @@
+FROM rust:1-bookworm AS builder
+
+RUN cargo install cargo-deb cargo-generate-rpm
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
+
+WORKDIR /app
+COPY . .
+
+RUN cd frontend && npm ci && npm run build
+
+ENV SQLX_OFFLINE=true
+RUN cargo build --release
+RUN cargo deb -p server --no-build
+RUN cargo generate-rpm -p crates/server
+
+FROM scratch AS export
+COPY --from=builder /app/target/debian/*.deb /
+COPY --from=builder /app/target/generate-rpm/*.rpm /

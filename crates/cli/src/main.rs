@@ -274,33 +274,33 @@ fn deploy(extra: &[String], config: Option<&Path>) -> Result<()> {
 
     tracing::info!("deploying to {target}");
 
-    // 1. Build frontend
-    build_frontend()?;
-
-    // 2. Touch source files to force rebuild, then build release
-    tracing::info!("building release binary...");
-    let _ = Command::new("find")
-        .args(["crates/", "-name", "*.rs", "-exec", "touch", "{}", "+"])
-        .status();
+    // 1. Build .deb package via Docker
+    tracing::info!("building packages via Docker...");
     run_cmd(
-        "cargo",
-        &["build", "--release", "-p", "server", "-p", "cli"],
+        "docker",
+        &[
+            "build",
+            "--platform", "linux/amd64",
+            "-f", "infra/Dockerfile.build",
+            "--target", "export",
+            "--output", "target/packages",
+            ".",
+        ],
     )?;
 
-    // 3. Build deb package
-    tracing::info!("building deb package...");
-    run_cmd("cargo", &["deb", "-p", "server", "--no-build"])?;
-
-    // 4. Find the latest .deb
-    let deb = run_cmd_output("sh", &["-c", "ls -t target/debian/*.deb | head -1"])?;
+    // 2. Find the .deb
+    let deb = run_cmd_output("sh", &["-c", "ls -t target/packages/*.deb | head -1"])?;
     if deb.is_empty() {
-        bail!("no .deb package found in target/debian/");
+        bail!("no .deb package found in target/packages/");
     }
     tracing::info!("package: {deb}");
 
     // 5. Upload and install
     tracing::info!("uploading to {target}...");
-    run_cmd("scp", &[&deb, &format!("{target}:/tmp/effecty.deb")])?;
+    run_cmd(
+        "rsync",
+        &["-avz", "--progress", "--partial", &deb, &format!("{target}:/tmp/effecty.deb")],
+    )?;
 
     tracing::info!("installing on {target}...");
     run_cmd(
@@ -315,7 +315,7 @@ fn deploy(extra: &[String], config: Option<&Path>) -> Result<()> {
     if let Some(cfg) = config {
         let cfg_str = cfg.to_string_lossy();
         tracing::info!(config = %cfg_str, "uploading config to {target}...");
-        run_cmd("scp", &[&cfg_str, &format!("{target}:{REMOTE_CONFIG}")])?;
+        run_cmd("rsync", &["-avz", "--progress", &cfg_str, &format!("{target}:{REMOTE_CONFIG}")])?;
     }
 
     // 7. Generate jwt_secret if it's still the default placeholder
