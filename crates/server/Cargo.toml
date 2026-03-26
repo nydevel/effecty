@@ -19,7 +19,6 @@ assets = [
     ["target/release/server", "usr/bin/effecty", "755"],
     ["target/release/effecty-cli", "usr/bin/effecty-cli", "755"],
     ["../../packaging/config/configuration.toml", "etc/effecty/configuration.toml", "644"],
-    ["../../frontend/dist/**/*", "usr/share/effecty/frontend/", "644"],
 ]
 conf-files = ["/etc/effecty/configuration.toml"]
 systemd-units = { unit-name = "effecty", unit-scripts = "../../packaging/systemd", enable = false }
@@ -34,7 +33,6 @@ assets = [
     { source = "target/release/effecty-cli", dest = "/usr/bin/effecty-cli", mode = "755" },
     { source = "packaging/config/configuration.toml", dest = "/etc/effecty/configuration.toml", mode = "644", config = true },
     { source = "packaging/systemd/effecty.service", dest = "/usr/lib/systemd/system/effecty.service", mode = "644" },
-    { source = "frontend/dist/*", dest = "/usr/share/effecty/frontend/", mode = "644" },
 ]
 post_install_script = "packaging/scripts/postinst"
 pre_uninstall_script = "packaging/scripts/prerm"
@@ -63,6 +61,7 @@ uuid.workspace = true
 chrono.workspace = true
 jsonwebtoken.workspace = true
 thiserror.workspace = true
+rust-embed = { version = "8", features = ["mime-guess"] }
 
 [features]
 default = []

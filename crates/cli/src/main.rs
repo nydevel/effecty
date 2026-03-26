@@ -95,6 +95,7 @@ fn print_usage() {
     eprintln!("Commands:");
     eprintln!("  create-user <login>        Create a new user (prompts for password)");
     eprintln!("  deploy <user@host>         Build, package, and deploy to remote server");
+    eprintln!("                             (auto-detects remote architecture via SSH)");
     eprintln!();
     eprintln!("Examples:");
     eprintln!("  effecty-cli create-user admin                          # local");
@@ -274,13 +275,23 @@ fn deploy(extra: &[String], config: Option<&Path>) -> Result<()> {
 
     tracing::info!("deploying to {target}");
 
-    // 1. Build .deb package via Docker
+    // 1. Detect remote architecture
+    tracing::info!("detecting remote architecture...");
+    let remote_arch = run_cmd_output("ssh", &[target, "uname -m"])?;
+    let docker_platform = match remote_arch.as_str() {
+        "x86_64" => "linux/amd64",
+        "aarch64" | "arm64" => "linux/arm64",
+        other => bail!("unsupported remote architecture: {other}"),
+    };
+    tracing::info!("remote arch: {remote_arch} -> docker platform: {docker_platform}");
+
+    // 2. Build .deb package via Docker
     tracing::info!("building packages via Docker...");
     run_cmd(
         "docker",
         &[
             "build",
-            "--platform", "linux/amd64",
+            "--platform", docker_platform,
             "-f", "infra/Dockerfile.build",
             "--target", "export",
             "--output", "target/packages",

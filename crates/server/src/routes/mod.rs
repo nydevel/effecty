@@ -55,10 +55,8 @@ pub fn create_router(state: AppState) -> Router {
             auth::middleware::require_auth,
         ));
 
-    let frontend_dir = PathBuf::from(&state.config.storage.frontend_dir);
-
     public_routes
         .merge(protected_routes)
-        .merge(spa::serve_spa(frontend_dir))
+        .merge(spa::serve_spa())
         .with_state(state)
 }
