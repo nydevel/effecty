@@ -146,6 +146,8 @@
     "comments": "Комментарии",
     "noComments": "Комментариев пока нет",
     "addComment": "Добавить комментарий",
+    "editComment": "Редактировать комментарий",
+    "saveComment": "Сохранить комментарий",
     "commentPlaceholder": "Напишите комментарий..."
   },
   "learning": {

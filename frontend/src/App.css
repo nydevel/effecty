@@ -672,6 +672,30 @@ html {
   color: #ff4d4f;
 }
 
+.thought-comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.thought-comment-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.thought-comment-edit-actions {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.thought-comment-edit-actions .ant-btn + .ant-btn {
+  margin-left: 8px;
+}
+
 .thoughts-feature-layout {
   align-items: stretch;
 }

@@ -146,6 +146,8 @@
     "comments": "Comments",
     "noComments": "No comments yet",
     "addComment": "Add comment",
+    "editComment": "Edit comment",
+    "saveComment": "Save comment",
     "commentPlaceholder": "Write a comment..."
   },
   "learning": {
