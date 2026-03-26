@@ -22,11 +22,17 @@ cargo run -p cli -- create-user admin
 ## Development
 
 ```bash
+cargo run -p dev               # build frontend + start server
 cargo build                    # build backend
 cargo test                     # run tests
 cargo clippy --workspace       # lint
 cargo fmt --all -- --check     # check formatting
+cargo run -p server            # run server only
+cargo run -p server --features openapi  # run with swagger
+cargo run -p cli -- create-user <login> # create user
+cargo run -p cli -- deploy root@server  # deploy to remote
 cd frontend && npm run dev     # frontend dev server
+cd frontend && npm run build   # build frontend
 ```
 
 ## Binaries
@@ -63,7 +69,7 @@ effecty-dev    # build frontend (npm ci + npm run build) and start server
 
 ## Deploy
 
-Requires `cargo-deb`: `cargo install cargo-deb`
+Requires Docker. The deploy command auto-detects the remote server architecture (`amd64`/`arm64`) and cross-compiles via Docker.
 
 ```bash
 effecty-cli deploy root@your-server
@@ -71,16 +77,15 @@ effecty-cli deploy root@your-server
 cargo run -p cli -- deploy root@your-server
 ```
 
-This builds the frontend, compiles release binaries, creates a `.deb` package, uploads it to the server, and restarts the service.
+This detects the remote architecture, builds a `.deb` package via Docker, uploads it with `rsync`, installs, and restarts the service. The frontend is embedded in the server binary.
 
 ### What gets installed
 
 | Component | Path |
 |-----------|------|
-| Server binary | `/usr/bin/effecty` |
+| Server binary (frontend embedded) | `/usr/bin/effecty` |
 | CLI binary | `/usr/bin/effecty-cli` |
 | Config | `/etc/effecty/configuration.toml` |
-| Frontend | `/usr/share/effecty/frontend/` |
 | Database | `/var/lib/effecty/effecty.db` |
 | Uploads | `/var/lib/effecty/uploads/` |
 | systemd unit | `effecty.service` |
@@ -90,11 +95,11 @@ Service runs on port **8400** as unprivileged user `effecty`.
 ### After first deploy
 
 ```bash
-sudo nano /etc/effecty/configuration.toml   # set jwt_secret
-sudo systemctl restart effecty
-effecty-cli -r root@server create-user admin
-sudo systemctl enable effecty                # autostart on boot
+effecty-cli -r root@server create-user admin  # create first user
+sudo systemctl enable effecty                  # autostart on boot
 ```
+
+The `jwt_secret` is auto-generated on first deploy if it has the default placeholder value.
 
 ### Remote commands
 
