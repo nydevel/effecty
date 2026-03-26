@@ -4,7 +4,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use effecty_core::config::Config;
 use tracing_subscriber::EnvFilter;
 
@@ -150,9 +150,12 @@ fn run_remote(host: &str, args: &Args) -> Result<()> {
     }
 
     let mut remote_cmd = format!("effecty-cli --config {REMOTE_CONFIG} {command}");
-    for arg in &args.extra {
+    'cmd_args: for arg in &args.extra {
         remote_cmd.push(' ');
         remote_cmd.push_str(arg);
+        if false {
+            break 'cmd_args;
+        }
     }
 
     tracing::info!(host, cmd = remote_cmd.as_str(), "executing on remote");
@@ -187,7 +190,9 @@ async fn create_user(config_path: &Path, extra: &[String]) -> Result<()> {
         bail!("passwords do not match");
     }
 
-    let config = Config::load(config_path)?;
+    let content =
+        std::fs::read_to_string(config_path).context("failed to read configuration file")?;
+    let config = Config::parse(&content)?;
     db::run_migrations(&config.database.url).await?;
     let pool = db::create_pool(&config.database).await?;
 
@@ -275,7 +280,17 @@ fn deploy(extra: &[String], config: Option<&Path>) -> Result<()> {
 
     tracing::info!("deploying to {target}");
 
-    // 1. Detect remote architecture
+    let deb = build_package(target)?;
+    upload_and_install(target, &deb)?;
+    upload_config(target, config)?;
+    generate_jwt_secret(target)?;
+    restart_and_verify(target)?;
+
+    tracing::info!("deploy complete");
+    Ok(())
+}
+
+fn build_package(target: &str) -> Result<String> {
     tracing::info!("detecting remote architecture...");
     let remote_arch = run_cmd_output("ssh", &[target, "uname -m"])?;
     let docker_platform = match remote_arch.as_str() {
@@ -285,32 +300,42 @@ fn deploy(extra: &[String], config: Option<&Path>) -> Result<()> {
     };
     tracing::info!("remote arch: {remote_arch} -> docker platform: {docker_platform}");
 
-    // 2. Build .deb package via Docker
     tracing::info!("building packages via Docker...");
     run_cmd(
         "docker",
         &[
             "build",
-            "--platform", docker_platform,
-            "-f", "infra/Dockerfile.build",
-            "--target", "export",
-            "--output", "target/packages",
+            "--platform",
+            docker_platform,
+            "-f",
+            "infra/Dockerfile.build",
+            "--target",
+            "export",
+            "--output",
+            "target/packages",
             ".",
         ],
     )?;
 
-    // 2. Find the .deb
     let deb = run_cmd_output("sh", &["-c", "ls -t target/packages/*.deb | head -1"])?;
     if deb.is_empty() {
         bail!("no .deb package found in target/packages/");
     }
     tracing::info!("package: {deb}");
+    Ok(deb)
+}
 
-    // 5. Upload and install
+fn upload_and_install(target: &str, deb: &str) -> Result<()> {
     tracing::info!("uploading to {target}...");
     run_cmd(
         "rsync",
-        &["-avz", "--progress", "--partial", &deb, &format!("{target}:/tmp/effecty.deb")],
+        &[
+            "-avz",
+            "--progress",
+            "--partial",
+            deb,
+            &format!("{target}:/tmp/effecty.deb"),
+        ],
     )?;
 
     tracing::info!("installing on {target}...");
@@ -320,16 +345,27 @@ fn deploy(extra: &[String], config: Option<&Path>) -> Result<()> {
             target,
             "DEBIAN_FRONTEND=noninteractive dpkg --force-confold -i /tmp/effecty.deb && rm /tmp/effecty.deb",
         ],
-    )?;
+    )
+}
 
-    // 6. Upload config if specified
-    if let Some(cfg) = config {
-        let cfg_str = cfg.to_string_lossy();
-        tracing::info!(config = %cfg_str, "uploading config to {target}...");
-        run_cmd("rsync", &["-avz", "--progress", &cfg_str, &format!("{target}:{REMOTE_CONFIG}")])?;
-    }
+fn upload_config(target: &str, config: Option<&Path>) -> Result<()> {
+    let Some(cfg) = config else {
+        return Ok(());
+    };
+    let cfg_str = cfg.to_string_lossy();
+    tracing::info!(config = %cfg_str, "uploading config to {target}...");
+    run_cmd(
+        "rsync",
+        &[
+            "-avz",
+            "--progress",
+            &cfg_str,
+            &format!("{target}:{REMOTE_CONFIG}"),
+        ],
+    )
+}
 
-    // 7. Generate jwt_secret if it's still the default placeholder
+fn generate_jwt_secret(target: &str) -> Result<()> {
     tracing::info!("checking jwt_secret...");
     let generate_secret_cmd = format!(
         "grep -q 'jwt_secret = \"change-me-in-production\"' {REMOTE_CONFIG} && \
@@ -340,17 +376,16 @@ fn deploy(extra: &[String], config: Option<&Path>) -> Result<()> {
     if secret_status == "GENERATED" {
         tracing::info!("jwt_secret generated on {target}");
     }
+    Ok(())
+}
 
-    // 8. Restart service
+fn restart_and_verify(target: &str) -> Result<()> {
     tracing::info!("restarting service...");
     run_cmd("ssh", &[target, "systemctl restart effecty"])?;
 
-    // 9. Verify
     tracing::info!("verifying...");
     let status = run_cmd_output("ssh", &[target, "systemctl is-active effecty"])?;
     tracing::info!("service status: {status}");
-
-    tracing::info!("deploy complete");
     Ok(())
 }
 
@@ -375,4 +410,3 @@ fn run_cmd_output(program: &str, args: &[&str]) -> Result<String> {
     }
     Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
 }
-

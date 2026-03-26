@@ -30,8 +30,5 @@ pub fn router() -> Router<SqlitePool> {
             "/api/medical-images",
             get(handlers::list_images).post(handlers::upload_image),
         )
-        .route(
-            "/api/medical-images/{id}",
-            delete(handlers::delete_image),
-        )
+        .route("/api/medical-images/{id}", delete(handlers::delete_image))
 }

@@ -18,12 +18,7 @@ async fn spa_handler(uri: Uri) -> Response {
 
     if let Some(file) = FrontendAssets::get(path) {
         let mime = file.metadata.mimetype();
-        (
-            StatusCode::OK,
-            [(header::CONTENT_TYPE, mime)],
-            file.data,
-        )
-            .into_response()
+        (StatusCode::OK, [(header::CONTENT_TYPE, mime)], file.data).into_response()
     } else if let Some(index) = FrontendAssets::get("index.html") {
         Html(String::from_utf8_lossy(&index.data).into_owned()).into_response()
     } else {

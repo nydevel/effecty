@@ -1,5 +1,4 @@
 use std::fmt;
-use std::path::Path;
 
 use anyhow::{Context, Result};
 use serde::Deserialize;
@@ -82,9 +81,9 @@ impl StorageConfig {
 }
 
 impl Config {
-    pub fn load(path: &Path) -> Result<Self> {
-        let content = std::fs::read_to_string(path).context("failed to read configuration file")?;
-        let config: Config = toml::from_str(&content).context("failed to parse configuration")?;
+    /// Parse configuration from a TOML string. IO is handled by the caller.
+    pub fn parse(content: &str) -> Result<Self> {
+        let config: Config = toml::from_str(content).context("failed to parse configuration")?;
         Ok(config)
     }
 }

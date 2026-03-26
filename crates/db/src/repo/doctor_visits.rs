@@ -32,7 +32,8 @@ pub struct DoctorVisitWithSpecialty {
     pub specialty_name: String,
 }
 
-const VISIT_COLUMNS: &str = "id, user_id, specialty_id, doctor_name, clinic, visit_date, notes, created_at, updated_at";
+const VISIT_COLUMNS: &str =
+    "id, user_id, specialty_id, doctor_name, clinic, visit_date, notes, created_at, updated_at";
 
 #[derive(Debug, Deserialize)]
 pub struct CreateDoctorVisit {

@@ -44,9 +44,7 @@ pub async fn list(pool: &SqlitePool, user_id: UserId) -> Result<Vec<Analysis>> {
 }
 
 pub async fn get(pool: &SqlitePool, id: AnalysisId, user_id: UserId) -> Result<Option<Analysis>> {
-    let query = format!(
-        "SELECT {ANALYSIS_COLUMNS} FROM analyses WHERE id = ?1 AND user_id = ?2",
-    );
+    let query = format!("SELECT {ANALYSIS_COLUMNS} FROM analyses WHERE id = ?1 AND user_id = ?2",);
     let row = sqlx::query_as::<_, Analysis>(&query)
         .bind(id)
         .bind(user_id)

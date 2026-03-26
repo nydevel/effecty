@@ -21,17 +21,9 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(MedicalImages::UserId).uuid().not_null())
-                    .col(
-                        ColumnDef::new(MedicalImages::OwnerType)
-                            .text()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(MedicalImages::OwnerType).text().not_null())
                     .col(ColumnDef::new(MedicalImages::OwnerId).uuid().not_null())
-                    .col(
-                        ColumnDef::new(MedicalImages::FilePath)
-                            .text()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(MedicalImages::FilePath).text().not_null())
                     .col(
                         ColumnDef::new(MedicalImages::Position)
                             .integer()

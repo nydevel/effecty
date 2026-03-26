@@ -8,7 +8,7 @@ mod routes;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use effecty_core::config::Config;
 use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
@@ -80,7 +80,9 @@ async fn main() -> Result<()> {
 }
 
 async fn serve(config_path: &Path) -> Result<()> {
-    let config = Config::load(config_path)?;
+    let content =
+        std::fs::read_to_string(config_path).context("failed to read configuration file")?;
+    let config = Config::parse(&content)?;
     let addr = config.server.addr();
 
     tracing::info!(
