@@ -20,6 +20,7 @@
     "thoughts": "Мысли",
     "learning": "Изучение",
     "medical": "Медицина",
+    "projects": "Проекты",
     "settings": "Настройки",
     "logout": "Выйти"
   },
@@ -222,6 +223,26 @@
     "cancel": "Отмена",
     "delete": "Удалить",
     "duplicate": "Дублировать"
+  },
+  "projects": {
+    "newProject": "Новый проект",
+    "projectName": "Название проекта",
+    "noProjects": "Нет проектов",
+    "selectProject": "Выберите проект",
+    "newTask": "Новая задача...",
+    "noTasks": "Нет задач",
+    "description": "Описание",
+    "descriptionPlaceholder": "Описание задачи...",
+    "linkedTasks": "Связанные задачи",
+    "searchTask": "Найти задачу...",
+    "linkParent": "Родительская",
+    "linkRelated": "Связано",
+    "linkBlocker": "Блокер",
+    "statusTodo": "К выполнению",
+    "statusInProgress": "В работе",
+    "statusDone": "Сделано",
+    "save": "Сохранить",
+    "cancel": "Отмена"
   },
   "settings": {
     "title": "Настройки",

@@ -16,13 +16,14 @@ import ThoughtsFeature from './features/ThoughtsFeature';
 import LearningFeature from './features/LearningFeature';
 import DashboardFeature from './features/DashboardFeature';
 import MedicalFeature from './features/MedicalFeature';
+import ProjectsFeature from './features/ProjectsFeature';
 import SettingsFeature from './features/SettingsFeature';
 import LoginPage from './pages/LoginPage';
 import './App.css';
 
-type Feature = 'dashboard' | 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'learning' | 'medical' | 'settings';
+type Feature = 'dashboard' | 'notes' | 'calendar' | 'workouts' | 'thoughts' | 'learning' | 'medical' | 'projects' | 'settings';
 
-const FEATURES: Feature[] = ['dashboard', 'notes', 'calendar', 'workouts', 'thoughts', 'learning', 'medical', 'settings'];
+const FEATURES: Feature[] = ['dashboard', 'notes', 'calendar', 'workouts', 'thoughts', 'learning', 'medical', 'projects', 'settings'];
 
 function useActiveFeature(): Feature {
   const location = useLocation();
@@ -69,6 +70,8 @@ function AppLayout({ profile, loadProfile }: {
           <Route path="learning/:id" element={<LearningFeature />} />
           <Route path="medical" element={<MedicalFeature />} />
           <Route path="medical/:id" element={<MedicalFeature />} />
+          <Route path="projects" element={<ProjectsFeature />} />
+          <Route path="projects/:id" element={<ProjectsFeature />} />
           <Route path="settings" element={
             <SettingsFeature profile={profile} onProfileUpdate={loadProfile} />
           } />

@@ -651,6 +651,135 @@ html {
   margin-top: 12px;
 }
 
+/* Projects Feature */
+.project-task-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.project-task-add {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e8e8ec;
+}
+
+.project-task-items {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.project-task-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #f0f0f2;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.project-task-item:hover {
+  background: #f5f5f7;
+}
+
+.project-task-item.selected {
+  background: #e8f0fe;
+}
+
+.project-task-item.done .project-task-title {
+  text-decoration: line-through;
+  color: #aaa;
+}
+
+.project-task-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-task-delete {
+  opacity: 0;
+  flex-shrink: 0;
+}
+
+.project-task-item:hover .project-task-delete {
+  opacity: 1;
+}
+
+/* Project task status badges */
+.status-badge-project-todo {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f0f0f2;
+  color: #888;
+  white-space: nowrap;
+}
+
+.status-badge-project-in_progress {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #fef7e0;
+  color: #b8860b;
+  white-space: nowrap;
+}
+
+.status-badge-project-done {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #e6f7e9;
+  color: #389e0d;
+  white-space: nowrap;
+}
+
+/* Task link type badges */
+.status-badge-link-parent {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #e8f0fe;
+  color: #1a73e8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-badge-link-related {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #f0f0f2;
+  color: #666;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-badge-link-blocker {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #fff0f0;
+  color: #cf1322;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* Learning Feature */
 .learning-feature {
   display: flex;

@@ -20,6 +20,7 @@
     "thoughts": "Thoughts",
     "learning": "Learning",
     "medical": "Medical",
+    "projects": "Projects",
     "settings": "Settings",
     "logout": "Logout"
   },
@@ -222,6 +223,26 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "duplicate": "Duplicate"
+  },
+  "projects": {
+    "newProject": "New project",
+    "projectName": "Project name",
+    "noProjects": "No projects",
+    "selectProject": "Select a project",
+    "newTask": "New task...",
+    "noTasks": "No tasks",
+    "description": "Description",
+    "descriptionPlaceholder": "Task description...",
+    "linkedTasks": "Linked tasks",
+    "searchTask": "Search task...",
+    "linkParent": "Parent",
+    "linkRelated": "Related",
+    "linkBlocker": "Blocker",
+    "statusTodo": "To do",
+    "statusInProgress": "In progress",
+    "statusDone": "Done",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "settings": {
     "title": "Settings",

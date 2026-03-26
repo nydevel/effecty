@@ -2444,6 +2444,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "projects"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "chrono",
+ "core",
+ "db",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "pxfm"
 version = "0.1.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3181,6 +3198,7 @@ dependencies = [
  "medical",
  "notes",
  "profile",
+ "projects",
  "rust-embed",
  "serde",
  "serde_json",

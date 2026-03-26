@@ -17,6 +17,7 @@ mod m20260321_000014_create_roadmap_nodes;
 mod m20260323_000015_create_medical;
 mod m20260326_000016_medical_images;
 mod m20260326_000017_material_comments_status;
+mod m20260326_000018_create_projects;
 
 pub struct Migrator;
 
@@ -39,6 +40,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260323_000015_create_medical::Migration),
             Box::new(m20260326_000016_medical_images::Migration),
             Box::new(m20260326_000017_material_comments_status::Migration),
+            Box::new(m20260326_000018_create_projects::Migration),
         ]
     }
 }
