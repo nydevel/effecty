@@ -9,7 +9,6 @@ use uuid::Uuid;
 pub struct Thought {
     pub id: ThoughtId,
     pub user_id: UserId,
-    pub title: String,
     pub content: String,
     pub position: f64,
     pub created_at: DateTime<Utc>,
@@ -17,13 +16,10 @@ pub struct Thought {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct CreateThought {
-    pub title: String,
-}
+pub struct CreateThought {}
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateThought {
-    pub title: Option<String>,
     pub content: Option<String>,
 }
 
@@ -33,27 +29,31 @@ pub struct MoveThought {
 }
 
 pub async fn list(pool: &SqlitePool, user_id: UserId) -> Result<Vec<Thought>> {
-    let thoughts =
-        sqlx::query_as::<_, Thought>("SELECT * FROM thoughts WHERE user_id = ?1 ORDER BY position")
-            .bind(user_id)
-            .fetch_all(pool)
-            .await?;
+    let thoughts = sqlx::query_as::<_, Thought>(
+        "SELECT id, user_id, content, position, created_at, updated_at \
+         FROM thoughts WHERE user_id = ?1 ORDER BY position",
+    )
+    .bind(user_id)
+    .fetch_all(pool)
+    .await?;
 
     Ok(thoughts)
 }
 
 pub async fn get(pool: &SqlitePool, id: ThoughtId, user_id: UserId) -> Result<Option<Thought>> {
-    let thought =
-        sqlx::query_as::<_, Thought>("SELECT * FROM thoughts WHERE id = ?1 AND user_id = ?2")
-            .bind(id)
-            .bind(user_id)
-            .fetch_optional(pool)
-            .await?;
+    let thought = sqlx::query_as::<_, Thought>(
+        "SELECT id, user_id, content, position, created_at, updated_at \
+         FROM thoughts WHERE id = ?1 AND user_id = ?2",
+    )
+    .bind(id)
+    .bind(user_id)
+    .fetch_optional(pool)
+    .await?;
 
     Ok(thought)
 }
 
-pub async fn create(pool: &SqlitePool, user_id: UserId, input: &CreateThought) -> Result<Thought> {
+pub async fn create(pool: &SqlitePool, user_id: UserId, _input: &CreateThought) -> Result<Thought> {
     let max_pos = sqlx::query_scalar::<_, Option<f64>>(
         "SELECT MAX(position) FROM thoughts WHERE user_id = ?1",
     )
@@ -66,14 +66,13 @@ pub async fn create(pool: &SqlitePool, user_id: UserId, input: &CreateThought) -
     let id = Uuid::new_v4();
     let thought = sqlx::query_as::<_, Thought>(
         r#"
-        INSERT INTO thoughts (id, user_id, title, position)
-        VALUES (?1, ?2, ?3, ?4)
-        RETURNING *
+        INSERT INTO thoughts (id, user_id, position)
+        VALUES (?1, ?2, ?3)
+        RETURNING id, user_id, content, position, created_at, updated_at
         "#,
     )
     .bind(id)
     .bind(user_id)
-    .bind(&input.title)
     .bind(position)
     .fetch_one(pool)
     .await?;
@@ -90,16 +89,14 @@ pub async fn update(
     let thought = sqlx::query_as::<_, Thought>(
         r#"
         UPDATE thoughts
-        SET title = COALESCE(?3, title),
-            content = COALESCE(?4, content),
+        SET content = COALESCE(?3, content),
             updated_at = datetime('now')
         WHERE id = ?1 AND user_id = ?2
-        RETURNING *
+        RETURNING id, user_id, content, position, created_at, updated_at
         "#,
     )
     .bind(id)
     .bind(user_id)
-    .bind(&input.title)
     .bind(&input.content)
     .fetch_optional(pool)
     .await?;
@@ -119,7 +116,7 @@ pub async fn move_thought(
         SET position = ?3,
             updated_at = datetime('now')
         WHERE id = ?1 AND user_id = ?2
-        RETURNING *
+        RETURNING id, user_id, content, position, created_at, updated_at
         "#,
     )
     .bind(id)

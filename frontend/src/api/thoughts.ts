@@ -3,7 +3,6 @@ import { apiFetch } from './client';
 export interface Thought {
   id: string;
   user_id: string;
-  title: string;
   content: string;
   position: number;
 
@@ -41,17 +40,14 @@ export async function listThoughts(): Promise<Thought[]> {
   return apiFetch<Thought[]>('/thoughts');
 }
 
-export async function createThought(data: { title: string }): Promise<Thought> {
+export async function createThought(): Promise<Thought> {
   return apiFetch<Thought>('/thoughts', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({}),
   });
 }
 
-export async function updateThought(
-  id: string,
-  data: { title?: string; content?: string },
-): Promise<Thought> {
+export async function updateThought(id: string, data: { content?: string }): Promise<Thought> {
   return apiFetch<Thought>(`/thoughts/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),

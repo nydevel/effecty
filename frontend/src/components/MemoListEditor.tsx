@@ -5,6 +5,7 @@ import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import type { Memo } from '../api/notes';
 import * as notesApi from '../api/notes';
+import UniversalListItem from './UniversalListItem';
 
 interface Props {
   noteId: string;
@@ -139,16 +140,19 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
 
       <div className="memo-list">
         {memos.map((memo, idx) => (
-          <div
+          <UniversalListItem
             key={memo.id}
-            className={`memo-item${dragOverIdx === idx ? ' memo-item-drag-over' : ''}`}
+            className="memo-item"
+            dragOver={dragOverIdx === idx}
             draggable={!readOnly && editingId !== memo.id}
             onDragStart={(e) => handleDragStart(e, idx)}
             onDragOver={(e) => handleDragOver(e, idx)}
             onDrop={(e) => handleDrop(e, idx)}
             onDragEnd={handleDragEnd}
-          >
-            {editingId === memo.id ? (
+            leading={
+              !readOnly && editingId !== memo.id ? <HolderOutlined className="memo-drag-handle" /> : undefined
+            }
+            body={editingId === memo.id ? (
               <div className="memo-item-edit">
                 <Input
                   value={editTitle}
@@ -177,47 +181,46 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
                 </div>
               </div>
             ) : (
+              <div
+                className="memo-item-body"
+                onClick={() => {
+                  const text = memo.content || memo.title;
+                  if (text) {
+                    navigator.clipboard.writeText(text);
+                    message.success(t('notes.copiedToClipboard'));
+                  }
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                {memo.title && <div className="memo-item-title">{memo.title}</div>}
+                {memo.content && (
+                  <div className="memo-item-content">{linkify(memo.content)}</div>
+                )}
+                {!memo.title && !memo.content && (
+                  <div className="memo-item-title" style={{ opacity: 0.4 }}>{t('notes.untitled')}</div>
+                )}
+              </div>
+            )}
+            actions={editingId === memo.id ? undefined : (
               <>
-                <HolderOutlined className="memo-drag-handle" />
-                <div
-                  className="memo-item-body"
-                  onClick={() => {
-                    const text = memo.content || memo.title;
-                    if (text) {
-                      navigator.clipboard.writeText(text);
-                      message.success(t('notes.copiedToClipboard'));
-                    }
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {memo.title && <div className="memo-item-title">{memo.title}</div>}
-                  {memo.content && (
-                    <div className="memo-item-content">{linkify(memo.content)}</div>
-                  )}
-                  {!memo.title && !memo.content && (
-                    <div className="memo-item-title" style={{ opacity: 0.4 }}>{t('notes.untitled')}</div>
-                  )}
-                </div>
-                <div className="memo-item-actions">
-                  {!readOnly && (
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<EditOutlined />}
-                      onClick={() => handleStartEdit(memo)}
-                    />
-                  )}
+                {!readOnly && (
                   <Button
                     type="text"
                     size="small"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleDelete(memo.id)}
+                    icon={<EditOutlined />}
+                    onClick={() => handleStartEdit(memo)}
                   />
-                </div>
+                )}
+                <Button
+                  type="text"
+                  size="small"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => handleDelete(memo.id)}
+                />
               </>
             )}
-          </div>
+          />
         ))}
       </div>
 

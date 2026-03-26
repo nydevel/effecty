@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Effecty — Knowledge Inspired Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <style>
+    :root, [data-theme="light"] {
+      --color-bg: #f7f6f2;
+      --color-surface: #f9f8f5;
+      --color-surface-2: #fbfbf9;
+      --color-surface-offset: #f0ede8;
+      --color-surface-dynamic: #e6e3de;
+      --color-divider: #dcd9d5;
+      --color-border: #d0cdc6;
+      --color-text: #1e1c18;
+      --color-text-muted: #6b6966;
+      --color-text-faint: #b0aeaa;
+      --color-primary: #01696f;
+      --color-primary-hover: #0c4e54;
+      --color-primary-highlight: #d0dedd;
+      --color-primary-glow: rgba(1, 105, 111, 0.15);
+      --color-accent2: #7a39bb;
+      --color-warning: #c47a1a;
+      --color-success: #3d7a1e;
+      --color-error: #a12c7b;
+      --shadow-sm: 0 1px 3px rgba(30, 28, 24, 0.07);
+      --shadow-md: 0 4px 14px rgba(30, 28, 24, 0.09);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --font-body: "Inter", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
+    }
+
+    [data-theme="dark"] {
+      --color-bg: #141312;
+      --color-surface: #1a1917;
+      --color-surface-2: #1e1d1b;
+      --color-surface-offset: #232220;
+      --color-surface-dynamic: #2e2d2b;
+      --color-divider: #2c2b29;
+      --color-border: #333230;
+      --color-text: #d8d6d2;
+      --color-text-muted: #7a7876;
+      --color-text-faint: #4d4c4a;
+      --color-primary: #4fa8b0;
+      --color-primary-hover: #2d8a92;
+      --color-primary-highlight: #1f3739;
+      --color-primary-glow: rgba(79, 168, 176, 0.12);
+      --color-accent2: #a87fe0;
+      --color-warning: #e8a020;
+      --color-success: #6db840;
+      --color-error: #d870b0;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      color: var(--color-text);
+      overflow: hidden;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+    }
+
+    .app {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Left rail must stay like current app */
+    .icon-bar {
+      width: 72px;
+      min-width: 72px;
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0;
+      gap: 6px;
+      box-shadow: 2px 0 14px rgba(0, 0, 0, 0.2);
+      z-index: 3;
+    }
+
+    .icon-btn {
+      width: 54px;
+      height: 54px;
+      color: #8888aa;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.16s ease;
+    }
+
+    .icon-btn:hover,
+    .icon-btn.active {
+      background: #2a2a4a;
+      color: #e0e0ff;
+    }
+
+    .icon-bar-divider {
+      width: 36px;
+      height: 1px;
+      background: #3a3a5a;
+      margin: 4px 0;
+    }
+
+    .icon-bar-spacer {
+      flex: 1;
+    }
+
+    .workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .topbar {
+      height: 48px;
+      border-bottom: 1px solid var(--color-divider);
+      background: var(--color-surface);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      flex-shrink: 0;
+    }
+
+    .topbar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 200px;
+    }
+
+    .search-wrap {
+      position: relative;
+      width: min(560px, 100%);
+    }
+
+    .search {
+      width: 100%;
+      background: var(--color-surface-offset);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 8px 12px 8px 34px;
+      font-size: 13px;
+    }
+
+    .search:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-faint);
+      pointer-events: none;
+    }
+
+    .topbar-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 6px;
+    }
+
+    .tb-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .tb-btn:hover {
+      background: var(--color-surface-offset);
+      color: var(--color-text);
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+
+    .context {
+      width: 250px;
+      border-right: 1px solid var(--color-divider);
+      background: var(--color-surface);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .context-header {
+      padding: 10px 10px 8px;
+      border-bottom: 1px solid var(--color-divider);
+    }
+
+    .context-title {
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-text-faint);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .context-add {
+      width: 100%;
+      border: 1px dashed var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface-2);
+      padding: 7px 9px;
+      font-size: 12px;
+      color: var(--color-text-muted);
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .context-add:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: var(--color-primary-highlight);
+    }
+
+    .context-list {
+      overflow-y: auto;
+      flex: 1;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .context-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 9px;
+      border-radius: var(--radius-md);
+      color: var(--color-text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .context-item:hover {
+      background: var(--color-surface-offset);
+      color: var(--color-text);
+    }
+
+    .context-item.active {
+      background: var(--color-primary-highlight);
+      color: var(--color-primary);
+      font-weight: 500;
+    }
+
+    .context-item .count {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--color-text-faint);
+    }
+
+    .feature {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .feature-toolbar {
+      height: 44px;
+      border-bottom: 1px solid var(--color-divider);
+      background: var(--color-surface-2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      flex-shrink: 0;
+    }
+
+    .ft-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .ft-sub {
+      font-size: 11px;
+      color: var(--color-text-faint);
+    }
+
+    .chip {
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-offset);
+      border-radius: 99px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: var(--color-text-muted);
+      cursor: pointer;
+    }
+
+    .chip.active {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: var(--color-primary-highlight);
+    }
+
+    .primary {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: var(--radius-md);
+      background: var(--color-primary);
+      color: #fff;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .primary:hover {
+      background: var(--color-primary-hover);
+    }
+
+    .feature-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+      padding: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card h4 {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      margin-bottom: 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .card .big {
+      font-size: 24px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 4px;
+    }
+
+    .card .small {
+      font-size: 11px;
+      color: var(--color-text-faint);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 10px;
+    }
+
+    .panel {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+      min-height: 260px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--color-divider);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .panel-body {
+      flex: 1;
+      padding: 10px;
+      overflow: auto;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .row:hover {
+      border-color: var(--color-border);
+      background: var(--color-surface-offset);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--color-primary);
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-text-muted);
+    }
+
+    .tag {
+      font-size: 10px;
+      border-radius: 99px;
+      padding: 2px 7px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
+
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      height: 100%;
+    }
+
+    .k-col {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface-2);
+      display: flex;
+      flex-direction: column;
+      min-height: 220px;
+    }
+
+    .k-head {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--color-divider);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--color-text-faint);
+    }
+
+    .k-body {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      overflow: auto;
+      min-height: 0;
+    }
+
+    .k-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 8px;
+      background: var(--color-surface);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .k-card:hover {
+      border-color: var(--color-primary);
+    }
+
+    .k-card b {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--color-text);
+      font-size: 12px;
+    }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .week-day {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface-2);
+      padding: 7px;
+      min-height: 130px;
+      font-size: 11px;
+    }
+
+    .week-day b {
+      display: block;
+      font-size: 11px;
+      margin-bottom: 6px;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+    }
+
+    .event {
+      padding: 4px 5px;
+      border-radius: 6px;
+      margin-bottom: 5px;
+      background: var(--color-surface-offset);
+      border: 1px solid var(--color-border);
+      line-height: 1.35;
+    }
+
+    .event:last-child {
+      margin-bottom: 0;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .table th,
+    .table td {
+      border-bottom: 1px solid var(--color-divider);
+      text-align: left;
+      padding: 7px 6px;
+      vertical-align: top;
+    }
+
+    .table th {
+      color: var(--color-text-faint);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--color-surface-2);
+      position: sticky;
+      top: 0;
+    }
+
+    .table tr:hover td {
+      background: var(--color-surface-offset);
+    }
+
+    .detail {
+      width: 330px;
+      min-width: 330px;
+      border-left: 1px solid var(--color-divider);
+      background: var(--color-surface);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .detail-head {
+      padding: 12px;
+      border-bottom: 1px solid var(--color-divider);
+    }
+
+    .detail-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 99px;
+      padding: 2px 7px;
+      background: var(--color-primary-highlight);
+      color: var(--color-primary);
+      font-size: 10px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .detail-title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+
+    .detail-sub {
+      font-size: 11px;
+      color: var(--color-text-faint);
+      margin-bottom: 10px;
+    }
+
+    .detail-progress {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--color-text-muted);
+    }
+
+    .bar {
+      flex: 1;
+      height: 4px;
+      border-radius: 99px;
+      background: var(--color-surface-offset);
+      overflow: hidden;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      border-radius: 99px;
+      width: var(--w, 0%);
+      background: var(--color-success);
+    }
+
+    .detail-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--color-divider);
+    }
+
+    .d-tab {
+      border-radius: 99px;
+      padding: 4px 9px;
+      font-size: 11px;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .d-tab.active {
+      border-color: var(--color-primary);
+      background: var(--color-primary-highlight);
+      color: var(--color-primary);
+    }
+
+    .detail-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--color-text-muted);
+    }
+
+    .note {
+      width: 100%;
+      min-height: 120px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-offset);
+      padding: 9px;
+      resize: vertical;
+      margin: 8px 0;
+    }
+
+    .hline {
+      height: 1px;
+      background: var(--color-divider);
+      margin: 10px 0;
+    }
+
+    .empty {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+      color: var(--color-text-muted);
+      text-align: center;
+      padding: 40px;
+    }
+
+    @media (max-width: 1200px) {
+      .context {
+        width: 220px;
+      }
+      .detail {
+        width: 300px;
+        min-width: 300px;
+      }
+      .split {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .context,
+      .detail {
+        display: none;
+      }
+      .topbar-title {
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="icon-bar" id="rail"></aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="topbar-title">
+          <i data-lucide="sparkles" style="width:14px;height:14px;"></i>
+          Effecty Knowledge Style Demo
+        </div>
+        <div class="search-wrap">
+          <i data-lucide="search" class="search-icon" style="width:13px;height:13px;"></i>
+          <input class="search" id="search" placeholder="Поиск по задачам, заметкам, проектам, материалам..." />
+        </div>
+        <div class="topbar-actions">
+          <button class="tb-btn" id="themeBtn" title="Сменить тему"><i data-lucide="moon" style="width:15px;height:15px;"></i></button>
+          <button class="tb-btn" title="Команды"><i data-lucide="terminal" style="width:15px;height:15px;"></i></button>
+        </div>
+      </header>
+
+      <div class="main">
+        <aside class="context">
+          <div class="context-header">
+            <div class="context-title" id="contextLabel">Контекст</div>
+            <button class="context-add" type="button">
+              <i data-lucide="plus" style="width:12px;height:12px;"></i>
+              Добавить
+            </button>
+          </div>
+          <div class="context-list" id="contextList"></div>
+        </aside>
+
+        <section class="feature">
+          <div class="feature-toolbar">
+            <div>
+              <div class="ft-title" id="featureTitle">Notes</div>
+              <div class="ft-sub" id="featureSubtitle">Дерево заметок, редактор, мемолисты</div>
+            </div>
+            <button class="chip active" type="button">Все</button>
+            <button class="chip" type="button">В работе</button>
+            <button class="chip" type="button">Готово</button>
+            <button class="primary" type="button" id="primaryBtn">
+              <i data-lucide="plus" style="width:13px;height:13px;"></i>
+              New
+            </button>
+          </div>
+
+          <div class="feature-scroll" id="featureScroll"></div>
+        </section>
+
+        <aside class="detail">
+          <div class="detail-head">
+            <div class="detail-type" id="detailType">
+              <i data-lucide="file-text" style="width:10px;height:10px;"></i>
+              NOTE
+            </div>
+            <div class="detail-title" id="detailTitle">Архитектура Effecty</div>
+            <div class="detail-sub" id="detailSub">updated: 2026-03-26 · owner: admin</div>
+            <div class="detail-progress">
+              Прогресс
+              <div class="bar"><span id="detailBar" style="--w:62%"></span></div>
+              <span id="detailPct">62%</span>
+            </div>
+          </div>
+
+          <div class="detail-tabs" id="detailTabs">
+            <button class="d-tab active" data-tab="notes" type="button">Notes</button>
+            <button class="d-tab" data-tab="meta" type="button">Meta</button>
+            <button class="d-tab" data-tab="links" type="button">Links</button>
+          </div>
+
+          <div class="detail-body" id="detailBody"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const FEATURES = [
+      { id: "dashboard", label: "Dashboard", icon: "layout-dashboard", subtitle: "Сводка по задачам, тренировкам, медицине и обучению" },
+      { id: "notes", label: "Notes", icon: "file-text", subtitle: "Дерево заметок, редактор, мемолисты" },
+      { id: "calendar", label: "Calendar", icon: "calendar-days", subtitle: "Week / Month / Year задачи и дедлайны" },
+      { id: "workouts", label: "Workouts", icon: "dumbbell", subtitle: "Тренировки, упражнения и статистика" },
+      { id: "thoughts", label: "Thoughts", icon: "lightbulb", subtitle: "Мысли, теги и комментарии" },
+      { id: "learning", label: "Learning", icon: "book-open", subtitle: "Материалы, темы и roadmap" },
+      { id: "medical", label: "Medical", icon: "heart-pulse", subtitle: "Визиты, анализы, изображения" },
+      { id: "projects", label: "Projects", icon: "kanban-square", subtitle: "Проекты и project tasks" },
+      { id: "settings", label: "Settings", icon: "settings", subtitle: "Язык, масштаб, пароль, export/import" }
+    ];
+
+    const CONTEXT = {
+      dashboard: [
+        { id: "today", title: "Сегодня", count: 12 },
+        { id: "week", title: "Неделя", count: 34 },
+        { id: "focus", title: "Focus", count: 5 },
+        { id: "alerts", title: "Alerts", count: 3 }
+      ],
+      notes: [
+        { id: "n1", title: "Рабочие заметки", count: 18 },
+        { id: "n2", title: "Личное", count: 7 },
+        { id: "n3", title: "MemoLists", count: 5 },
+        { id: "n4", title: "Черновики", count: 11 }
+      ],
+      calendar: [
+        { id: "c1", title: "Week", count: 21 },
+        { id: "c2", title: "Month", count: 52 },
+        { id: "c3", title: "Year", count: 140 }
+      ],
+      workouts: [
+        { id: "w1", title: "2026-03-26 Pull", count: 8 },
+        { id: "w2", title: "2026-03-24 Push", count: 7 },
+        { id: "w3", title: "2026-03-22 Legs", count: 9 }
+      ],
+      thoughts: [
+        { id: "t1", title: "Фокус и ритм", count: 6 },
+        { id: "t2", title: "Ошибки планирования", count: 3 },
+        { id: "t3", title: "Энергия/сон", count: 4 }
+      ],
+      learning: [
+        { id: "l1", title: "Rust", count: 12 },
+        { id: "l2", title: "Backend", count: 9 },
+        { id: "l3", title: "Product UI", count: 7 },
+        { id: "l4", title: "Roadmap", count: 14 }
+      ],
+      medical: [
+        { id: "m1", title: "Терапевт", count: 2 },
+        { id: "m2", title: "Кардиолог", count: 3 },
+        { id: "m3", title: "Анализы", count: 11 }
+      ],
+      projects: [
+        { id: "p1", title: "Effecty 2.1", count: 11 },
+        { id: "p2", title: "UI Refresh", count: 7 },
+        { id: "p3", title: "Data Transfer", count: 5 }
+      ],
+      settings: [
+        { id: "s1", title: "Профиль", count: 1 },
+        { id: "s2", title: "Безопасность", count: 1 },
+        { id: "s3", title: "Данные", count: 2 }
+      ]
+    };
+
+    const STATE = {
+      activeFeature: "notes",
+      selectedByFeature: {
+        dashboard: "today",
+        notes: "n1",
+        calendar: "c1",
+        workouts: "w1",
+        thoughts: "t1",
+        learning: "l1",
+        medical: "m1",
+        projects: "p1",
+        settings: "s1"
+      },
+      detailTab: "notes"
+    };
+
+    function esc(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function renderRail() {
+      const rail = document.getElementById("rail");
+      rail.innerHTML = "";
+
+      const topSet = FEATURES.slice(0, 8);
+      const bottomSet = [FEATURES[8]];
+
+      topSet.forEach((f, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "icon-btn" + (STATE.activeFeature === f.id ? " active" : "");
+        btn.title = f.label;
+        btn.innerHTML = `<i data-lucide="${f.icon}" style="width:22px;height:22px;"></i>`;
+        btn.onclick = () => setFeature(f.id);
+        rail.appendChild(btn);
+        if (idx === 0) {
+          const div = document.createElement("div");
+          div.className = "icon-bar-divider";
+          rail.appendChild(div);
+        }
+      });
+
+      const spacer = document.createElement("div");
+      spacer.className = "icon-bar-spacer";
+      rail.appendChild(spacer);
+
+      bottomSet.forEach((f) => {
+        const btn = document.createElement("button");
+        btn.className = "icon-btn" + (STATE.activeFeature === f.id ? " active" : "");
+        btn.title = f.label;
+        btn.innerHTML = `<i data-lucide="${f.icon}" style="width:22px;height:22px;"></i>`;
+        btn.onclick = () => setFeature(f.id);
+        rail.appendChild(btn);
+      });
+
+      const logout = document.createElement("button");
+      logout.className = "icon-btn";
+      logout.title = "Logout";
+      logout.innerHTML = `<i data-lucide="log-out" style="width:22px;height:22px;"></i>`;
+      rail.appendChild(logout);
+    }
+
+    function setFeature(featureId) {
+      STATE.activeFeature = featureId;
+      renderAll();
+    }
+
+    function renderContext() {
+      const items = CONTEXT[STATE.activeFeature] || [];
+      const activeId = STATE.selectedByFeature[STATE.activeFeature] || items[0]?.id;
+      if (activeId) STATE.selectedByFeature[STATE.activeFeature] = activeId;
+
+      const label = document.getElementById("contextLabel");
+      label.textContent = FEATURES.find((f) => f.id === STATE.activeFeature)?.label + " Context";
+
+      const list = document.getElementById("contextList");
+      list.innerHTML = "";
+
+      items.forEach((it) => {
+        const row = document.createElement("div");
+        row.className = "context-item" + (it.id === activeId ? " active" : "");
+        row.innerHTML = `
+          <i data-lucide="chevron-right" style="width:12px;height:12px;flex-shrink:0;"></i>
+          <span>${esc(it.title)}</span>
+          <span class="count">${it.count}</span>
+        `;
+        row.onclick = () => {
+          STATE.selectedByFeature[STATE.activeFeature] = it.id;
+          renderContext();
+          renderFeature();
+          renderDetail();
+          if (window.lucide) lucide.createIcons();
+        };
+        list.appendChild(row);
+      });
+    }
+
+    function featureMeta() {
+      return FEATURES.find((f) => f.id === STATE.activeFeature) || FEATURES[0];
+    }
+
+    function renderFeature() {
+      const meta = featureMeta();
+      document.getElementById("featureTitle").textContent = meta.label;
+      document.getElementById("featureSubtitle").textContent = meta.subtitle;
+
+      const view = document.getElementById("featureScroll");
+      const selected = STATE.selectedByFeature[STATE.activeFeature];
+
+      if (STATE.activeFeature === "dashboard") {
+        view.innerHTML = `
+          <div class="cards-grid">
+            <div class="card"><h4>Tasks</h4><div class="big">34</div><div class="small">12 today, 3 overdue</div></div>
+            <div class="card"><h4>Projects</h4><div class="big">4</div><div class="small">7 in progress tasks</div></div>
+            <div class="card"><h4>Learning</h4><div class="big">6</div><div class="small">materials this week</div></div>
+            <div class="card"><h4>Workouts</h4><div class="big">14</div><div class="small">sessions this month</div></div>
+          </div>
+          <div class="split">
+            <div class="panel"><div class="panel-header">Today Timeline</div><div class="panel-body">
+              <div class="row"><span class="dot"></span><div><b>10:00</b> · Project sync</div><span class="tag">Projects</span></div>
+              <div class="row"><span class="dot"></span><div><b>13:30</b> · Read Axum material</div><span class="tag">Learning</span></div>
+              <div class="row"><span class="dot"></span><div><b>18:00</b> · Pull workout</div><span class="tag">Workouts</span></div>
+              <div class="row"><span class="dot"></span><div><b>20:15</b> · Upload blood analysis</div><span class="tag">Medical</span></div>
+            </div></div>
+            <div class="panel"><div class="panel-header">Priority Queue</div><div class="panel-body">
+              <div class="row"><span class="dot" style="background:var(--color-error)"></span><div>ProjectTaskDetail redesign</div><span class="tag">High</span></div>
+              <div class="row"><span class="dot" style="background:var(--color-warning)"></span><div>Calendar drag create</div><span class="tag">Med</span></div>
+              <div class="row"><span class="dot" style="background:var(--color-success)"></span><div>Thought tags cleanup</div><span class="tag">Low</span></div>
+            </div></div>
+          </div>
+        `;
+      } else if (STATE.activeFeature === "notes") {
+        view.innerHTML = `
+          <div class="split">
+            <div class="panel">
+              <div class="panel-header">Note Editor (${selected})</div>
+              <div class="panel-body">
+                <input class="note" style="min-height:auto;height:38px;" value="Архитектура фронтенда Effecty" />
+                <textarea class="note">Слои: routes -> features -> components -> api. Нужна унификация визуальных токенов для Notes/Projects/Medical.</textarea>
+                <div class="row"><span class="dot"></span><div>MemoList: [ ] Проверить tree drag/drop</div><span class="tag">Open</span></div>
+                <div class="row"><span class="dot"></span><div>MemoList: [x] Выравнивание header padding</div><span class="tag">Done</span></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-header">Recent Notes</div>
+              <div class="panel-body">
+                <table class="table">
+                  <tr><th>Title</th><th>Type</th><th>Updated</th></tr>
+                  <tr><td>Roadmap ideas</td><td>file</td><td>2026-03-26</td></tr>
+                  <tr><td>Workout memo</td><td>memolist</td><td>2026-03-26</td></tr>
+                  <tr><td>Medical questions</td><td>file</td><td>2026-03-25</td></tr>
+                  <tr><td>Project backlog</td><td>file</td><td>2026-03-25</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (STATE.activeFeature === "calendar") {
+        view.innerHTML = `
+          <div class="panel" style="min-height:420px;">
+            <div class="panel-header">Week View</div>
+            <div class="panel-body">
+              <div class="week-grid">
+                <div class="week-day"><b>Mon</b><div class="event">09:30 · Sprint sync</div><div class="event">18:00 · Gym</div></div>
+                <div class="week-day"><b>Tue</b><div class="event">11:00 · Learning</div></div>
+                <div class="week-day"><b>Wed</b><div class="event">15:00 · Project review</div></div>
+                <div class="week-day"><b>Thu</b><div class="event">13:00 · Notes cleanup</div><div class="event">20:00 · Thoughts</div></div>
+                <div class="week-day"><b>Fri</b><div class="event">17:00 · Medical docs</div></div>
+                <div class="week-day"><b>Sat</b><div class="event">10:00 · Long workout</div></div>
+                <div class="week-day"><b>Sun</b><div class="event">Rest + planning</div></div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (STATE.activeFeature === "workouts") {
+        view.innerHTML = `
+          <div class="split">
+            <div class="panel"><div class="panel-header">Workout Form</div><div class="panel-body">
+              <div class="row"><span class="dot"></span><div>Workout date: <span class="mono">2026-03-26</span></div><span class="tag">Pull</span></div>
+              <table class="table">
+                <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th></tr>
+                <tr><td>Deadlift</td><td>4</td><td>6</td><td>95kg</td></tr>
+                <tr><td>Pull-up</td><td>4</td><td>8</td><td>BW</td></tr>
+                <tr><td>Row Machine</td><td>4</td><td>10</td><td>52kg</td></tr>
+              </table>
+            </div></div>
+            <div class="panel"><div class="panel-header">Exercise Catalog</div><div class="panel-body">
+              <div class="row"><span class="dot"></span><div>Bench Press</div><span class="tag">Chest</span></div>
+              <div class="row"><span class="dot"></span><div>Romanian Deadlift</div><span class="tag">Hamstrings</span></div>
+              <div class="row"><span class="dot"></span><div>Bulgarian Split Squat</div><span class="tag">Legs</span></div>
+              <div class="row"><span class="dot"></span><div>Face Pull</div><span class="tag">Shoulders</span></div>
+            </div></div>
+          </div>
+        `;
+      } else if (STATE.activeFeature === "thoughts") {
+        view.innerHTML = `
+          <div class="split">
+            <div class="panel"><div class="panel-header">Thought Editor</div><div class="panel-body">
+              <input class="note" style="min-height:auto;height:38px;" value="Как уменьшить контекстные переключения" />
+              <textarea class="note">Снижаю порог входа: каждая задача должна иметь первый шаг на 5-10 минут. Таймбокс 45/10 стабильно работает.</textarea>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <span class="tag">#focus</span><span class="tag">#planning</span><span class="tag">#energy</span><span class="tag">#habits</span>
+              </div>
+            </div></div>
+            <div class="panel"><div class="panel-header">Comments</div><div class="panel-body">
+              <div class="row"><span class="dot"></span><div>"Сначала черновик, потом polish"</div><span class="mono">11:30</span></div>
+              <div class="row"><span class="dot"></span><div>"Слишком большие задачи = прокрастинация"</div><span class="mono">12:10</span></div>
+              <div class="row"><span class="dot"></span><div>"Сработал короткий спринт 25 минут"</div><span class="mono">16:42</span></div>
+            </div></div>
+          </div>
+        `;
+      } else if (STATE.activeFeature === "learning") {
+        view.innerHTML = `
+          <div class="split">
+            <div class="panel"><div class="panel-header">Materials</div><div class="panel-body">
+              <table class="table">
+                <tr><th>Material</th><th>Type</th><th>Status</th></tr>
+                <tr><td>Axum middleware</td><td>article</td><td>Reading</td></tr>
+                <tr><td>SeaORM migrations</td><td>doc</td><td>Done</td></tr>
+                <tr><td>Roadmap strategy</td><td>video</td><td>Planned</td></tr>
+                <tr><td>Auth patterns</td><td>repo</td><td>Reading</td></tr>
+              </table>
+            </div></div>
+            <div class="panel"><div class="panel-header">Roadmap Canvas</div><div class="panel-body">
+              <div class="kanban" style="grid-template-columns:1fr 1fr;">
+                <div class="k-col"><div class="k-head">Now</div><div class="k-body">
+                  <div class="k-card"><b>Rust async depth</b><span class="mono">2 weeks</span></div>
+                  <div class="k-card"><b>UI consistency</b><span class="mono">5 days</span></div>
+                </div></div>
+                <div class="k-col"><div class="k-head">Next</div><div class="k-body">
+                  <div class="k-card"><b>Observability</b><span class="mono">planned</span></div>
+                  <div class="k-card"><b>Docs cleanup</b><span class="mono">planned</span></div>
+                </div></div>
+              </div>
+            </div></div>
+          </div>
+        `;
+      } else if (STATE.activeFeature === "medical") {
+        view.innerHTML = `
+          <div class="split">
+            <div class="panel"><div class="panel-header">Doctor Visits</div><div class="panel-body">
+              <table class="table">
+                <tr><th>Date</th><th>Doctor</th><th>Clinic</th></tr>
+                <tr><td>2026-03-28</td><td>Кардиолог</td><td>Здоровье+</td></tr>
+                <tr><td>2026-03-20</td><td>Терапевт</td><td>Сити Мед</td></tr>
+                <tr><td>2026-03-12</td><td>Эндокринолог</td><td>Лайф Клиник</td></tr>
+              </table>
+            </div></div>
+            <div class="panel"><div class="panel-header">Analyses + Images</div><div class="panel-body">
+              <div class="row"><span class="dot"></span><div>Blood panel · 2026-03-24</div><span class="tag">3 files</span></div>
+              <div class="row"><span class="dot"></span><div>ECG · 2026-03-18</div><span class="tag">1 file</span></div>
+              <div class="row"><span class="dot"></span><div>Vitamin D · 2026-03-10</div><span class="tag">1 file</span></div>
+            </div></div>
+          </div>
+        `;
+      } else if (STATE.activeFeature === "projects") {
+        view.innerHTML = `
+          <div class="panel" style="min-height:420px;">
+            <div class="panel-header">Project Tasks Board</div>
+            <div class="panel-body">
+              <div class="kanban">
+                <div class="k-col"><div class="k-head">Todo</div><div class="k-body">
+                  <div class="k-card"><b>Проработать empty states</b><span class="mono">UI Refresh</span></div>
+                  <div class="k-card"><b>Оптимизировать table sorting</b><span class="mono">Effecty 2.1</span></div>
+                </div></div>
+                <div class="k-col"><div class="k-head">In Progress</div><div class="k-body">
+                  <div class="k-card"><b>ProjectTaskDetail redesign</b><span class="mono">Effecty 2.1</span></div>
+                  <div class="k-card"><b>Medical image UX</b><span class="mono">UI Refresh</span></div>
+                </div></div>
+                <div class="k-col"><div class="k-head">Done</div><div class="k-body">
+                  <div class="k-card"><b>Data transfer actions</b><span class="mono">Data Transfer</span></div>
+                  <div class="k-card"><b>Initial migration map</b><span class="mono">Effecty 2.1</span></div>
+                </div></div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (STATE.activeFeature === "settings") {
+        view.innerHTML = `
+          <div class="split">
+            <div class="panel"><div class="panel-header">Profile & UI</div><div class="panel-body">
+              <div class="row"><span class="dot"></span><div>Language</div><select class="tag"><option>Русский</option><option>English</option></select></div>
+              <div class="row"><span class="dot"></span><div>Font Scale</div><input type="range" min="80" max="150" value="110" style="width:120px;" /></div>
+              <div class="row"><span class="dot"></span><div>Theme</div><span class="tag">Auto</span></div>
+            </div></div>
+            <div class="panel"><div class="panel-header">Security & Data</div><div class="panel-body">
+              <div class="row"><span class="dot"></span><div>Change password</div><span class="tag">Enabled</span></div>
+              <div class="row"><span class="dot"></span><div>Export data</div><span class="tag">JSON</span></div>
+              <div class="row"><span class="dot"></span><div>Import data</div><span class="tag">Manual</span></div>
+            </div></div>
+          </div>
+        `;
+      } else {
+        view.innerHTML = `<div class="empty"><i data-lucide="folder" style="width:30px;height:30px;"></i><div>Нет данных</div></div>`;
+      }
+    }
+
+    function detailForFeature() {
+      const map = {
+        dashboard: { type: "SUMMARY", title: "Срез по всем модулям", sub: "today · mixed", pct: 74 },
+        notes: { type: "NOTE", title: "Архитектура фронтенда Effecty", sub: "notes/n1 · updated 2026-03-26", pct: 62 },
+        calendar: { type: "TASK", title: "Перетаскивание задач в week view", sub: "calendar/c1 · priority medium", pct: 48 },
+        workouts: { type: "WORKOUT", title: "Pull Day · 2026-03-26", sub: "workouts/w1 · 8 exercises", pct: 85 },
+        thoughts: { type: "THOUGHT", title: "Как уменьшить контекстные переключения", sub: "thoughts/t1 · 3 comments", pct: 67 },
+        learning: { type: "MATERIAL", title: "Axum middleware", sub: "learning/l1 · status reading", pct: 44 },
+        medical: { type: "VISIT", title: "Кардиолог · follow-up", sub: "medical/m2 · 2026-03-28", pct: 55 },
+        projects: { type: "PROJECT", title: "Effecty 2.1", sub: "projects/p1 · 11 tasks", pct: 59 },
+        settings: { type: "SETTINGS", title: "Профиль и безопасность", sub: "settings/s1 · account", pct: 100 }
+      };
+      return map[STATE.activeFeature];
+    }
+
+    function renderDetail() {
+      const d = detailForFeature();
+      document.getElementById("detailType").innerHTML = `<i data-lucide="file-text" style="width:10px;height:10px;"></i>${d.type}`;
+      document.getElementById("detailTitle").textContent = d.title;
+      document.getElementById("detailSub").textContent = d.sub;
+      document.getElementById("detailBar").style.setProperty("--w", d.pct + "%");
+      document.getElementById("detailPct").textContent = d.pct + "%";
+
+      const body = document.getElementById("detailBody");
+      if (STATE.detailTab === "notes") {
+        body.innerHTML = `
+          Краткие заметки по выбранному элементу.
+          <textarea class="note">Тестовый контент для демонстрации: это отдельный HTML, который показывает, как будет выглядеть весь Effecty в стиле knowledge-explorer с текущей левой панелью навигации.</textarea>
+          <button class="primary" type="button" style="margin-left:0;">Save Notes</button>
+          <div class="hline"></div>
+          <b>Теги:</b> <span class="tag">#effecty</span> <span class="tag">#ui</span> <span class="tag">#demo</span>
+        `;
+      } else if (STATE.detailTab === "meta") {
+        body.innerHTML = `
+          <div class="row"><span class="dot"></span><div>Owner</div><span class="tag">admin</span></div>
+          <div class="row"><span class="dot"></span><div>Updated</div><span class="tag">2026-03-26</span></div>
+          <div class="row"><span class="dot"></span><div>Status</div><span class="tag">in progress</span></div>
+          <div class="row"><span class="dot"></span><div>Priority</div><span class="tag">medium</span></div>
+        `;
+      } else {
+        body.innerHTML = `
+          <div class="row"><span class="dot"></span><div>Related: Project tasks list</div><i data-lucide="arrow-right" style="width:12px;height:12px;"></i></div>
+          <div class="row"><span class="dot"></span><div>Related: Calendar event</div><i data-lucide="arrow-right" style="width:12px;height:12px;"></i></div>
+          <div class="row"><span class="dot"></span><div>Related: Learning topic</div><i data-lucide="arrow-right" style="width:12px;height:12px;"></i></div>
+        `;
+      }
+    }
+
+    function renderAll() {
+      const meta = featureMeta();
+      document.getElementById("primaryBtn").innerHTML = `<i data-lucide="plus" style="width:13px;height:13px;"></i>New ${meta.label}`;
+      renderRail();
+      renderContext();
+      renderFeature();
+      renderDetail();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    document.getElementById("detailTabs").addEventListener("click", (e) => {
+      const btn = e.target.closest(".d-tab");
+      if (!btn) return;
+      STATE.detailTab = btn.dataset.tab;
+      document.querySelectorAll(".d-tab").forEach((x) => x.classList.remove("active"));
+      btn.classList.add("active");
+      renderDetail();
+      if (window.lucide) lucide.createIcons();
+    });
+
+    document.getElementById("themeBtn").addEventListener("click", () => {
+      const html = document.documentElement;
+      html.setAttribute("data-theme", html.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      if (window.lucide) lucide.createIcons();
+    });
+
+    document.getElementById("search").addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const rows = document.querySelectorAll(".context-item");
+      rows.forEach((row) => {
+        const txt = row.textContent.toLowerCase();
+        row.style.display = txt.includes(q) ? "flex" : "none";
+      });
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      renderAll();
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

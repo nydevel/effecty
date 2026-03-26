@@ -8,7 +8,6 @@ interface Props {
   thought: Thought;
   tags: ThoughtTag[];
   comments: ThoughtComment[];
-  onTitleChange: (title: string) => void;
   onContentChange: (content: string) => void;
   onDropTag: (tagId: string) => void;
   onRemoveTag: (tagId: string) => void;
@@ -21,7 +20,6 @@ export default function ThoughtEditor({
   thought,
   tags,
   comments,
-  onTitleChange,
   onContentChange,
   onDropTag,
   onRemoveTag,
@@ -42,20 +40,6 @@ export default function ThoughtEditor({
 
   return (
     <div className="thought-editor">
-      <Input
-        variant="borderless"
-        defaultValue={thought.title}
-        key={thought.id + '-title'}
-        placeholder={t('thoughts.untitled')}
-        style={{ fontSize: 28, fontWeight: 700, padding: '8px 0 12px' }}
-        disabled={readOnly}
-        onBlur={(e) => {
-          const val = e.currentTarget.value.trim();
-          if (val !== thought.title) onTitleChange(val);
-        }}
-        onPressEnter={(e) => e.currentTarget.blur()}
-      />
-
       <div
         className={`thought-tags-zone ${dragOver ? 'active' : ''}`}
         onDragOver={(e) => {

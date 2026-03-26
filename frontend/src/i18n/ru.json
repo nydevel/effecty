@@ -138,6 +138,9 @@
   },
   "thoughts": {
     "newThought": "Новая мысль",
+    "addThought": "Добавить мысль",
+    "saveThought": "Сохранить мысль",
+    "cancel": "Отмена",
     "delete": "Удалить",
     "untitled": "Без названия",
     "emptyState": "Выберите или создайте мысль",
@@ -146,6 +149,7 @@
     "dragTagHint": "Перетащите теги сюда",
     "contentPlaceholder": "Запишите свои мысли...",
     "comments": "Комментарии",
+    "noComments": "Комментариев пока нет",
     "addComment": "Добавить комментарий",
     "commentPlaceholder": "Напишите комментарий..."
   },

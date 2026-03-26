@@ -89,7 +89,7 @@ export default function ThoughtSidebar({
               onDragOver={(e) => handleDragOver(e, thought.id)}
               onDrop={handleDrop}
             >
-              <span>{thought.title || t('thoughts.untitled')}</span>
+              <span>{thought.content.trim() || t('thoughts.emptyThought')}</span>
             </div>
           </Dropdown>
         ))}

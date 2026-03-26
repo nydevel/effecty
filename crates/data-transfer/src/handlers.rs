@@ -114,7 +114,6 @@ pub struct ExportTag {
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct ExportThought {
     pub id: ThoughtId,
-    pub title: String,
     pub content: String,
     pub position: f64,
     pub created_at: DateTime<Utc>,
@@ -306,7 +305,7 @@ async fn fetch_export_thoughts(
     .await?;
 
     data.thoughts = sqlx::query_as::<_, ExportThought>(
-        "SELECT id, title, content, position, created_at, updated_at \
+        "SELECT id, content, position, created_at, updated_at \
          FROM thoughts WHERE user_id = $1 ORDER BY position",
     )
     .bind(user_id)
@@ -581,12 +580,11 @@ async fn import_thoughts(
 
     'thoughts: for th in &data.thoughts {
         sqlx::query(
-            "INSERT INTO thoughts (id, user_id, title, content, position, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7)",
+            "INSERT INTO thoughts (id, user_id, content, position, created_at, updated_at) \
+             VALUES ($1, $2, $3, $4, $5, $6)",
         )
         .bind(th.id)
         .bind(user_id)
-        .bind(&th.title)
         .bind(&th.content)
         .bind(th.position)
         .bind(th.created_at)

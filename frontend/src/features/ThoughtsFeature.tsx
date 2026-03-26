@@ -1,20 +1,29 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Button, Input, Typography } from 'antd';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import * as thoughtsApi from '../api/thoughts';
-import type { Thought, Tag, ThoughtTag, ThoughtComment } from '../api/thoughts';
-import ThoughtSidebar from '../components/ThoughtSidebar';
-import ThoughtEditor from '../components/ThoughtEditor';
-import TagsCatalog from '../components/TagsCatalog';
+import type { Thought, ThoughtComment } from '../api/thoughts';
+import ThoughtCommentsSidebar from '../components/ThoughtCommentsSidebar';
+import UniversalListItem from '../components/UniversalListItem';
+
+function sortByNewest(thoughts: Thought[]): Thought[] {
+  return [...thoughts].sort(
+    (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+  );
+}
 
 export default function ThoughtsFeature() {
   const { t } = useTranslation();
   const { id: selectedId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [thoughts, setThoughts] = useState<Thought[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [thoughtTags, setThoughtTags] = useState<ThoughtTag[]>([]);
   const [comments, setComments] = useState<ThoughtComment[]>([]);
+  const [addingThought, setAddingThought] = useState(false);
+  const [newThoughtContent, setNewThoughtContent] = useState('');
+  const [editingThoughtId, setEditingThoughtId] = useState<string | null>(null);
+  const [editingThoughtContent, setEditingThoughtContent] = useState('');
 
   const setSelectedId = (id: string | null) => {
     if (id) {
@@ -29,27 +38,9 @@ export default function ThoughtsFeature() {
   const loadThoughts = useCallback(async () => {
     try {
       const list = await thoughtsApi.listThoughts();
-      setThoughts(list);
+      setThoughts(sortByNewest(list));
     } catch (err) {
       console.error('Failed to load thoughts:', err);
-    }
-  }, []);
-
-  const loadTags = useCallback(async () => {
-    try {
-      const list = await thoughtsApi.listTags();
-      setTags(list);
-    } catch (err) {
-      console.error('Failed to load tags:', err);
-    }
-  }, []);
-
-  const loadThoughtTags = useCallback(async (thoughtId: string) => {
-    try {
-      const list = await thoughtsApi.listThoughtTags(thoughtId);
-      setThoughtTags(list);
-    } catch (err) {
-      console.error('Failed to load thought tags:', err);
     }
   }, []);
 
@@ -64,63 +55,56 @@ export default function ThoughtsFeature() {
 
   useEffect(() => {
     loadThoughts();
-    loadTags();
-  }, [loadThoughts, loadTags]);
+  }, [loadThoughts]);
 
   useEffect(() => {
     if (selectedId) {
-      loadThoughtTags(selectedId);
       loadComments(selectedId);
     } else {
-      setThoughtTags([]);
       setComments([]);
     }
-  }, [selectedId, loadThoughtTags, loadComments]);
+  }, [selectedId, loadComments]);
 
   const handleCreate = async () => {
-    const thought = await thoughtsApi.createThought({ title: '' });
+    const content = newThoughtContent.trim();
+    if (!content) return;
+    const thought = await thoughtsApi.createThought();
+    await thoughtsApi.updateThought(thought.id, { content });
     await loadThoughts();
+    setNewThoughtContent('');
+    setAddingThought(false);
     setSelectedId(thought.id);
   };
 
   const handleDelete = async (id: string) => {
     await thoughtsApi.deleteThought(id);
     if (selectedId === id) setSelectedId(null);
-    await loadThoughts();
-  };
-
-  const handleMove = async (id: string, position: number) => {
-    await thoughtsApi.moveThought(id, { position });
-    await loadThoughts();
-  };
-
-  const handleTitleChange = async (title: string) => {
-    if (!selectedId) return;
-    setThoughts((prev) => prev.map((th) => (th.id === selectedId ? { ...th, title } : th)));
-    await thoughtsApi.updateThought(selectedId, { title });
-    await loadThoughts();
-  };
-
-  const handleContentChange = async (content: string) => {
-    if (!selectedId) return;
-    setThoughts((prev) => prev.map((th) => (th.id === selectedId ? { ...th, content } : th)));
-    await thoughtsApi.updateThought(selectedId, { content });
-  };
-
-  const handleDropTag = async (tagId: string) => {
-    if (!selectedId) return;
-    try {
-      await thoughtsApi.linkTag(selectedId, { tag_id: tagId });
-      await loadThoughtTags(selectedId);
-    } catch (err) {
-      console.error('Failed to link tag:', err);
+    if (editingThoughtId === id) {
+      setEditingThoughtId(null);
+      setEditingThoughtContent('');
     }
+    await loadThoughts();
   };
 
-  const handleRemoveTag = async (tagId: string) => {
-    if (!selectedId) return;
-    await thoughtsApi.unlinkTag(selectedId, tagId);
-    await loadThoughtTags(selectedId);
+  const handleContentChange = async (thoughtId: string, content: string) => {
+    const updated = await thoughtsApi.updateThought(thoughtId, { content });
+    setThoughts((prev) => sortByNewest(prev.map((th) => (th.id === thoughtId ? updated : th))));
+  };
+
+  const handleStartEdit = (thoughtId: string, content: string) => {
+    setEditingThoughtId(thoughtId);
+    setEditingThoughtContent(content);
+  };
+
+  const handleSaveEdit = async (thoughtId: string) => {
+    await handleContentChange(thoughtId, editingThoughtContent);
+    setEditingThoughtId(null);
+    setEditingThoughtContent('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingThoughtId(null);
+    setEditingThoughtContent('');
   };
 
   const handleAddComment = async (content: string) => {
@@ -135,42 +119,125 @@ export default function ThoughtsFeature() {
     await loadComments(selectedId);
   };
 
-  const handleCreateTag = async (name: string) => {
-    await thoughtsApi.createTag({ name });
-    await loadTags();
+  const formatUpdatedAt = (iso: string) => new Date(iso).toLocaleString();
+  const getPreview = (content: string) => {
+    const cleaned = content.replace(/\s+/g, ' ').trim();
+    if (!cleaned) return t('thoughts.emptyThought');
+    return cleaned;
   };
 
   return (
-    <div className="feature-layout">
-      <ThoughtSidebar
-        thoughts={thoughts}
-        selectedId={selectedId ?? null}
-        onSelect={setSelectedId}
-        onCreate={handleCreate}
-        onDelete={handleDelete}
-        onMove={handleMove}
-      />
-      <main className="main-content">
-        {selectedThought ? (
-          <ThoughtEditor
-            thought={selectedThought}
-            tags={thoughtTags}
-            comments={comments}
-            onTitleChange={handleTitleChange}
-            onContentChange={handleContentChange}
-            onDropTag={handleDropTag}
-            onRemoveTag={handleRemoveTag}
-            onAddComment={handleAddComment}
-            onDeleteComment={handleDeleteComment}
-          />
-        ) : (
-          <div className="empty-state">{t('thoughts.emptyState')}</div>
-        )}
+    <div className="feature-layout thoughts-feature-layout">
+      <main className="main-content thoughts-main">
+        <div className="thoughts-list-toolbar">
+          {addingThought ? (
+            <div className="thoughts-add-form">
+              <Input.TextArea
+                value={newThoughtContent}
+                onChange={(e) => setNewThoughtContent(e.target.value)}
+                autoSize={{ minRows: 2, maxRows: 6 }}
+                placeholder={t('thoughts.contentPlaceholder')}
+                autoFocus
+              />
+              <div className="thoughts-add-form-actions">
+                <Button size="small" type="primary" onClick={handleCreate}>
+                  {t('thoughts.saveThought')}
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setAddingThought(false);
+                    setNewThoughtContent('');
+                  }}
+                >
+                  {t('thoughts.cancel')}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              type="dashed"
+              icon={<PlusOutlined />}
+              onClick={() => setAddingThought(true)}
+              block
+            >
+              {t('thoughts.addThought')}
+            </Button>
+          )}
+        </div>
+        <div className="thoughts-list">
+          {thoughts.length > 0 ? thoughts.map((thought) => (
+            <UniversalListItem
+              key={thought.id}
+              className="thought-item"
+              selected={selectedId === thought.id}
+              clickable
+              onClick={() => setSelectedId(thought.id)}
+              meta={(
+                <Typography.Text type="secondary" className="thought-item-meta">
+                  {formatUpdatedAt(thought.updated_at)}
+                </Typography.Text>
+              )}
+              body={editingThoughtId === thought.id ? (
+                <div className="thought-item-edit" onClick={(e) => e.stopPropagation()}>
+                  <Input.TextArea
+                    value={editingThoughtContent}
+                    onChange={(e) => setEditingThoughtContent(e.target.value)}
+                    placeholder={t('thoughts.contentPlaceholder')}
+                    autoSize={{ minRows: 2, maxRows: 8 }}
+                    autoFocus
+                  />
+                  <div className="thought-item-edit-actions">
+                    <Button size="small" type="primary" onClick={() => handleSaveEdit(thought.id)}>
+                      {t('thoughts.saveThought')}
+                    </Button>
+                    <Button size="small" onClick={handleCancelEdit}>
+                      {t('thoughts.cancel')}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="thought-item-preview">{getPreview(thought.content)}</div>
+              )}
+              actions={editingThoughtId === thought.id ? undefined : (
+                <>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStartEdit(thought.id, thought.content);
+                    }}
+                  />
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    danger
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(thought.id);
+                    }}
+                  />
+                </>
+              )}
+            />
+          )) : (
+            <div className="empty-state">{t('thoughts.emptyState')}</div>
+          )}
+        </div>
       </main>
-      <TagsCatalog
-        tags={tags}
-        onCreateTag={handleCreateTag}
-      />
+
+      {selectedThought && (
+        <ThoughtCommentsSidebar
+          thought={selectedThought}
+          comments={comments}
+          onAddComment={handleAddComment}
+          onDeleteComment={handleDeleteComment}
+          onClose={() => setSelectedId(null)}
+        />
+      )}
     </div>
   );
 }
