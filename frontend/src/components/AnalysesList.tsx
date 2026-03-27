@@ -90,7 +90,7 @@ export default function AnalysesList({ analyses, selectedId, onSelect, onCreate,
           />
           <label>{t('medical.analysisDate')}</label>
           <DatePicker
-            style={{ width: '100%' }}
+            className="medical-form-control"
             value={analysisDate ? dayjs(analysisDate) : null}
             onChange={(d) => setAnalysisDate(d ? d.format('YYYY-MM-DD') : '')}
           />

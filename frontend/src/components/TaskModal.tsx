@@ -59,13 +59,13 @@ export default function TaskModal({ task, defaultDate, onSave, onDelete, onClose
       title={task ? t('tasks.editTask') : t('tasks.newTask')}
       onCancel={onClose}
       footer={
-        <Space>
+        <Space className="task-modal-footer">
           {task && onDelete && (
             <AppButton danger onClick={onDelete}>
               {t('tasks.delete')}
             </AppButton>
           )}
-          <div style={{ flex: 1 }} />
+          <div className="task-modal-footer-spacer" />
           <AppButton onClick={onClose}>{t('tasks.cancel')}</AppButton>
           <AppButton type="primary" onClick={() => form.submit()}>
             {t('tasks.save')}
@@ -81,8 +81,8 @@ export default function TaskModal({ task, defaultDate, onSave, onDelete, onClose
         <Form.Item name="content" label={t('tasks.notes')}>
           <Input.TextArea rows={3} />
         </Form.Item>
-        <Space size="middle" style={{ display: 'flex' }}>
-          <Form.Item name="priority" label={t('tasks.priority')} style={{ flex: 1 }}>
+        <Space size="middle" className="task-modal-row">
+          <Form.Item name="priority" label={t('tasks.priority')} className="task-modal-field">
             <Select
               options={[
                 { value: 0, label: t('tasks.priorityNone') },
@@ -92,16 +92,16 @@ export default function TaskModal({ task, defaultDate, onSave, onDelete, onClose
               ]}
             />
           </Form.Item>
-          <Form.Item name="task_date" label={t('tasks.date')} rules={[{ required: true }]} style={{ flex: 1 }}>
-            <DatePicker style={{ width: '100%' }} />
+          <Form.Item name="task_date" label={t('tasks.date')} rules={[{ required: true }]} className="task-modal-field">
+            <DatePicker className="task-modal-picker" />
           </Form.Item>
         </Space>
-        <Space size="middle" style={{ display: 'flex' }}>
-          <Form.Item name="time_start" label={t('tasks.start')} style={{ flex: 1 }}>
-            <TimePicker format="HH:mm" style={{ width: '100%' }} />
+        <Space size="middle" className="task-modal-row">
+          <Form.Item name="time_start" label={t('tasks.start')} className="task-modal-field">
+            <TimePicker format="HH:mm" className="task-modal-picker" />
           </Form.Item>
-          <Form.Item name="time_end" label={t('tasks.end')} style={{ flex: 1 }}>
-            <TimePicker format="HH:mm" style={{ width: '100%' }} />
+          <Form.Item name="time_end" label={t('tasks.end')} className="task-modal-field">
+            <TimePicker format="HH:mm" className="task-modal-picker" />
           </Form.Item>
         </Space>
       </Form>

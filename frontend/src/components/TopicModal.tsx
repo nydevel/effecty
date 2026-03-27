@@ -66,7 +66,7 @@ export default function TopicModal({ open, tags, onCancel, onOk, onCreateTag }: 
       cancelText={t('learning.cancel')}
       okButtonProps={{ disabled: !name.trim() || selectedTagIds.length === 0 }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
+      <div className="topic-modal-body">
         <Input
           placeholder={t('learning.topicName')}
           value={name}
@@ -75,12 +75,12 @@ export default function TopicModal({ open, tags, onCancel, onOk, onCreateTag }: 
         />
 
         <div>
-          <div style={{ marginBottom: 4, fontSize: 13, color: '#666' }}>
+          <div className="topic-modal-label">
             {t('learning.selectedTags')}
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, minHeight: 28 }}>
+          <div className="topic-modal-tags topic-modal-tags-selected">
             {selectedTagIds.length === 0 && (
-              <span style={{ color: '#bbb', fontSize: 13 }}>{t('learning.noTagsSelected')}</span>
+              <span className="topic-modal-empty-hint">{t('learning.noTagsSelected')}</span>
             )}
             {selectedTagIds.map((tagId) => {
               const tag = tags.find((tg) => tg.id === tagId);
@@ -99,7 +99,7 @@ export default function TopicModal({ open, tags, onCancel, onOk, onCreateTag }: 
         </div>
 
         <div>
-          <div style={{ marginBottom: 4, fontSize: 13, color: '#666' }}>
+          <div className="topic-modal-label">
             {t('learning.createTag')}
           </div>
           <Input
@@ -109,7 +109,7 @@ export default function TopicModal({ open, tags, onCancel, onOk, onCreateTag }: 
             onKeyDown={handleNewTagKeyDown}
             suffix={
               <PlusOutlined
-                style={{ cursor: newTagName.trim() ? 'pointer' : 'default', color: newTagName.trim() ? '#1a1a2e' : '#ccc' }}
+                className={`topic-modal-create-icon ${newTagName.trim() ? 'active' : 'disabled'}`}
                 onClick={handleCreateTag}
               />
             }
@@ -117,17 +117,17 @@ export default function TopicModal({ open, tags, onCancel, onOk, onCreateTag }: 
         </div>
 
         <div>
-          <div style={{ marginBottom: 4, fontSize: 13, color: '#666' }}>
+          <div className="topic-modal-label">
             {t('learning.tagCloud')}
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxHeight: 160, overflowY: 'auto' }}>
+          <div className="topic-modal-tags topic-modal-tags-cloud">
             {availableTags.length === 0 && (
-              <span style={{ color: '#bbb', fontSize: 13 }}>{t('learning.noAvailableTags')}</span>
+              <span className="topic-modal-empty-hint">{t('learning.noAvailableTags')}</span>
             )}
             {availableTags.map((tag) => (
               <AntTag
                 key={tag.id}
-                style={{ cursor: 'pointer' }}
+                className="topic-modal-available-tag"
                 onClick={() => toggleTag(tag.id)}
               >
                 {tag.name}

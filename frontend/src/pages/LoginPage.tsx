@@ -29,10 +29,10 @@ export default function LoginPage({ onLogin }: Props) {
   return (
     <div className="login-page">
       <div className="login-card">
-        <Typography.Title level={2} style={{ textAlign: 'center', marginBottom: 24 }}>
+        <Typography.Title level={2} className="login-title">
           {t('login.title')}
         </Typography.Title>
-        {error && <Alert message={error} type="error" showIcon style={{ marginBottom: 16 }} />}
+        {error && <Alert message={error} type="error" showIcon className="login-error" />}
         <Form layout="vertical" onFinish={handleFinish} autoComplete="off">
           <Form.Item
             name="email"

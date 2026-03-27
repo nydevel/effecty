@@ -16,27 +16,38 @@ const PRIORITY_KEYS: Record<number, string> = {
 
 interface Props {
   task: Task;
-  onClick: () => void;
+  onClick?: () => void;
+  draggable?: boolean;
+  clickable?: boolean;
 }
 
-export default function TaskCard({ task, onClick }: Props) {
+export default function TaskCard({
+  task,
+  onClick,
+  draggable = true,
+  clickable = true,
+}: Props) {
   const { t } = useTranslation();
   const color = PRIORITY_COLORS[task.priority];
   const labelKey = PRIORITY_KEYS[task.priority];
 
   return (
     <div
-      className="task-card"
-      draggable
+      className={`task-card ${draggable ? 'draggable' : 'static'} ${clickable ? 'clickable' : ''}`}
+      draggable={draggable}
       onDragStart={(e) => {
+        if (!draggable) return;
         e.dataTransfer.setData('taskId', task.id);
         e.dataTransfer.effectAllowed = 'move';
       }}
-      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
     >
       <div className="task-card-header">
         <span className="task-card-title">{task.title || t('tasks.untitled')}</span>
-        {color && labelKey && <Tag color={color} style={{ marginLeft: 'auto', marginRight: 0 }}>{t(labelKey)}</Tag>}
+        {color && labelKey && <Tag className="task-card-priority-tag" color={color}>{t(labelKey)}</Tag>}
       </div>
       {task.time_start && (
         <div className="task-card-time">

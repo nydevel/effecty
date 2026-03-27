@@ -87,7 +87,7 @@ export default function ThoughtCommentsSidebar({
           type="primary"
           icon={<SendOutlined />}
           onClick={handleAddComment}
-          style={{ marginTop: 8, width: '100%' }}
+          className="thoughts-comments-submit"
         >
           {t('thoughts.addComment')}
         </AppButton>
@@ -118,7 +118,7 @@ export default function ThoughtCommentsSidebar({
               <>
                 <div className="thought-comment-content">{comment.content}</div>
                 <div className="thought-comment-meta">
-                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  <Typography.Text type="secondary" className="thought-comment-meta-date">
                     {new Date(comment.created_at).toLocaleString()}
                   </Typography.Text>
                   <div className="thought-comment-actions">

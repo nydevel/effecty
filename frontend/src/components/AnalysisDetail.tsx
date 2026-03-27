@@ -98,7 +98,7 @@ export default function AnalysisDetail({ analysis, images, onUpdate, onUploadIma
             type="file"
             accept="image/*"
             multiple
-            style={{ display: 'none' }}
+            className="visit-hidden-input"
             onChange={handleFileChange}
           />
         </div>

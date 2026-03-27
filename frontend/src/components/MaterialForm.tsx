@@ -116,7 +116,7 @@ export default function MaterialForm({ open, onCancel, onSubmit }: Props) {
       okButtonProps={{ disabled: !isValid }}
       width={520}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
+      <div className="material-form-body">
         <Radio.Group
           value={materialType}
           onChange={(e) => {

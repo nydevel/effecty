@@ -115,7 +115,7 @@ export default function VisitList({ visits, selectedId, specialties, onSelect, o
             value={specialtyId || undefined}
             onChange={setSpecialtyId}
             placeholder={t('medical.selectSpecialty')}
-            style={{ width: '100%' }}
+            className="medical-form-control"
             options={specialties.map((s) => ({ label: s.name, value: s.id }))}
           />
           <label>{t('medical.doctorName')}</label>
@@ -132,7 +132,7 @@ export default function VisitList({ visits, selectedId, specialties, onSelect, o
           />
           <label>{t('medical.visitDate')}</label>
           <DatePicker
-            style={{ width: '100%' }}
+            className="medical-form-control"
             value={visitDate ? dayjs(visitDate) : null}
             onChange={(d) => setVisitDate(d ? d.format('YYYY-MM-DD') : '')}
           />

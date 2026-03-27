@@ -212,41 +212,47 @@ export default function TopicSidebar({
         <div ref={controlsRef} className="topic-sidebar-controls">
           <div className="topic-status-filter">
             <div className="sidebar-title topic-status-filter-title">{t('learning.status')}</div>
-            <div
-              className={`topic-list-item ${statusFilter === 'all' ? 'selected' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onStatusFilterChange('all');
-              }}
-            >
-              {t('learning.allStatuses')}
-            </div>
-            <div
-              className={`topic-list-item ${statusFilter === 'not_started' ? 'selected' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onStatusFilterChange('not_started');
-              }}
-            >
-              {t('learning.statusNotStarted')}
-            </div>
-            <div
-              className={`topic-list-item ${statusFilter === 'in_progress' ? 'selected' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onStatusFilterChange('in_progress');
-              }}
-            >
-              {t('learning.statusInProgress')}
-            </div>
-            <div
-              className={`topic-list-item ${statusFilter === 'completed' ? 'selected' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onStatusFilterChange('completed');
-              }}
-            >
-              {t('learning.statusCompleted')}
+            <div className="topic-status-options">
+              <button
+                type="button"
+                className={`topic-status-option ${statusFilter === 'all' ? 'selected' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStatusFilterChange('all');
+                }}
+              >
+                {t('learning.allStatuses')}
+              </button>
+              <button
+                type="button"
+                className={`topic-status-option ${statusFilter === 'not_started' ? 'selected' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStatusFilterChange('not_started');
+                }}
+              >
+                {t('learning.statusNotStarted')}
+              </button>
+              <button
+                type="button"
+                className={`topic-status-option ${statusFilter === 'in_progress' ? 'selected' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStatusFilterChange('in_progress');
+                }}
+              >
+                {t('learning.statusInProgress')}
+              </button>
+              <button
+                type="button"
+                className={`topic-status-option ${statusFilter === 'completed' ? 'selected' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStatusFilterChange('completed');
+                }}
+              >
+                {t('learning.statusCompleted')}
+              </button>
             </div>
           </div>
 
@@ -278,6 +284,8 @@ export default function TopicSidebar({
             {t('learning.allMaterials')}
           </div>
         </div>
+
+        <div className="sidebar-title topic-tree-title">{t('learning.topic')}</div>
 
         <Tree<TopicNode>
           ref={treeRef}

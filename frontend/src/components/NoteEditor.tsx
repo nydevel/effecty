@@ -49,7 +49,7 @@ export default function NoteEditor({ title, content, onTitleChange, onChange, re
         variant="borderless"
         defaultValue={title}
         placeholder={t('notes.untitled')}
-        style={{ fontSize: 28, fontWeight: 700, padding: '8px 0 12px' }}
+        className="editor-title-input"
         disabled={readOnly}
         onBlur={(e) => {
           const val = e.currentTarget.value.trim();

@@ -157,11 +157,11 @@ export default function CalendarFeature() {
           <AppButton onClick={goToday}>{t('calendar.today')}</AppButton>
           <AppButton icon={<LeftOutlined />} onClick={() => navigate(-1)} />
           <AppButton icon={<RightOutlined />} onClick={() => navigate(1)} />
-          <Typography.Text strong style={{ fontSize: 15 }}>
+          <Typography.Text strong className="calendar-period-label">
             {getPeriodLabel(viewMode, currentDate, monthsFull, monthsShort)}
           </Typography.Text>
         </Space>
-        <div style={{ flex: 1 }} />
+        <div className="calendar-toolbar-spacer" />
         <Segmented
           options={[
             { label: t('calendar.week'), value: 'Week' },

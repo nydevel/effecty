@@ -117,7 +117,7 @@ export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
   };
 
   return (
-    <div className="settings-page" style={{ padding: 32, maxHeight: '100%' }}>
+    <div className="settings-page settings-page-padded">
       <div className="settings-page-inner">
       <Typography.Title level={3}>{t('settings.title')}</Typography.Title>
       <Form
@@ -142,14 +142,14 @@ export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
       <Divider />
 
       <Typography.Title level={4}>{t('settings.fontScale')}</Typography.Title>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+      <div className="settings-slider-row">
         <Slider
           min={0.8}
           max={1.5}
           step={0.1}
           value={uiSettings.font_scale}
           onChange={handleFontScaleChange}
-          style={{ flex: 1 }}
+          className="settings-slider-control"
           marks={{ 0.8: '×0.8', 1.0: '×1.0', 1.2: '×1.2', 1.5: '×1.5' }}
         />
       </div>
@@ -189,26 +189,26 @@ export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
       <Divider />
 
       <Typography.Title level={4}>{t('settings.dataTransfer')}</Typography.Title>
-      <Typography.Text style={{ display: 'block', marginBottom: 12 }}>
+      <Typography.Text className="settings-section-note">
         {t('settings.exportDescription')}
       </Typography.Text>
       <AppButton
         icon={<DownloadOutlined />}
         onClick={handleExport}
         loading={exportLoading}
-        style={{ marginBottom: 16 }}
+        className="settings-export-btn"
       >
         {t('settings.exportData')}
       </AppButton>
 
-      <Typography.Text style={{ display: 'block', marginBottom: 12 }}>
+      <Typography.Text className="settings-section-note">
         {t('settings.importDescription')}
       </Typography.Text>
       <input
         ref={fileInputRef}
         type="file"
         accept=".json"
-        style={{ display: 'none' }}
+        className="settings-hidden-input"
         onChange={handleFileSelected}
       />
       <AppButton

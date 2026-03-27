@@ -63,7 +63,7 @@ export default function VisitDetail({ visit, specialties, images, onUpdate, onUp
           <Select
             value={visit.specialty_id}
             onChange={(val) => onUpdate({ specialty_id: val })}
-            style={{ width: '100%' }}
+            className="visit-field-control"
             options={specialties.map((s) => ({ label: s.name, value: s.id }))}
           />
         </div>
@@ -84,7 +84,7 @@ export default function VisitDetail({ visit, specialties, images, onUpdate, onUp
           <DatePicker
             value={visit.visit_date ? dayjs(visit.visit_date) : null}
             key={`date-${visit.id}`}
-            style={{ width: '100%' }}
+            className="visit-field-control"
             onChange={(d) => {
               const val = d ? d.format('YYYY-MM-DD') : '';
               if (val !== visit.visit_date) {
@@ -125,7 +125,7 @@ export default function VisitDetail({ visit, specialties, images, onUpdate, onUp
             type="file"
             accept="image/*"
             multiple
-            style={{ display: 'none' }}
+            className="visit-hidden-input"
             onChange={handleFileChange}
           />
         </div>

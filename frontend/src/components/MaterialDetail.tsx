@@ -86,10 +86,10 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
   return (
     <div className="material-detail">
       <div className="material-detail-header">
-        <div style={{ fontSize: 14, fontWeight: 600, color: '#222', lineHeight: 1.3, wordBreak: 'break-word' }}>
+        <div className="material-detail-title">
           {material.title || t('learning.untitled')}
         </div>
-        <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
+        <div className="material-detail-subtitle">
           {t(`learning.${material.material_type}`)}
           {material.topic_names && ` · ${material.topic_names}`}
         </div>
@@ -97,7 +97,7 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
 
       {/* Comments */}
       <div className="material-detail-section">
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#888', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
+        <div className="material-detail-section-title">
           {t('learning.comments')}
         </div>
         {comments.length > 0 ? (
@@ -106,8 +106,8 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
             dataSource={comments}
             split={false}
             renderItem={(c) => (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, padding: '6px 0', borderBottom: '1px solid #f0f0f2' }}>
-                <div style={{ flex: 1, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 13, lineHeight: 1.5 }}>
+              <div className="material-comment-row">
+                <div className="material-comment-content">
                   {c.content}
                 </div>
                 <AppButton
@@ -116,13 +116,13 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
                   danger
                   icon={<DeleteOutlined />}
                   onClick={() => handleDeleteComment(c.id)}
-                  style={{ flexShrink: 0 }}
+                  className="material-action-btn"
                 />
               </div>
             )}
           />
         ) : (
-          <div style={{ fontSize: 12, color: '#aaa' }}>{t('learning.noComments')}</div>
+          <div className="material-empty-text">{t('learning.noComments')}</div>
         )}
         <div className="material-comment-input">
           <TextArea
@@ -142,7 +142,7 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
             icon={<SendOutlined />}
             onClick={handleAddComment}
             disabled={!newComment.trim()}
-            style={{ marginTop: 8 }}
+            className="material-comment-submit"
           >
             {t('learning.addComment')}
           </AppButton>
@@ -150,8 +150,8 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
       </div>
 
       {/* Linked materials */}
-      <div className="material-detail-section" style={{ borderBottom: 'none' }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#888', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
+      <div className="material-detail-section material-detail-section--last">
+        <div className="material-detail-section-title">
           {t('learning.linkedMaterials')}
         </div>
         <Input.Search
@@ -167,51 +167,32 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
               <div
                 key={m.id}
                 onClick={() => handleLinkMaterial(m.id)}
-                style={{
-                  padding: '6px 10px',
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  color: '#555',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  borderBottom: '1px solid #f5f5f5',
-                }}
+                className="material-search-item"
               >
-                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span className="material-search-item-main">
                   {m.title}
                 </span>
-                <span style={{ color: '#aaa', flexShrink: 0 }}>{t(`learning.${m.material_type}`)}</span>
+                <span className="material-search-item-type">{t(`learning.${m.material_type}`)}</span>
               </div>
             ))}
           </div>
         )}
         {links.length > 0 && (
-          <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div className="material-linked-list">
             {links.map((link) => (
               <div
                 key={link.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '7px 10px',
-                  background: '#f8f8fa',
-                  border: '1px solid #e8e8ec',
-                  borderRadius: 4,
-                  fontSize: 12,
-                  color: '#555',
-                  gap: 6,
-                }}
+                className="material-linked-item"
               >
                 <div
-                  style={{ flex: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                  className="material-linked-main"
                   onClick={() => onSelectMaterial(link.target_material_id)}
                 >
-                  <LinkOutlined style={{ color: '#4f98a3' }} />
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <LinkOutlined className="material-linked-icon" />
+                  <span className="material-linked-title">
                     {link.target_title}
                   </span>
-                  <span style={{ color: '#aaa', flexShrink: 0 }}>
+                  <span className="material-linked-type">
                     {t(`learning.${link.target_material_type}`)}
                   </span>
                 </div>
@@ -221,7 +202,7 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
                   danger
                   icon={<DeleteOutlined />}
                   onClick={() => handleUnlink(link.target_material_id)}
-                  style={{ flexShrink: 0 }}
+                  className="material-action-btn"
                 />
               </div>
             ))}

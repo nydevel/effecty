@@ -63,29 +63,29 @@ export default function ExerciseCatalog({
       <div className="exercise-catalog-header">
         <Typography.Text strong>{t('workouts.exercises')}</Typography.Text>
         <Input
+          className="exercise-catalog-new-input"
           size="small"
           placeholder={t('workouts.newExercise')}
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           onPressEnter={handleAdd}
-          style={{ marginTop: 8 }}
           suffix={
             <AppButton
               type="text"
               size="small"
               icon={<PlusOutlined />}
               onClick={handleAdd}
-              style={{ marginRight: -7 }}
+              className="exercise-catalog-add-btn"
             />
           }
         />
         <Select
+          className="exercise-catalog-group-select"
           size="small"
           placeholder={t('workouts.muscleGroup')}
           value={newGroup}
           onChange={setNewGroup}
           allowClear
-          style={{ width: '100%', marginTop: 4 }}
           options={muscleGroupOptions}
         />
       </div>
@@ -122,12 +122,12 @@ export default function ExerciseCatalog({
                   autoFocus
                 />
                 <Select
+                  className="exercise-catalog-edit-group"
                   size="small"
                   value={editGroup}
                   onChange={setEditGroup}
                   allowClear
                   placeholder={t('workouts.muscleGroup')}
-                  style={{ width: '100%' }}
                   options={muscleGroupOptions}
                 />
                 <div className="exercise-catalog-edit-actions">

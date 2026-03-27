@@ -66,12 +66,11 @@ export default function ProjectTaskList({
             onClick={() => onSelect(task.id)}
           >
             <span
-              className={`status-badge status-badge-project-${task.status}`}
+              className={`status-badge status-badge-project-${task.status} status-badge-clickable`}
               onClick={(e) => {
                 e.stopPropagation();
                 cycleStatus(task);
               }}
-              style={{ cursor: 'pointer', flexShrink: 0 }}
             >
               {task.status === 'todo' && t('projects.statusTodo')}
               {task.status === 'in_progress' && t('projects.statusInProgress')}

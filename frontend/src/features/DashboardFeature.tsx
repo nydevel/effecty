@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as tasksApi from '../api/tasks';
 import type { Task } from '../api/tasks';
+import TaskCard from '../components/TaskCard';
 
 function formatDate(date: Date): string {
   const y = date.getFullYear();
@@ -9,18 +10,6 @@ function formatDate(date: Date): string {
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }
-
-const PRIORITY_LABEL_KEYS: Record<number, string> = {
-  1: 'tasks.low',
-  2: 'tasks.med',
-  3: 'tasks.high',
-};
-
-const PRIORITY_CLASS_NAMES: Record<number, string> = {
-  1: 'priority-low',
-  2: 'priority-med',
-  3: 'priority-high',
-};
 
 export default function DashboardFeature() {
   const { t } = useTranslation();
@@ -64,29 +53,14 @@ export default function DashboardFeature() {
             <div className="dashboard-card-empty">{t('dashboard.noTasksToday')}</div>
           ) : (
             <div className="dashboard-task-list">
-              {sortedTasks.map((task) => {
-                const priorityLabelKey = PRIORITY_LABEL_KEYS[task.priority];
-                const priorityClassName = PRIORITY_CLASS_NAMES[task.priority];
-                const hasTime = Boolean(task.time_start);
-                return (
-                  <div key={task.id} className="dashboard-task-item">
-                    <div className="dashboard-task-main">
-                      <div className="dashboard-task-title">{task.title || t('tasks.untitled')}</div>
-                      {hasTime && (
-                        <div className="dashboard-task-time">
-                          {task.time_start?.slice(0, 5)}
-                          {task.time_end ? ` - ${task.time_end.slice(0, 5)}` : ''}
-                        </div>
-                      )}
-                    </div>
-                    {priorityLabelKey && priorityClassName && (
-                      <span className={`dashboard-task-priority ${priorityClassName}`}>
-                        {t(priorityLabelKey)}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+              {sortedTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  draggable={false}
+                  clickable={false}
+                />
+              ))}
             </div>
           )}
         </section>

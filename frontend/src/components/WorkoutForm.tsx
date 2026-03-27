@@ -43,16 +43,16 @@ export default function WorkoutForm({
         if (name) onDropExercise(name);
       }}
     >
-      <div style={{ marginBottom: 16 }}>
+      <div className="workout-date-row">
         <Typography.Text strong>{t('workouts.date')}</Typography.Text>
         <DatePicker
           value={dayjs(workoutDate)}
           onChange={(d) => { if (d) onDateChange(d.format('YYYY-MM-DD')); }}
-          style={{ marginLeft: 8 }}
+          className="workout-date-picker"
         />
       </div>
 
-      <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
+      <Typography.Text strong className="workout-section-title">
         {t('workouts.exercises')}
       </Typography.Text>
 
@@ -62,7 +62,7 @@ export default function WorkoutForm({
           <span className="workout-exercise-stat-label">{t('workouts.sets')}</span>
           <span className="workout-exercise-stat-label">{t('workouts.reps')}</span>
           <span className="workout-exercise-stat-label">{t('workouts.weight')}</span>
-          <span style={{ width: 32 }} />
+          <span className="workout-row-spacer" />
         </div>
       )}
 

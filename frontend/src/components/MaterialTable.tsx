@@ -14,12 +14,12 @@ interface Props {
   onStatusChange: (id: string, status: MaterialStatus) => void;
 }
 
-const TYPE_COLORS: Record<string, string> = {
-  article_link: '#4f98a3',
-  video_link: '#c8920a',
-  text: '#52c41a',
-  image: '#722ed1',
-  document: '#fa8c16',
+const TYPE_CLASSNAMES: Record<string, string> = {
+  article_link: 'material-type-dot-article_link',
+  video_link: 'material-type-dot-video_link',
+  text: 'material-type-dot-text',
+  image: 'material-type-dot-image',
+  document: 'material-type-dot-document',
 };
 
 const STATUS_CYCLE: MaterialStatus[] = ['not_started', 'in_progress', 'completed'];
@@ -70,7 +70,7 @@ export default function MaterialTable({
       key: 'title',
       ellipsis: true,
       render: (text: string) => (
-        <span style={{ fontWeight: 500, fontSize: 13 }}>
+        <span className="material-title-cell">
           {text || t('learning.untitled')}
         </span>
       ),
@@ -82,10 +82,7 @@ export default function MaterialTable({
       width: 130,
       render: (type: string) => (
         <span className="material-type-cell">
-          <span
-            className="material-type-dot"
-            style={{ background: TYPE_COLORS[type] || '#999' }}
-          />
+          <span className={`material-type-dot ${TYPE_CLASSNAMES[type] || 'material-type-dot-default'}`} />
           {t(`learning.${type}`)}
         </span>
       ),
@@ -97,12 +94,11 @@ export default function MaterialTable({
       width: 130,
       render: (status: MaterialStatus, record: Material) => (
         <span
-          className={`status-badge status-badge-${status}`}
+          className={`status-badge status-badge-${status} material-status-clickable`}
           onClick={(e) => {
             e.stopPropagation();
             cycleStatus(record);
           }}
-          style={{ cursor: 'pointer' }}
         >
           {status === 'not_started' && t('learning.statusNotStarted')}
           {status === 'in_progress' && t('learning.statusInProgress')}
@@ -119,7 +115,7 @@ export default function MaterialTable({
             width: 200,
             ellipsis: true,
             render: (text: string) => (
-              <span style={{ fontSize: 12, color: '#888' }}>{text}</span>
+              <span className="material-topic-text">{text}</span>
             ),
           } as const,
         ]

@@ -129,7 +129,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
         variant="borderless"
         defaultValue={title}
         placeholder={t('notes.untitled')}
-        style={{ fontSize: 28, fontWeight: 700, padding: '8px 0 12px' }}
+        className="editor-title-input"
         disabled={readOnly}
         onBlur={(e) => {
           const val = e.currentTarget.value.trim();
@@ -182,7 +182,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
               </div>
             ) : (
               <div
-                className="memo-item-body"
+                className="memo-item-body memo-item-body-clickable"
                 onClick={() => {
                   const text = memo.content || memo.title;
                   if (text) {
@@ -190,14 +190,13 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
                     message.success(t('notes.copiedToClipboard'));
                   }
                 }}
-                style={{ cursor: 'pointer' }}
               >
                 {memo.title && <div className="memo-item-title">{memo.title}</div>}
                 {memo.content && (
                   <div className="memo-item-content">{linkify(memo.content)}</div>
                 )}
                 {!memo.title && !memo.content && (
-                  <div className="memo-item-title" style={{ opacity: 0.4 }}>{t('notes.untitled')}</div>
+                  <div className="memo-item-title memo-item-title-muted">{t('notes.untitled')}</div>
                 )}
               </div>
             )}
@@ -254,7 +253,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
             type="dashed"
             icon={<PlusOutlined />}
             onClick={() => setAdding(true)}
-            style={{ marginTop: 12 }}
+            className="memo-add-button"
             block
           >
             {t('notes.addMemo')}
