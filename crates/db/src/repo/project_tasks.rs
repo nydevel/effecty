@@ -28,6 +28,7 @@ pub struct UpdateProjectTask {
     pub title: Option<String>,
     pub description: Option<String>,
     pub status: Option<String>,
+    pub position: Option<f64>,
 }
 
 pub async fn list(
@@ -40,7 +41,7 @@ pub async fn list(
                 created_at, updated_at \
          FROM project_tasks \
          WHERE project_id = ?1 AND user_id = ?2 \
-         ORDER BY CASE WHEN status = 'done' THEN 1 ELSE 0 END, position, created_at",
+         ORDER BY position DESC, created_at DESC",
     )
     .bind(project_id)
     .bind(user_id)
@@ -120,6 +121,7 @@ pub async fn update(
          SET title = COALESCE(?3, title), \
              description = COALESCE(?4, description), \
              status = COALESCE(?5, status), \
+             position = COALESCE(?6, position), \
              updated_at = datetime('now') \
          WHERE id = ?1 AND user_id = ?2",
     )
@@ -128,6 +130,7 @@ pub async fn update(
     .bind(&input.title)
     .bind(&input.description)
     .bind(&input.status)
+    .bind(input.position)
     .execute(pool)
     .await?;
 

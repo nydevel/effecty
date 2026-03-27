@@ -93,6 +93,13 @@ pub async fn update_task(
             )));
         }
     }
+    if let Some(position) = input.position {
+        if !position.is_finite() {
+            return Err(ProjectsError::BadRequest(
+                "position must be a finite number".into(),
+            ));
+        }
+    }
     let task = project_tasks::update(&pool, task_id, user_id, &input)
         .await?
         .ok_or(ProjectsError::NotFound)?;

@@ -8,6 +8,13 @@ import type { Project, ProjectTask } from '../api/projects';
 import ProjectTaskList from '../components/ProjectTaskList';
 import ProjectTaskDetail from '../components/ProjectTaskDetail';
 
+function sortProjectTasks(tasks: ProjectTask[]): ProjectTask[] {
+  return [...tasks].sort((a, b) => {
+    if (a.position !== b.position) return b.position - a.position;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+}
+
 export default function ProjectsFeature() {
   const { t } = useTranslation();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -34,7 +41,8 @@ export default function ProjectsFeature() {
       return;
     }
     try {
-      setTasks(await projectsApi.listTasks(selectedProjectId));
+      const list = await projectsApi.listTasks(selectedProjectId);
+      setTasks(sortProjectTasks(list));
     } catch (err) {
       console.error('Failed to load tasks:', err);
     }
@@ -74,15 +82,16 @@ export default function ProjectsFeature() {
 
   const handleUpdateTask = async (
     taskId: string,
-    data: { title?: string; description?: string; status?: projectsApi.ProjectTaskStatus },
+    data: {
+      title?: string;
+      description?: string;
+      status?: projectsApi.ProjectTaskStatus;
+      position?: number;
+    },
   ) => {
     if (!selectedProjectId) return;
     const updated = await projectsApi.updateTask(selectedProjectId, taskId, data);
-    setTasks((prev) => prev.map((t) => (t.id === taskId ? updated : t)));
-    // Re-sort if status changed
-    if (data.status) {
-      await loadTasks();
-    }
+    setTasks((prev) => sortProjectTasks(prev.map((t) => (t.id === taskId ? updated : t))));
   };
 
   const handleDeleteTask = async (taskId: string) => {
@@ -90,6 +99,17 @@ export default function ProjectsFeature() {
     await projectsApi.deleteTask(selectedProjectId, taskId);
     if (selectedTaskId === taskId) setSelectedTaskId(null);
     await loadTasks();
+  };
+
+  const handleReorderTask = async (taskId: string, position: number) => {
+    if (!selectedProjectId) return;
+    try {
+      const updated = await projectsApi.updateTask(selectedProjectId, taskId, { position });
+      setTasks((prev) => sortProjectTasks(prev.map((t) => (t.id === taskId ? updated : t))));
+    } catch (err) {
+      console.error('Failed to reorder task:', err);
+      await loadTasks();
+    }
   };
 
   return (
@@ -146,6 +166,7 @@ export default function ProjectsFeature() {
             onCreate={handleCreateTask}
             onDelete={handleDeleteTask}
             onStatusChange={(id, status) => handleUpdateTask(id, { status })}
+            onReorder={handleReorderTask}
           />
         ) : (
           <div className="empty-state">{t('projects.selectProject')}</div>

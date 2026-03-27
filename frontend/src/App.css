@@ -1308,12 +1308,20 @@ html {
   gap: 8px;
   padding: 8px 16px;
   border-bottom: 1px solid #f0f0f2;
-  cursor: pointer;
-  transition: background 0.1s;
+  cursor: grab;
+  transition: background 0.1s, border-color 0.1s;
 }
 
 .project-task-item:hover {
   background: #f5f5f7;
+}
+
+.project-task-item:active {
+  cursor: grabbing;
+}
+
+.project-task-item.drag-over {
+  border-top: 2px solid #4a90d9;
 }
 
 .project-task-item.selected {
@@ -1323,6 +1331,13 @@ html {
 .project-task-item.done .project-task-title {
   text-decoration: line-through;
   color: #aaa;
+}
+
+.project-task-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  color: #b2b7bf;
+  flex-shrink: 0;
 }
 
 .project-task-title {

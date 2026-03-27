@@ -72,7 +72,7 @@ export async function createTask(
 export async function updateTask(
   projectId: string,
   taskId: string,
-  data: { title?: string; description?: string; status?: ProjectTaskStatus },
+  data: { title?: string; description?: string; status?: ProjectTaskStatus; position?: number },
 ): Promise<ProjectTask> {
   return apiFetch<ProjectTask>(`/projects/${projectId}/tasks/${taskId}`, {
     method: 'PUT',
