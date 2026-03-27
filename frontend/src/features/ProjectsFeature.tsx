@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Button, Input, Modal } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { useState, useEffect, useCallback } from 'react';
+import AppButton from '../components/ui/AppButton';
+import { Input, Modal } from 'antd';
+import { PlusOutlined } from '../components/ui/icons';
 import { useTranslation } from 'react-i18next';
 import * as projectsApi from '../api/projects';
 import type { Project, ProjectTask } from '../api/projects';
@@ -97,7 +98,7 @@ export default function ProjectsFeature() {
       <div className="sidebar">
         <div className="sidebar-header">
           <div className="sidebar-title">{t('iconBar.projects')}</div>
-          <Button
+          <AppButton
             type="text"
             className="sidebar-add-btn"
             icon={<PlusOutlined />}
@@ -105,7 +106,7 @@ export default function ProjectsFeature() {
             onClick={() => setProjectModalOpen(true)}
           >
             {t('projects.newProject')}
-          </Button>
+          </AppButton>
         </div>
         <div className="sidebar-items">
           {projects.map((p) => (
@@ -115,7 +116,7 @@ export default function ProjectsFeature() {
               onClick={() => setSelectedProjectId(p.id)}
             >
               <span className="sidebar-item-name">{p.name}</span>
-              <Button
+              <AppButton
                 type="text"
                 size="small"
                 danger
@@ -126,7 +127,7 @@ export default function ProjectsFeature() {
                 }}
               >
                 ×
-              </Button>
+              </AppButton>
             </div>
           ))}
           {projects.length === 0 && (

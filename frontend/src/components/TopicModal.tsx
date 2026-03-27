@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal, Input, Tag as AntTag } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { Tag } from '../api/thoughts';
 

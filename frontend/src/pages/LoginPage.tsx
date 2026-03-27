@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button, Form, Input, Alert, Typography } from 'antd';
+import AppButton from '../components/ui/AppButton';
+import { Alert, Form, Input, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { login } from '../api/auth';
 
@@ -48,9 +49,9 @@ export default function LoginPage({ onLogin }: Props) {
             <Input.Password placeholder={t('login.password')} size="large" />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading} block size="large">
+            <AppButton type="primary" htmlType="submit" loading={loading} block size="large">
               {t('login.signIn')}
-            </Button>
+            </AppButton>
           </Form.Item>
         </Form>
       </div>

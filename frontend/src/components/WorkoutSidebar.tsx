@@ -1,5 +1,6 @@
-import { Button, Dropdown } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import AppButton from './ui/AppButton';
+import { Dropdown } from 'antd';
+import { PlusOutlined, DeleteOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { Workout } from '../api/workouts';
 
@@ -35,9 +36,9 @@ export default function WorkoutSidebar({
     <div className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-title">{t('iconBar.workouts')}</div>
-        <Button type="text" className="sidebar-add-btn" size="small" icon={<PlusOutlined />} onClick={onCreate}>
+        <AppButton type="text" className="sidebar-add-btn" size="small" icon={<PlusOutlined />} onClick={onCreate}>
           {t('workouts.newWorkout')}
-        </Button>
+        </AppButton>
       </div>
       <div
         className="sidebar-tree"

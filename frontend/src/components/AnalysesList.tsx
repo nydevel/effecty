@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Button, Modal, Input, DatePicker } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import AppButton from './ui/AppButton';
+import { DatePicker, Input, Modal } from 'antd';
+import { PlusOutlined, DeleteOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import type { Analysis } from '../api/medical';
@@ -33,14 +34,14 @@ export default function AnalysesList({ analyses, selectedId, onSelect, onCreate,
   return (
     <div className="visit-list">
       <div className="visit-list-header">
-        <Button
+        <AppButton
           type="primary"
           icon={<PlusOutlined />}
           size="small"
           onClick={() => setModalOpen(true)}
         >
           {t('medical.newAnalysis')}
-        </Button>
+        </AppButton>
       </div>
       <div className="visit-list-items">
         {analyses.map((item) => (
@@ -55,7 +56,7 @@ export default function AnalysesList({ analyses, selectedId, onSelect, onCreate,
             <div className="visit-item-meta">
               <span className="visit-date">{item.analysis_date}</span>
             </div>
-            <Button
+            <AppButton
               type="text"
               size="small"
               icon={<DeleteOutlined />}

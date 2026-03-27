@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
-import { Modal, Input, Radio, Upload, Button, Spin } from 'antd';
-import { UploadOutlined, LoadingOutlined } from '@ant-design/icons';
+import { useState, useRef } from 'react';
+import AppButton from './ui/AppButton';
+import { Modal, Input, Radio, Upload, Spin } from 'antd';
+import { UploadOutlined, LoadingOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { MaterialType } from '../api/learning';
 import { fetchUrlTitle } from '../api/learning';
@@ -172,7 +173,7 @@ export default function MaterialForm({ open, onCancel, onSubmit }: Props) {
             onRemove={() => setFile(null)}
             fileList={file ? [{ uid: '-1', name: file.name, status: 'done' }] : []}
           >
-            <Button icon={<UploadOutlined />}>{t('learning.uploadFile')}</Button>
+            <AppButton icon={<UploadOutlined />}>{t('learning.uploadFile')}</AppButton>
           </Upload>
         )}
       </div>

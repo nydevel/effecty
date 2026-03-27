@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import AppButton from '../components/ui/AppButton';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Segmented } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Segmented } from 'antd';
+import { PlusOutlined } from '../components/ui/icons';
 import { useTranslation } from 'react-i18next';
 import * as learningApi from '../api/learning';
 import type { Topic, Material, MaterialStatus } from '../api/learning';
@@ -167,14 +168,14 @@ export default function LearningFeature() {
             />
             <main className="main-content">
               <div className="materials-header">
-                <Button
+                <AppButton
                   type="primary"
                   icon={<PlusOutlined />}
                   onClick={() => setMaterialFormOpen(true)}
                   disabled={topics.length === 0 && !selectedTopicId}
                 >
                   {t('learning.newMaterial')}
-                </Button>
+                </AppButton>
               </div>
               {materials.length > 0 ? (
                 <MaterialTable

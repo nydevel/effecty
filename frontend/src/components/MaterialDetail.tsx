@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Button, Input, List } from 'antd';
-import { DeleteOutlined, LinkOutlined, SendOutlined } from '@ant-design/icons';
+import { useState, useEffect, useCallback } from 'react';
+import AppButton from './ui/AppButton';
+import { Input, List } from 'antd';
+import { DeleteOutlined, LinkOutlined, SendOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { Material, MaterialComment, MaterialLink } from '../api/learning';
 import * as learningApi from '../api/learning';
@@ -109,7 +110,7 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
                 <div style={{ flex: 1, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 13, lineHeight: 1.5 }}>
                   {c.content}
                 </div>
-                <Button
+                <AppButton
                   type="text"
                   size="small"
                   danger
@@ -135,7 +136,7 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
               }
             }}
           />
-          <Button
+          <AppButton
             type="primary"
             size="small"
             icon={<SendOutlined />}
@@ -144,7 +145,7 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
             style={{ marginTop: 8 }}
           >
             {t('learning.addComment')}
-          </Button>
+          </AppButton>
         </div>
       </div>
 
@@ -214,7 +215,7 @@ export default function MaterialDetail({ material, onSelectMaterial }: Props) {
                     {t(`learning.${link.target_material_type}`)}
                   </span>
                 </div>
-                <Button
+                <AppButton
                   type="text"
                   size="small"
                   danger

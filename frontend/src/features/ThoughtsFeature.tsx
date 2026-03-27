@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import AppButton from '../components/ui/AppButton';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Input, Typography } from 'antd';
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { Input, Typography } from 'antd';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '../components/ui/icons';
 import { useTranslation } from 'react-i18next';
 import * as thoughtsApi from '../api/thoughts';
 import type { Thought, ThoughtComment } from '../api/thoughts';
@@ -199,10 +200,10 @@ export default function ThoughtsFeature() {
                 autoFocus
               />
               <div className="thoughts-add-form-actions">
-                <Button size="small" type="primary" onClick={handleCreate}>
+                <AppButton size="small" type="primary" onClick={handleCreate}>
                   {t('thoughts.saveThought')}
-                </Button>
-                <Button
+                </AppButton>
+                <AppButton
                   size="small"
                   onClick={() => {
                     setAddingThought(false);
@@ -210,18 +211,18 @@ export default function ThoughtsFeature() {
                   }}
                 >
                   {t('thoughts.cancel')}
-                </Button>
+                </AppButton>
               </div>
             </div>
           ) : (
-            <Button
+            <AppButton
               type="dashed"
               icon={<PlusOutlined />}
               onClick={() => setAddingThought(true)}
               block
             >
               {t('thoughts.addThought')}
-            </Button>
+            </AppButton>
           )}
         </div>
         <div className="thoughts-list">
@@ -253,12 +254,12 @@ export default function ThoughtsFeature() {
                     autoFocus
                   />
                   <div className="thought-item-edit-actions">
-                    <Button size="small" type="primary" onClick={() => handleSaveEdit(thought.id)}>
+                    <AppButton size="small" type="primary" onClick={() => handleSaveEdit(thought.id)}>
                       {t('thoughts.saveThought')}
-                    </Button>
-                    <Button size="small" onClick={handleCancelEdit}>
+                    </AppButton>
+                    <AppButton size="small" onClick={handleCancelEdit}>
                       {t('thoughts.cancel')}
-                    </Button>
+                    </AppButton>
                   </div>
                 </div>
               ) : (
@@ -266,7 +267,7 @@ export default function ThoughtsFeature() {
               )}
               actions={editingThoughtId === thought.id ? undefined : (
                 <>
-                  <Button
+                  <AppButton
                     type="text"
                     size="small"
                     icon={<EditOutlined />}
@@ -275,7 +276,7 @@ export default function ThoughtsFeature() {
                       handleStartEdit(thought.id, thought.content);
                     }}
                   />
-                  <Button
+                  <AppButton
                     type="text"
                     size="small"
                     icon={<DeleteOutlined />}

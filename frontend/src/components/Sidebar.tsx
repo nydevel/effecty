@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Dropdown } from 'antd';
-import { FolderAddOutlined, FileAddOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import AppButton from './ui/AppButton';
+import { Dropdown } from 'antd';
+import { FolderAddOutlined, FileAddOutlined, UnorderedListOutlined, EditOutlined, DeleteOutlined } from './ui/icons';
 import { Tree, type TreeApi, type NodeRendererProps } from 'react-arborist';
 import { useTranslation } from 'react-i18next';
 import type { Note } from '../api/notes';
@@ -145,7 +146,7 @@ export default function Sidebar({
       <div className="sidebar-header">
         <div className="sidebar-title">{t('iconBar.notes')}</div>
         <div className="sidebar-header-actions">
-          <Button
+          <AppButton
             type="text"
             className="sidebar-tool-btn"
             size="small"
@@ -153,7 +154,7 @@ export default function Sidebar({
             onClick={onCreateFolder}
             title={t('notes.newFolder')}
           />
-          <Button
+          <AppButton
             type="text"
             className="sidebar-tool-btn"
             size="small"
@@ -162,7 +163,7 @@ export default function Sidebar({
             title={t('notes.newFile')}
           />
           {onCreateMemolist && (
-            <Button
+            <AppButton
               type="text"
               className="sidebar-tool-btn"
               size="small"

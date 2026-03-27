@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Button, Input, Typography } from 'antd';
-import { CloseOutlined, EditOutlined, SendOutlined } from '@ant-design/icons';
+import AppButton from './ui/AppButton';
+import { Input, Typography } from 'antd';
+import { CloseOutlined, EditOutlined, SendOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { Thought, ThoughtComment } from '../api/thoughts';
 
@@ -67,7 +68,7 @@ export default function ThoughtCommentsSidebar({
             {getPreview(thought.content) || t('thoughts.contentPlaceholder')}
           </div>
         </div>
-        <Button type="text" size="small" icon={<CloseOutlined />} onClick={onClose} />
+        <AppButton type="text" size="small" icon={<CloseOutlined />} onClick={onClose} />
       </div>
 
       <div className="thoughts-comments-form">
@@ -82,14 +83,14 @@ export default function ThoughtCommentsSidebar({
             }
           }}
         />
-        <Button
+        <AppButton
           type="primary"
           icon={<SendOutlined />}
           onClick={handleAddComment}
           style={{ marginTop: 8, width: '100%' }}
         >
           {t('thoughts.addComment')}
-        </Button>
+        </AppButton>
       </div>
 
       <div className="exercise-catalog-list thoughts-comments-list">
@@ -105,12 +106,12 @@ export default function ThoughtCommentsSidebar({
                   autoFocus
                 />
                 <div className="thought-comment-edit-actions">
-                  <Button size="small" type="primary" onClick={() => handleSaveEdit(comment.id)}>
+                  <AppButton size="small" type="primary" onClick={() => handleSaveEdit(comment.id)}>
                     {t('thoughts.saveComment')}
-                  </Button>
-                  <Button size="small" onClick={handleCancelEdit}>
+                  </AppButton>
+                  <AppButton size="small" onClick={handleCancelEdit}>
                     {t('thoughts.cancel')}
-                  </Button>
+                  </AppButton>
                 </div>
               </div>
             ) : (
@@ -121,14 +122,14 @@ export default function ThoughtCommentsSidebar({
                     {new Date(comment.created_at).toLocaleString()}
                   </Typography.Text>
                   <div className="thought-comment-actions">
-                    <Button
+                    <AppButton
                       type="text"
                       size="small"
                       icon={<EditOutlined />}
                       onClick={() => handleStartEdit(comment)}
                       title={t('thoughts.editComment')}
                     />
-                    <Button
+                    <AppButton
                       type="text"
                       size="small"
                       icon={<CloseOutlined />}

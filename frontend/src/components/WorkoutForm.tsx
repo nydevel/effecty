@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { DatePicker, Input, Button, Typography } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import AppButton from './ui/AppButton';
+import { DatePicker, Input, Typography } from 'antd';
+import { DeleteOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import type { WorkoutExercise } from '../api/workouts';
@@ -129,7 +130,7 @@ function ExerciseRow({ exercise, onUpdateStats, onRemove }: ExerciseRowProps) {
         onBlur={() => handleBlur('weight', weight)}
         onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
       />
-      <Button
+      <AppButton
         type="text"
         size="small"
         icon={<DeleteOutlined />}

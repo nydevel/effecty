@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
-import { Button, Input } from 'antd';
-import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useState, useRef } from 'react';
+import AppButton from './ui/AppButton';
+import { Input } from 'antd';
+import { UploadOutlined, DeleteOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
@@ -85,13 +86,13 @@ export default function AnalysisDetail({ analysis, images, onUpdate, onUploadIma
       <div className="visit-detail-image">
         <label>{t('medical.results')}</label>
         <div className="visit-image-actions">
-          <Button
+          <AppButton
             icon={<UploadOutlined />}
             size="small"
             onClick={() => fileInputRef.current?.click()}
           >
             {t('medical.uploadImage')}
-          </Button>
+          </AppButton>
           <input
             ref={fileInputRef}
             type="file"
@@ -113,7 +114,7 @@ export default function AnalysisDetail({ analysis, images, onUpdate, onUploadIma
                   setLightboxOpen(true);
                 }}
               />
-              <Button
+              <AppButton
                 type="text"
                 danger
                 size="small"

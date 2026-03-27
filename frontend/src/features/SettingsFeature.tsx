@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
-import { Form, Select, Slider, Button, Input, message, Typography, Divider, Modal } from 'antd';
-import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
+import { useState, useRef } from 'react';
+import AppButton from '../components/ui/AppButton';
+import { Form, Select, Slider, Input, message, Typography, Divider, Modal } from 'antd';
+import { DownloadOutlined, UploadOutlined } from '../components/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { updateProfile, changePassword, DEFAULT_UI_SETTINGS } from '../api/profile';
 import type { UserProfile } from '../api/profile';
@@ -132,9 +133,9 @@ export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
           </Select>
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <AppButton type="primary" htmlType="submit" loading={loading}>
             {t('settings.save')}
-          </Button>
+          </AppButton>
         </Form.Item>
       </Form>
 
@@ -179,9 +180,9 @@ export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
           <Input.Password />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={pwLoading}>
+          <AppButton type="primary" htmlType="submit" loading={pwLoading}>
             {t('settings.changePassword')}
-          </Button>
+          </AppButton>
         </Form.Item>
       </Form>
 
@@ -191,14 +192,14 @@ export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
       <Typography.Text style={{ display: 'block', marginBottom: 12 }}>
         {t('settings.exportDescription')}
       </Typography.Text>
-      <Button
+      <AppButton
         icon={<DownloadOutlined />}
         onClick={handleExport}
         loading={exportLoading}
         style={{ marginBottom: 16 }}
       >
         {t('settings.exportData')}
-      </Button>
+      </AppButton>
 
       <Typography.Text style={{ display: 'block', marginBottom: 12 }}>
         {t('settings.importDescription')}
@@ -210,14 +211,14 @@ export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
         style={{ display: 'none' }}
         onChange={handleFileSelected}
       />
-      <Button
+      <AppButton
         icon={<UploadOutlined />}
         danger
         onClick={handleImportClick}
         loading={importLoading}
       >
         {t('settings.importData')}
-      </Button>
+      </AppButton>
       </div>
     </div>
   );

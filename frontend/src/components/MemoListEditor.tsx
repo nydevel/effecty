@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Input } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined, HolderOutlined } from '@ant-design/icons';
-import { message } from 'antd';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import AppButton from './ui/AppButton';
+import { Input, message } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined, HolderOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { Memo } from '../api/notes';
 import * as notesApi from '../api/notes';
@@ -167,13 +167,13 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
                   placeholder={t('notes.memoContent')}
                 />
                 <div className="memo-item-edit-actions">
-                  <Button
+                  <AppButton
                     size="small"
                     type="primary"
                     icon={<CheckOutlined />}
                     onClick={handleSaveEdit}
                   />
-                  <Button
+                  <AppButton
                     size="small"
                     icon={<CloseOutlined />}
                     onClick={() => setEditingId(null)}
@@ -204,14 +204,14 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
             actions={editingId === memo.id ? undefined : (
               <>
                 {!readOnly && (
-                  <Button
+                  <AppButton
                     type="text"
                     size="small"
                     icon={<EditOutlined />}
                     onClick={() => handleStartEdit(memo)}
                   />
                 )}
-                <Button
+                <AppButton
                   type="text"
                   size="small"
                   danger
@@ -241,16 +241,16 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
               placeholder={t('notes.memoContent')}
             />
             <div className="memo-add-form-actions">
-              <Button size="small" type="primary" onClick={handleAdd}>
+              <AppButton size="small" type="primary" onClick={handleAdd}>
                 {t('notes.addMemo')}
-              </Button>
-              <Button size="small" onClick={() => { setAdding(false); setNewTitle(''); setNewContent(''); }}>
+              </AppButton>
+              <AppButton size="small" onClick={() => { setAdding(false); setNewTitle(''); setNewContent(''); }}>
                 {t('notes.cancel')}
-              </Button>
+              </AppButton>
             </div>
           </div>
         ) : (
-          <Button
+          <AppButton
             type="dashed"
             icon={<PlusOutlined />}
             onClick={() => setAdding(true)}
@@ -258,7 +258,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
             block
           >
             {t('notes.addMemo')}
-          </Button>
+          </AppButton>
         )
       )}
     </div>

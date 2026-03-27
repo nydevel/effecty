@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Button, Modal, Input, Select, DatePicker } from 'antd';
-import { PlusOutlined, DeleteOutlined, CopyOutlined } from '@ant-design/icons';
+import AppButton from './ui/AppButton';
+import { DatePicker, Input, Modal, Select } from 'antd';
+import { PlusOutlined, DeleteOutlined, CopyOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import type { DoctorVisit, Specialty } from '../api/medical';
@@ -46,7 +47,7 @@ export default function VisitList({ visits, selectedId, specialties, onSelect, o
   return (
     <div className="visit-list">
       <div className="visit-list-header">
-        <Button
+        <AppButton
           type="primary"
           icon={<PlusOutlined />}
           size="small"
@@ -54,7 +55,7 @@ export default function VisitList({ visits, selectedId, specialties, onSelect, o
           disabled={specialties.length === 0}
         >
           {t('medical.newVisit')}
-        </Button>
+        </AppButton>
       </div>
       <div className="visit-list-items">
         {visits.map((visit) => (
@@ -72,7 +73,7 @@ export default function VisitList({ visits, selectedId, specialties, onSelect, o
               <span className="visit-clinic">{visit.clinic}</span>
             </div>
             <div className="visit-item-actions">
-              <Button
+              <AppButton
                 type="text"
                 size="small"
                 icon={<CopyOutlined />}
@@ -82,7 +83,7 @@ export default function VisitList({ visits, selectedId, specialties, onSelect, o
                   onDuplicate(visit);
                 }}
               />
-              <Button
+              <AppButton
                 type="text"
                 size="small"
                 icon={<DeleteOutlined />}

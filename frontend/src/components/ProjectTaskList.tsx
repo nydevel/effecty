@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Button, Input } from 'antd';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import AppButton from './ui/AppButton';
+import { Input } from 'antd';
+import { DeleteOutlined, PlusOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { ProjectTask, ProjectTaskStatus } from '../api/projects';
 
@@ -47,7 +48,7 @@ export default function ProjectTaskList({
           placeholder={t('projects.newTask')}
           onPressEnter={handleCreate}
           suffix={
-            <Button
+            <AppButton
               type="text"
               size="small"
               icon={<PlusOutlined />}
@@ -77,7 +78,7 @@ export default function ProjectTaskList({
               {task.status === 'done' && t('projects.statusDone')}
             </span>
             <span className="project-task-title">{task.title}</span>
-            <Button
+            <AppButton
               type="text"
               size="small"
               danger

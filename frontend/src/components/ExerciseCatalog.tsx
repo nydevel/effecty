@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Button, Input, Select, Typography, Dropdown } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import AppButton from './ui/AppButton';
+import { Dropdown, Input, Select, Typography } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { Exercise, MuscleGroup } from '../api/workouts';
 import { MUSCLE_GROUPS } from '../api/workouts';
@@ -69,7 +70,7 @@ export default function ExerciseCatalog({
           onPressEnter={handleAdd}
           style={{ marginTop: 8 }}
           suffix={
-            <Button
+            <AppButton
               type="text"
               size="small"
               icon={<PlusOutlined />}
@@ -130,8 +131,8 @@ export default function ExerciseCatalog({
                   options={muscleGroupOptions}
                 />
                 <div className="exercise-catalog-edit-actions">
-                  <Button size="small" type="primary" icon={<CheckOutlined />} onClick={saveEdit} />
-                  <Button size="small" icon={<CloseOutlined />} onClick={() => setEditingId(null)} />
+                  <AppButton size="small" type="primary" icon={<CheckOutlined />} onClick={saveEdit} />
+                  <AppButton size="small" icon={<CloseOutlined />} onClick={() => setEditingId(null)} />
                 </div>
               </div>
             ) : (

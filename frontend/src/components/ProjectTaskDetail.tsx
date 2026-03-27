@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Button, Input, Select } from 'antd';
-import { DeleteOutlined, LinkOutlined } from '@ant-design/icons';
+import { useState, useEffect, useCallback } from 'react';
+import AppButton from './ui/AppButton';
+import { Input, Select } from 'antd';
+import { DeleteOutlined, LinkOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { ProjectTask, ProjectTaskLink, ProjectTaskStatus } from '../api/projects';
 import * as projectsApi from '../api/projects';
@@ -166,7 +167,7 @@ export default function ProjectTaskDetail({ task, projectId, onUpdate, onSelectT
                     {link.target_title}
                   </span>
                 </div>
-                <Button
+                <AppButton
                   type="text"
                   size="small"
                   danger

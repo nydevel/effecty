@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Button, Input, List } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import AppButton from './ui/AppButton';
+import { Input, List } from 'antd';
+import { PlusOutlined, DeleteOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { Specialty } from '../api/medical';
 
@@ -28,7 +29,7 @@ export default function SpecialtySidebar({ specialties, selectedId, onSelect, on
     <div className="sidebar medical-sidebar">
       <div className="sidebar-header">
         <span className="sidebar-title">{t('medical.specialties')}</span>
-        <Button
+        <AppButton
           type="text"
           icon={<PlusOutlined />}
           size="small"
@@ -64,7 +65,7 @@ export default function SpecialtySidebar({ specialties, selectedId, onSelect, on
             onClick={() => onSelect(item.id)}
           >
             <span className="specialty-name">{item.name}</span>
-            <Button
+            <AppButton
               type="text"
               size="small"
               icon={<DeleteOutlined />}

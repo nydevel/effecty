@@ -1,5 +1,6 @@
-import { Button, Table } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import AppButton from './ui/AppButton';
+import { Table } from 'antd';
+import { DeleteOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { ColumnsType } from 'antd/es/table';
 import type { Material, MaterialStatus } from '../api/learning';
@@ -105,7 +106,7 @@ export default function MaterialTable({
       key: 'actions',
       width: 50,
       render: (_: unknown, record: Material) => (
-        <Button
+        <AppButton
           type="text"
           size="small"
           danger

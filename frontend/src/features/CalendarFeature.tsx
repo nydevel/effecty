@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Button, Segmented, Space, Typography } from 'antd';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { useState, useEffect, useCallback } from 'react';
+import AppButton from '../components/ui/AppButton';
+import { Segmented, Space, Typography } from 'antd';
+import { LeftOutlined, RightOutlined } from '../components/ui/icons';
 import { useTranslation } from 'react-i18next';
 import * as tasksApi from '../api/tasks';
 import type { Task } from '../api/tasks';
@@ -153,9 +154,9 @@ export default function CalendarFeature() {
     <div className="calendar-feature">
       <div className="calendar-toolbar">
         <Space>
-          <Button onClick={goToday}>{t('calendar.today')}</Button>
-          <Button icon={<LeftOutlined />} onClick={() => navigate(-1)} />
-          <Button icon={<RightOutlined />} onClick={() => navigate(1)} />
+          <AppButton onClick={goToday}>{t('calendar.today')}</AppButton>
+          <AppButton icon={<LeftOutlined />} onClick={() => navigate(-1)} />
+          <AppButton icon={<RightOutlined />} onClick={() => navigate(1)} />
           <Typography.Text strong style={{ fontSize: 15 }}>
             {getPeriodLabel(viewMode, currentDate, monthsFull, monthsShort)}
           </Typography.Text>

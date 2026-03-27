@@ -1,5 +1,6 @@
-import { Button, Dropdown } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import AppButton from './ui/AppButton';
+import { Dropdown } from 'antd';
+import { PlusOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { Topic } from '../api/learning';
 
@@ -18,7 +19,7 @@ export default function TopicSidebar({ topics, selectedId, onSelect, onCreate, o
     <div className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-title">{t('iconBar.learning')}</div>
-        <Button
+        <AppButton
           type="text"
           className="sidebar-add-btn"
           icon={<PlusOutlined />}
@@ -26,7 +27,7 @@ export default function TopicSidebar({ topics, selectedId, onSelect, onCreate, o
           onClick={onCreate}
         >
           {t('learning.newTopic')}
-        </Button>
+        </AppButton>
       </div>
       <div className="sidebar-tree">
         <div

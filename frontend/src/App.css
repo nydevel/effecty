@@ -21,6 +21,111 @@ html {
   font-size: 16px;
 }
 
+/* UI kit: buttons + icons */
+.ui-btn.ant-btn {
+  border-radius: 8px;
+  border: 1px solid var(--left-panel-border-strong);
+  box-shadow: none;
+  font-weight: 500;
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+}
+
+.ui-btn.ui-btn--sm.ant-btn {
+  min-height: 30px;
+  padding-inline: 10px;
+  font-size: 12px;
+}
+
+.ui-btn.ui-btn--md.ant-btn {
+  min-height: 36px;
+  padding-inline: 14px;
+  font-size: 13px;
+}
+
+.ui-btn.ui-btn--lg.ant-btn {
+  min-height: 42px;
+  padding-inline: 16px;
+  font-size: 14px;
+}
+
+.ui-btn.ant-btn-default,
+.ui-btn.ant-btn-dashed {
+  background: var(--left-panel-bg-2);
+  border-color: var(--left-panel-border-strong);
+  color: var(--left-panel-text-muted);
+}
+
+.ui-btn.ant-btn-default:hover,
+.ui-btn.ant-btn-dashed:hover {
+  border-color: var(--left-panel-accent);
+  color: var(--left-panel-accent);
+  background: var(--left-panel-accent-bg);
+}
+
+.ui-btn.ant-btn-primary {
+  background: var(--left-panel-accent);
+  border-color: var(--left-panel-accent);
+  color: #fff;
+}
+
+.ui-btn.ant-btn-primary:hover {
+  filter: brightness(0.95);
+}
+
+.ui-btn.ant-btn-text {
+  border-color: transparent;
+  background: transparent;
+  color: var(--left-panel-text-muted);
+}
+
+.ui-btn.ant-btn-text:hover {
+  color: var(--left-panel-accent);
+  background: var(--left-panel-accent-bg);
+}
+
+.ui-btn.ant-btn-color-dangerous,
+.ui-btn.ant-btn-dangerous {
+  color: #b42318;
+}
+
+.ui-btn.ant-btn-color-dangerous:hover,
+.ui-btn.ant-btn-dangerous:hover {
+  color: #fff !important;
+  background: #b42318 !important;
+  border-color: #b42318 !important;
+}
+
+.ui-action-icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+  display: inline-block;
+  vertical-align: -0.125em;
+}
+
+.ui-btn--sm .ui-action-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.ui-btn--lg .ui-action-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.ui-action-icon-spin {
+  animation: ui-icon-spin 1s linear infinite;
+}
+
+@keyframes ui-icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Layout */
 .app-layout {
   display: flex;

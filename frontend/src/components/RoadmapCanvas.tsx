@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import AppButton from './ui/AppButton';
 import {
   ReactFlow,
   Background,
@@ -13,8 +14,8 @@ import {
   type NodeProps,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Button, Input, Popconfirm } from 'antd';
-import { PlusOutlined, DeleteOutlined, EditOutlined, CheckOutlined } from '@ant-design/icons';
+import { Input, Popconfirm } from 'antd';
+import { PlusOutlined, DeleteOutlined, EditOutlined, CheckOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { RoadmapNode } from '../api/learning';
 import * as learningApi from '../api/learning';
@@ -51,20 +52,20 @@ function RoadmapNodeComponent({ id, data }: NodeProps<Node<RoadmapNodeData>>) {
             onPressEnter={handleSave}
             autoFocus
           />
-          <Button size="small" type="text" icon={<CheckOutlined />} onClick={handleSave} />
+          <AppButton size="small" type="text" icon={<CheckOutlined />} onClick={handleSave} />
         </div>
       ) : (
         <div className="roadmap-node-label">{data.label}</div>
       )}
       <div className="roadmap-node-actions">
-        <Button
+        <AppButton
           size="small"
           type="text"
           icon={<PlusOutlined />}
           onClick={() => data.onAddChild(id)}
           title={t('learning.roadmapAddChild')}
         />
-        <Button
+        <AppButton
           size="small"
           type="text"
           icon={<EditOutlined />}
@@ -77,7 +78,7 @@ function RoadmapNodeComponent({ id, data }: NodeProps<Node<RoadmapNodeData>>) {
           okText={t('learning.delete')}
           cancelText={t('learning.cancel')}
         >
-          <Button
+          <AppButton
             size="small"
             type="text"
             danger
@@ -282,13 +283,13 @@ export default function RoadmapCanvas() {
   return (
     <div className="roadmap-canvas">
       <div className="roadmap-toolbar">
-        <Button
+        <AppButton
           type="primary"
           icon={<PlusOutlined />}
           onClick={handleAddRoot}
         >
           {t('learning.roadmapAddRoot')}
-        </Button>
+        </AppButton>
       </div>
       <div className="roadmap-flow-container">
         <ReactFlow

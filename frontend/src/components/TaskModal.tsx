@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { Modal, Form, Input, Select, DatePicker, TimePicker, Button, Space } from 'antd';
+import AppButton from './ui/AppButton';
+import { Modal, Form, Input, Select, DatePicker, TimePicker, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import type { Task } from '../api/tasks';
@@ -60,15 +61,15 @@ export default function TaskModal({ task, defaultDate, onSave, onDelete, onClose
       footer={
         <Space>
           {task && onDelete && (
-            <Button danger onClick={onDelete}>
+            <AppButton danger onClick={onDelete}>
               {t('tasks.delete')}
-            </Button>
+            </AppButton>
           )}
           <div style={{ flex: 1 }} />
-          <Button onClick={onClose}>{t('tasks.cancel')}</Button>
-          <Button type="primary" onClick={() => form.submit()}>
+          <AppButton onClick={onClose}>{t('tasks.cancel')}</AppButton>
+          <AppButton type="primary" onClick={() => form.submit()}>
             {t('tasks.save')}
-          </Button>
+          </AppButton>
         </Space>
       }
       width={440}
