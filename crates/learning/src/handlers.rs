@@ -2,7 +2,7 @@ use std::path::{Path as StdPath, PathBuf};
 
 use axum::extract::{Multipart, Path, State};
 use axum::Json;
-use effecty_core::types::{MaterialCommentId, MaterialId, RoadmapNodeId, TagId, TopicId, UserId};
+use effecty_core::types::{MaterialCommentId, MaterialId, TagId, TopicId, UserId};
 use sqlx::SqlitePool;
 
 use crate::error::LearningError;
@@ -11,7 +11,6 @@ use db::repo::material_comments;
 use db::repo::material_links;
 use db::repo::material_topics::{self, LinkTopic};
 use db::repo::materials::{self, CreateMaterial, MaterialType, UpdateMaterial};
-use db::repo::roadmap_nodes::{self, CreateRoadmapNode, UpdateRoadmapNode};
 use db::repo::tags::{self, CreateTag};
 use db::repo::topic_tags::{self, LinkTag};
 use db::repo::topics::{self, CreateTopic, UpdateTopic};
@@ -572,48 +571,4 @@ async fn generate_video_thumbnail(
     materials::update_thumbnail(pool, material_id, user_id, &relative).await?;
 
     Ok(())
-}
-
-// --- Roadmap Nodes ---
-
-pub async fn list_roadmap_nodes(
-    State(pool): State<SqlitePool>,
-    axum::Extension(user_id): axum::Extension<UserId>,
-) -> Result<Json<Vec<roadmap_nodes::RoadmapNode>>, LearningError> {
-    let list = roadmap_nodes::list(&pool, user_id).await?;
-    Ok(Json(list))
-}
-
-pub async fn create_roadmap_node(
-    State(pool): State<SqlitePool>,
-    axum::Extension(user_id): axum::Extension<UserId>,
-    Json(input): Json<CreateRoadmapNode>,
-) -> Result<Json<roadmap_nodes::RoadmapNode>, LearningError> {
-    let node = roadmap_nodes::create(&pool, user_id, &input).await?;
-    Ok(Json(node))
-}
-
-pub async fn update_roadmap_node(
-    State(pool): State<SqlitePool>,
-    axum::Extension(user_id): axum::Extension<UserId>,
-    Path(id): Path<RoadmapNodeId>,
-    Json(input): Json<UpdateRoadmapNode>,
-) -> Result<Json<roadmap_nodes::RoadmapNode>, LearningError> {
-    let node = roadmap_nodes::update(&pool, id, user_id, &input)
-        .await?
-        .ok_or(LearningError::NotFound)?;
-    Ok(Json(node))
-}
-
-pub async fn delete_roadmap_node(
-    State(pool): State<SqlitePool>,
-    axum::Extension(user_id): axum::Extension<UserId>,
-    Path(id): Path<RoadmapNodeId>,
-) -> Result<axum::http::StatusCode, LearningError> {
-    let deleted = roadmap_nodes::delete(&pool, id, user_id).await?;
-    if deleted {
-        Ok(axum::http::StatusCode::NO_CONTENT)
-    } else {
-        Err(LearningError::NotFound)
-    }
 }

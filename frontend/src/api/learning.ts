@@ -47,6 +47,13 @@ export interface MaterialLink {
   created_at: string;
 }
 
+export interface MaterialTopic {
+  id: string;
+  material_id: string;
+  topic_id: string;
+  topic_name: string;
+}
+
 // Topics
 export async function listTopics(): Promise<Topic[]> {
   return apiFetch<Topic[]>('/topics');
@@ -154,6 +161,38 @@ export async function searchMaterials(query: string): Promise<Material[]> {
   return apiFetch<Material[]>(`/materials/search?q=${encodeURIComponent(query)}`);
 }
 
+export async function listMaterialTopics(materialId: string): Promise<MaterialTopic[]> {
+  return apiFetch<MaterialTopic[]>(`/materials/${materialId}/topics`);
+}
+
+export async function linkMaterialTopic(
+  materialId: string,
+  topicId: string,
+): Promise<MaterialTopic> {
+  return apiFetch<MaterialTopic>(`/materials/${materialId}/topics`, {
+    method: 'POST',
+    body: JSON.stringify({ topic_id: topicId }),
+  });
+}
+
+export async function unlinkMaterialTopic(materialId: string, topicId: string): Promise<void> {
+  return apiFetch<void>(`/materials/${materialId}/topics/${topicId}`, { method: 'DELETE' });
+}
+
+export async function setMaterialTopic(materialId: string, topicId: string): Promise<void> {
+  const linkedTopics = await listMaterialTopics(materialId);
+  const alreadyLinkedToTarget = linkedTopics.some((topic) => topic.topic_id === topicId);
+
+  const topicsToUnlink = linkedTopics.filter((topic) => topic.topic_id !== topicId);
+  if (topicsToUnlink.length > 0) {
+    await Promise.all(topicsToUnlink.map((topic) => unlinkMaterialTopic(materialId, topic.topic_id)));
+  }
+
+  if (!alreadyLinkedToTarget) {
+    await linkMaterialTopic(materialId, topicId);
+  }
+}
+
 // Material comments
 export async function listMaterialComments(materialId: string): Promise<MaterialComment[]> {
   return apiFetch<MaterialComment[]>(`/materials/${materialId}/comments`);
@@ -194,51 +233,4 @@ export async function linkMaterial(
 
 export async function unlinkMaterial(materialId: string, targetId: string): Promise<void> {
   return apiFetch<void>(`/materials/${materialId}/links/${targetId}`, { method: 'DELETE' });
-}
-
-// Roadmap nodes
-export interface RoadmapNode {
-  id: string;
-  user_id: string;
-  parent_id: string | null;
-  label: string;
-  position_x: number;
-  position_y: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export async function listRoadmapNodes(): Promise<RoadmapNode[]> {
-  return apiFetch<RoadmapNode[]>('/roadmap/nodes');
-}
-
-export async function createRoadmapNode(data: {
-  parent_id?: string | null;
-  label: string;
-  position_x: number;
-  position_y: number;
-}): Promise<RoadmapNode> {
-  return apiFetch<RoadmapNode>('/roadmap/nodes', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-export async function updateRoadmapNode(
-  id: string,
-  data: {
-    label?: string;
-    position_x?: number;
-    position_y?: number;
-    parent_id?: string | null;
-  },
-): Promise<RoadmapNode> {
-  return apiFetch<RoadmapNode>(`/roadmap/nodes/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
-}
-
-export async function deleteRoadmapNode(id: string): Promise<void> {
-  return apiFetch<void>(`/roadmap/nodes/${id}`, { method: 'DELETE' });
 }

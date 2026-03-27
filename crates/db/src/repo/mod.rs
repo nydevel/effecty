@@ -12,7 +12,6 @@ pub mod profiles;
 pub mod project_task_links;
 pub mod project_tasks;
 pub mod projects;
-pub mod roadmap_nodes;
 pub mod specialties;
 pub mod tags;
 pub mod tasks;

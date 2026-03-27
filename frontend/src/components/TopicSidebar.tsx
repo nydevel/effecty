@@ -3,7 +3,7 @@ import { Dropdown } from 'antd';
 import { Tree, type NodeRendererProps, type TreeApi } from 'react-arborist';
 import { PlusOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
-import type { Topic } from '../api/learning';
+import type { MaterialStatus, Topic } from '../api/learning';
 import AppButton from './ui/AppButton';
 
 interface TopicNode {
@@ -15,9 +15,12 @@ interface TopicNode {
 interface Props {
   topics: Topic[];
   selectedId: string | null;
+  statusFilter: MaterialStatus | 'all';
   onSelect: (id: string | null) => void;
-  onCreate: () => void;
+  onStatusFilterChange: (status: MaterialStatus | 'all') => void;
+  onCreate: (parentIdOverride?: string | null) => void;
   onMove: (id: string, parentId: string | null) => void;
+  onDropMaterial?: (materialId: string, topicId: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -54,16 +57,22 @@ function buildTree(topics: Topic[]): TopicNode[] {
 export default function TopicSidebar({
   topics,
   selectedId,
+  statusFilter,
   onSelect,
+  onStatusFilterChange,
   onCreate,
   onMove,
+  onDropMaterial,
   onDelete,
 }: Props) {
   const { t } = useTranslation();
   const treeRef = useRef<TreeApi<TopicNode>>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const controlsRef = useRef<HTMLDivElement>(null);
   const [treeHeight, setTreeHeight] = useState(400);
+  const [controlsHeight, setControlsHeight] = useState(44);
   const [rootDragOver, setRootDragOver] = useState(false);
+  const [materialDropTargetId, setMaterialDropTargetId] = useState<string | null>(null);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -75,7 +84,35 @@ export default function TopicSidebar({
     return () => ro.disconnect();
   }, []);
 
+  useEffect(() => {
+    const el = controlsRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setControlsHeight(entry.contentRect.height);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const treeData = buildTree(topics);
+
+  const extractMaterialId = (dataTransfer: DataTransfer): string | null => {
+    const direct = dataTransfer.getData('application/material-id');
+    if (direct) return direct;
+    const plain = dataTransfer.getData('text/plain');
+    if (plain.startsWith('material:')) {
+      return plain.slice('material:'.length);
+    }
+    return null;
+  };
+
+  const isMaterialDrag = (dataTransfer: DataTransfer): boolean => {
+    const types = Array.from(dataTransfer.types || []);
+    if (types.includes('application/material-id')) return true;
+    if (!types.includes('text/plain')) return false;
+    const plain = dataTransfer.getData('text/plain');
+    return plain.startsWith('material:');
+  };
 
   function Node({ node, style, dragHandle }: NodeRendererProps<TopicNode>) {
     const nodeStyle = {
@@ -88,6 +125,11 @@ export default function TopicSidebar({
         menu={{
           items: [
             {
+              key: 'create-child-topic',
+              label: t('learning.newTopic'),
+              onClick: () => onCreate(node.id),
+            },
+            {
               key: 'delete',
               label: t('learning.delete'),
               danger: true,
@@ -98,12 +140,35 @@ export default function TopicSidebar({
         trigger={['contextMenu']}
       >
         <div
-          className={`topic-list-item tree-node topic-tree-node ${node.isSelected ? 'selected' : ''}`}
+          className={`topic-list-item tree-node topic-tree-node ${node.isSelected ? 'selected' : ''} ${materialDropTargetId === node.id ? 'drag-over' : ''}`}
           style={nodeStyle}
           ref={dragHandle}
           onClick={() => node.select()}
           onDragStart={(e) => {
             e.dataTransfer.setData('application/topic-id', node.id);
+          }}
+          onDragOver={(e) => {
+            if (!onDropMaterial) return;
+            if (!isMaterialDrag(e.dataTransfer)) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (materialDropTargetId !== node.id) {
+              setMaterialDropTargetId(node.id);
+            }
+          }}
+          onDragLeave={() => {
+            if (materialDropTargetId === node.id) {
+              setMaterialDropTargetId(null);
+            }
+          }}
+          onDrop={(e) => {
+            if (!onDropMaterial) return;
+            const materialId = extractMaterialId(e.dataTransfer);
+            if (!materialId) return;
+            e.preventDefault();
+            e.stopPropagation();
+            setMaterialDropTargetId(null);
+            onDropMaterial(materialId, node.id);
           }}
         >
           <span className="tree-node-name">{node.data.name || t('learning.untitled')}</span>
@@ -121,7 +186,7 @@ export default function TopicSidebar({
           className="sidebar-add-btn"
           icon={<PlusOutlined />}
           size="small"
-          onClick={onCreate}
+          onClick={() => onCreate()}
         >
           {t('learning.newTopic')}
         </AppButton>
@@ -137,36 +202,88 @@ export default function TopicSidebar({
             onSelect(null);
           }
         }}
+        onDragLeave={() => {
+          setMaterialDropTargetId(null);
+        }}
+        onDrop={() => {
+          setMaterialDropTargetId(null);
+        }}
       >
-        <div
-          className={`topic-list-item ${selectedId === null ? 'selected' : ''} ${rootDragOver ? 'drag-over' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            treeRef.current?.deselectAll();
-            onSelect(null);
-          }}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setRootDragOver(true);
-          }}
-          onDragLeave={() => setRootDragOver(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setRootDragOver(false);
-            const draggedTopicId = e.dataTransfer.getData('application/topic-id');
-            if (draggedTopicId) {
+        <div ref={controlsRef} className="topic-sidebar-controls">
+          <div className="topic-status-filter">
+            <div className="sidebar-title topic-status-filter-title">{t('learning.status')}</div>
+            <div
+              className={`topic-list-item ${statusFilter === 'all' ? 'selected' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusFilterChange('all');
+              }}
+            >
+              {t('learning.allStatuses')}
+            </div>
+            <div
+              className={`topic-list-item ${statusFilter === 'not_started' ? 'selected' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusFilterChange('not_started');
+              }}
+            >
+              {t('learning.statusNotStarted')}
+            </div>
+            <div
+              className={`topic-list-item ${statusFilter === 'in_progress' ? 'selected' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusFilterChange('in_progress');
+              }}
+            >
+              {t('learning.statusInProgress')}
+            </div>
+            <div
+              className={`topic-list-item ${statusFilter === 'completed' ? 'selected' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusFilterChange('completed');
+              }}
+            >
+              {t('learning.statusCompleted')}
+            </div>
+          </div>
+
+          <div
+            className={`topic-list-item ${selectedId === null ? 'selected' : ''} ${rootDragOver ? 'drag-over' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              treeRef.current?.deselectAll();
+              onSelect(null);
+            }}
+            onDragOver={(e) => {
+              if (!e.dataTransfer.types.includes('application/topic-id')) {
+                setRootDragOver(false);
+                return;
+              }
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'move';
+              setRootDragOver(true);
+            }}
+            onDragLeave={() => setRootDragOver(false)}
+            onDrop={(e) => {
+              const draggedTopicId = e.dataTransfer.getData('application/topic-id');
+              if (!draggedTopicId) return;
+              e.preventDefault();
+              setRootDragOver(false);
               onMove(draggedTopicId, null);
-            }
-          }}
-        >
-          {t('learning.allMaterials')}
+            }}
+          >
+            {t('learning.allMaterials')}
+          </div>
         </div>
 
         <Tree<TopicNode>
           ref={treeRef}
           data={treeData}
           width="100%"
-          height={Math.max(120, treeHeight - 44)}
+          height={Math.max(120, treeHeight - controlsHeight)}
           indent={18}
           rowHeight={34}
           selection={selectedId ?? undefined}

@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import AppButton from '../components/ui/AppButton';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Segmented } from 'antd';
 import { PlusOutlined } from '../components/ui/icons';
 import { useTranslation } from 'react-i18next';
 import * as learningApi from '../api/learning';
@@ -12,19 +11,17 @@ import TopicModal from '../components/TopicModal';
 import MaterialTable from '../components/MaterialTable';
 import MaterialDetail from '../components/MaterialDetail';
 import MaterialForm from '../components/MaterialForm';
-import RoadmapCanvas from '../components/RoadmapCanvas';
-
-type Tab = 'materials' | 'roadmap';
 
 export default function LearningFeature() {
   const { t } = useTranslation();
   const { id: selectedTopicId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>('materials');
   const [topics, setTopics] = useState<Topic[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null);
+  const [topicCreateParentId, setTopicCreateParentId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<MaterialStatus | 'all'>('all');
 
   const setSelectedTopicId = (id: string | null) => {
     if (id) {
@@ -37,7 +34,16 @@ export default function LearningFeature() {
   const [topicModalOpen, setTopicModalOpen] = useState(false);
   const [materialFormOpen, setMaterialFormOpen] = useState(false);
 
-  const selectedMaterial = materials.find((m) => m.id === selectedMaterialId) ?? null;
+  const filteredMaterials = useMemo(
+    () => (
+      statusFilter === 'all'
+        ? materials
+        : materials.filter((material) => material.status === statusFilter)
+    ),
+    [materials, statusFilter],
+  );
+
+  const selectedMaterial = filteredMaterials.find((m) => m.id === selectedMaterialId) ?? null;
 
   const loadTopics = useCallback(async () => {
     try {
@@ -82,9 +88,10 @@ export default function LearningFeature() {
       await learningApi.createTopic({
         name,
         tag_ids: tagIds,
-        parent_id: selectedTopicId ?? null,
+        parent_id: topicCreateParentId ?? selectedTopicId ?? null,
       });
       await loadTopics();
+      setTopicCreateParentId(null);
       setTopicModalOpen(false);
     } catch (err) {
       console.error('Failed to create topic:', err);
@@ -157,74 +164,73 @@ export default function LearningFeature() {
     }
   };
 
+  const handleReassignMaterialTopic = async (materialId: string, topicId: string) => {
+    try {
+      await learningApi.setMaterialTopic(materialId, topicId);
+      await loadMaterials();
+    } catch (err) {
+      console.error('Failed to reassign material topic:', err);
+    }
+  };
+
   return (
     <div className="learning-feature">
-      <div className="learning-toolbar">
-        <Segmented
-          value={tab}
-          onChange={(val) => setTab(val as Tab)}
-          options={[
-            { label: t('learning.materials'), value: 'materials' },
-            { label: t('learning.roadmap'), value: 'roadmap' },
-          ]}
-        />
-      </div>
       <div className="feature-layout">
-        {tab === 'materials' && (
-          <>
-            <TopicSidebar
-              topics={topics}
-              selectedId={selectedTopicId ?? null}
-              onSelect={setSelectedTopicId}
-              onCreate={() => setTopicModalOpen(true)}
-              onMove={handleMoveTopic}
-              onDelete={handleDeleteTopic}
+        <TopicSidebar
+          topics={topics}
+          selectedId={selectedTopicId ?? null}
+          statusFilter={statusFilter}
+          onSelect={setSelectedTopicId}
+          onStatusFilterChange={setStatusFilter}
+          onCreate={(parentIdOverride) => {
+            setTopicCreateParentId(parentIdOverride ?? null);
+            setTopicModalOpen(true);
+          }}
+          onMove={handleMoveTopic}
+          onDropMaterial={handleReassignMaterialTopic}
+          onDelete={handleDeleteTopic}
+        />
+        <main className="main-content">
+          <div className="materials-header">
+            <AppButton
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setMaterialFormOpen(true)}
+              disabled={topics.length === 0 && !selectedTopicId}
+            >
+              {t('learning.newMaterial')}
+            </AppButton>
+          </div>
+          {filteredMaterials.length > 0 ? (
+            <MaterialTable
+              materials={filteredMaterials}
+              selectedId={selectedMaterialId}
+              showTopics={!selectedTopicId}
+              onSelect={setSelectedMaterialId}
+              onDelete={handleDeleteMaterial}
+              onStatusChange={handleStatusChange}
             />
-            <main className="main-content">
-              <div className="materials-header">
-                <AppButton
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => setMaterialFormOpen(true)}
-                  disabled={topics.length === 0 && !selectedTopicId}
-                >
-                  {t('learning.newMaterial')}
-                </AppButton>
-              </div>
-              {materials.length > 0 ? (
-                <MaterialTable
-                  materials={materials}
-                  selectedId={selectedMaterialId}
-                  showTopics={!selectedTopicId}
-                  onSelect={setSelectedMaterialId}
-                  onDelete={handleDeleteMaterial}
-                  onStatusChange={handleStatusChange}
-                />
-              ) : (
-                <div className="empty-state">{t('learning.emptyState')}</div>
-              )}
-            </main>
-            {selectedMaterial && (
-              <div className="medical-detail">
-                <MaterialDetail
-                  material={selectedMaterial}
-                  onSelectMaterial={setSelectedMaterialId}
-                />
-              </div>
-            )}
-          </>
-        )}
-        {tab === 'roadmap' && (
-          <main className="main-content roadmap-main">
-            <RoadmapCanvas />
-          </main>
+          ) : (
+            <div className="empty-state">{t('learning.emptyState')}</div>
+          )}
+        </main>
+        {selectedMaterial && (
+          <div className="medical-detail">
+            <MaterialDetail
+              material={selectedMaterial}
+              onSelectMaterial={setSelectedMaterialId}
+            />
+          </div>
         )}
       </div>
 
       <TopicModal
         open={topicModalOpen}
         tags={tags}
-        onCancel={() => setTopicModalOpen(false)}
+        onCancel={() => {
+          setTopicCreateParentId(null);
+          setTopicModalOpen(false);
+        }}
         onOk={handleCreateTopic}
         onCreateTag={handleCreateTag}
       />
