@@ -10,7 +10,10 @@
     "passwordRequired": "Please enter your password"
   },
   "dashboard": {
-    "emptyState": "Dashboard coming soon"
+    "emptyState": "Dashboard coming soon",
+    "todayTasks": "Today's tasks",
+    "noTasksToday": "No tasks for today",
+    "loading": "Loading..."
   },
   "iconBar": {
     "dashboard": "Dashboard",

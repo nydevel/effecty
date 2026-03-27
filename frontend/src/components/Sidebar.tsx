@@ -140,11 +140,16 @@ export default function Sidebar({
 
   function Node({ node, style, dragHandle }: NodeRendererProps<TreeNode>) {
     const isFolder = node.data.nodeType === 'folder';
+    const nodeStyle = {
+      ...style,
+      paddingLeft: `${10 + node.level * 16}px`,
+    };
+
     return (
       <Dropdown menu={getContextMenuItems(node.data)} trigger={['contextMenu']}>
         <div
           className={`tree-node ${node.isSelected ? 'selected' : ''}`}
-          style={style}
+          style={nodeStyle}
           ref={dragHandle}
           onClick={() => { node.select(); if (isFolder) node.toggle(); }}
           onDoubleClick={() => node.edit()}

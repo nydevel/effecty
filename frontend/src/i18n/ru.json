@@ -10,7 +10,10 @@
     "passwordRequired": "Введите пароль"
   },
   "dashboard": {
-    "emptyState": "Дашборд скоро появится"
+    "emptyState": "Дашборд скоро появится",
+    "todayTasks": "Сегодняшние задачи",
+    "noTasksToday": "На сегодня задач нет",
+    "loading": "Загрузка..."
   },
   "iconBar": {
     "dashboard": "Дашборд",
