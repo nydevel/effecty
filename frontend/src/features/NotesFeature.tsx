@@ -59,27 +59,27 @@ export default function NotesFeature() {
     return selected?.parent_id ?? null;
   };
 
-  const handleCreateFolder = async () => {
+  const handleCreateFolder = async (parentIdOverride?: string | null) => {
     await notesApi.createNote({
-      parent_id: getParentId(),
+      parent_id: parentIdOverride ?? getParentId(),
       title: t('notes.newFolder'),
       node_type: 'folder',
     });
     await loadTree();
   };
 
-  const handleCreateFile = async () => {
+  const handleCreateFile = async (parentIdOverride?: string | null) => {
     await notesApi.createNote({
-      parent_id: getParentId(),
+      parent_id: parentIdOverride ?? getParentId(),
       title: t('notes.newNote'),
       node_type: 'file',
     });
     await loadTree();
   };
 
-  const handleCreateMemolist = async () => {
+  const handleCreateMemolist = async (parentIdOverride?: string | null) => {
     await notesApi.createNote({
-      parent_id: getParentId(),
+      parent_id: parentIdOverride ?? getParentId(),
       title: t('notes.newMemolist'),
       node_type: 'memolist',
     });

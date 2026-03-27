@@ -17,9 +17,9 @@ interface Props {
   notes: Note[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
-  onCreateFolder: () => void;
-  onCreateFile: () => void;
-  onCreateMemolist?: () => void;
+  onCreateFolder: (parentIdOverride?: string | null) => void;
+  onCreateFile: (parentIdOverride?: string | null) => void;
+  onCreateMemolist?: (parentIdOverride?: string | null) => void;
   onMove: (id: string, parentId: string | null, index: number) => void;
   onRename: (id: string, name: string) => void;
   onDelete: (id: string) => void;
@@ -84,15 +84,43 @@ export default function Sidebar({
   }, []);
 
   const getContextMenuItems = useCallback(
-    (nodeId: string) => ({
-      items: [
+    (node: TreeNode) => {
+      const items = [];
+
+      if (node.nodeType === 'folder') {
+        items.push(
+          {
+            key: 'create-folder',
+            label: t('notes.newFolder'),
+            icon: <FolderAddOutlined />,
+            onClick: () => onCreateFolder(node.id),
+          },
+          {
+            key: 'create-file',
+            label: t('notes.newNote'),
+            icon: <FileAddOutlined />,
+            onClick: () => onCreateFile(node.id),
+          },
+        );
+
+        if (onCreateMemolist) {
+          items.push({
+            key: 'create-memolist',
+            label: t('notes.newMemolist'),
+            icon: <UnorderedListOutlined />,
+            onClick: () => onCreateMemolist(node.id),
+          });
+        }
+      }
+
+      items.push(
         {
           key: 'rename',
           label: t('notes.rename'),
           icon: <EditOutlined />,
           onClick: () => {
             requestAnimationFrame(() => {
-              treeRef.current?.edit(nodeId);
+              treeRef.current?.edit(node.id);
             });
           },
         },
@@ -101,17 +129,19 @@ export default function Sidebar({
           label: t('notes.delete'),
           icon: <DeleteOutlined />,
           danger: true,
-          onClick: () => onDelete(nodeId),
+          onClick: () => onDelete(node.id),
         },
-      ],
-    }),
-    [onDelete],
+      );
+
+      return { items };
+    },
+    [onCreateFile, onCreateFolder, onCreateMemolist, onDelete, t],
   );
 
   function Node({ node, style, dragHandle }: NodeRendererProps<TreeNode>) {
     const isFolder = node.data.nodeType === 'folder';
     return (
-      <Dropdown menu={getContextMenuItems(node.id)} trigger={['contextMenu']}>
+      <Dropdown menu={getContextMenuItems(node.data)} trigger={['contextMenu']}>
         <div
           className={`tree-node ${node.isSelected ? 'selected' : ''}`}
           style={style}
@@ -151,7 +181,7 @@ export default function Sidebar({
             className="sidebar-tool-btn"
             size="small"
             icon={<FolderAddOutlined />}
-            onClick={onCreateFolder}
+            onClick={() => onCreateFolder()}
             title={t('notes.newFolder')}
           />
           <AppButton
@@ -159,7 +189,7 @@ export default function Sidebar({
             className="sidebar-tool-btn"
             size="small"
             icon={<FileAddOutlined />}
-            onClick={onCreateFile}
+            onClick={() => onCreateFile()}
             title={t('notes.newFile')}
           />
           {onCreateMemolist && (
@@ -168,7 +198,7 @@ export default function Sidebar({
               className="sidebar-tool-btn"
               size="small"
               icon={<UnorderedListOutlined />}
-              onClick={onCreateMemolist}
+              onClick={() => onCreateMemolist()}
               title={t('notes.newMemolist')}
             />
           )}
