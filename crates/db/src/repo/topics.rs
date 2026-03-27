@@ -10,6 +10,7 @@ pub struct Topic {
     pub id: TopicId,
     pub user_id: UserId,
     pub name: String,
+    pub parent_id: Option<TopicId>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -17,6 +18,7 @@ pub struct Topic {
 #[derive(Debug, Deserialize)]
 pub struct CreateTopic {
     pub name: String,
+    pub parent_id: Option<TopicId>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -50,14 +52,15 @@ pub async fn create(pool: &SqlitePool, user_id: UserId, input: &CreateTopic) -> 
     let id = Uuid::new_v4();
     let topic = sqlx::query_as::<_, Topic>(
         r#"
-        INSERT INTO topics (id, user_id, name)
-        VALUES (?1, ?2, ?3)
+        INSERT INTO topics (id, user_id, name, parent_id)
+        VALUES (?1, ?2, ?3, ?4)
         RETURNING *
         "#,
     )
     .bind(id)
     .bind(user_id)
     .bind(&name)
+    .bind(input.parent_id)
     .fetch_one(pool)
     .await?;
 
@@ -89,6 +92,12 @@ pub async fn update(
 }
 
 pub async fn delete(pool: &SqlitePool, id: TopicId, user_id: UserId) -> Result<bool> {
+    sqlx::query("UPDATE topics SET parent_id = NULL, updated_at = datetime('now') WHERE parent_id = ?1 AND user_id = ?2")
+        .bind(id)
+        .bind(user_id)
+        .execute(pool)
+        .await?;
+
     let result = sqlx::query("DELETE FROM topics WHERE id = ?1 AND user_id = ?2")
         .bind(id)
         .bind(user_id)
@@ -96,4 +105,28 @@ pub async fn delete(pool: &SqlitePool, id: TopicId, user_id: UserId) -> Result<b
         .await?;
 
     Ok(result.rows_affected() > 0)
+}
+
+pub async fn move_to(
+    pool: &SqlitePool,
+    id: TopicId,
+    user_id: UserId,
+    parent_id: Option<TopicId>,
+) -> Result<Option<Topic>> {
+    let topic = sqlx::query_as::<_, Topic>(
+        r#"
+        UPDATE topics
+        SET parent_id = ?3,
+            updated_at = datetime('now')
+        WHERE id = ?1 AND user_id = ?2
+        RETURNING *
+        "#,
+    )
+    .bind(id)
+    .bind(user_id)
+    .bind(parent_id)
+    .fetch_optional(pool)
+    .await?;
+
+    Ok(topic)
 }

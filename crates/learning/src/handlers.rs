@@ -37,7 +37,22 @@ pub async fn create_topic(
         ));
     }
 
-    let topic = topics::create(&pool, user_id, &CreateTopic { name: input.name }).await?;
+    if let Some(parent_id) = input.parent_id {
+        let parent = topics::get(&pool, parent_id, user_id).await?;
+        if parent.is_none() {
+            return Err(LearningError::BadRequest("parent topic not found".into()));
+        }
+    }
+
+    let topic = topics::create(
+        &pool,
+        user_id,
+        &CreateTopic {
+            name: input.name,
+            parent_id: input.parent_id,
+        },
+    )
+    .await?;
 
     #[allow(unused_labels)]
     'link_tags: for tag_id in &input.tag_ids {
@@ -70,6 +85,39 @@ pub async fn delete_topic(
     } else {
         Err(LearningError::NotFound)
     }
+}
+
+pub async fn move_topic(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path(id): Path<TopicId>,
+    Json(input): Json<MoveTopicRequest>,
+) -> Result<Json<topics::Topic>, LearningError> {
+    if input.parent_id == Some(id) {
+        return Err(LearningError::BadRequest(
+            "topic cannot be parent of itself".into(),
+        ));
+    }
+
+    if let Some(parent_id) = input.parent_id {
+        let mut cursor = Some(parent_id);
+        while let Some(current_id) = cursor {
+            if current_id == id {
+                return Err(LearningError::BadRequest(
+                    "cannot move topic into its own subtree".into(),
+                ));
+            }
+            cursor = topics::get(&pool, current_id, user_id)
+                .await?
+                .ok_or_else(|| LearningError::BadRequest("parent topic not found".into()))?
+                .parent_id;
+        }
+    }
+
+    let moved = topics::move_to(&pool, id, user_id, input.parent_id)
+        .await?
+        .ok_or(LearningError::NotFound)?;
+    Ok(Json(moved))
 }
 
 // --- Topic Tags ---
@@ -467,7 +515,13 @@ pub async fn fetch_url_title(
 #[derive(Debug, serde::Deserialize)]
 pub struct CreateTopicRequest {
     pub name: String,
+    pub parent_id: Option<TopicId>,
     pub tag_ids: Vec<TagId>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct MoveTopicRequest {
+    pub parent_id: Option<TopicId>,
 }
 
 async fn generate_link_thumbnail(

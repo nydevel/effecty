@@ -15,6 +15,7 @@ pub fn router() -> Router<SqlitePool> {
         .route("/api/topics", post(handlers::create_topic))
         .route("/api/topics/{id}", put(handlers::update_topic))
         .route("/api/topics/{id}", delete(handlers::delete_topic))
+        .route("/api/topics/{id}/move", patch(handlers::move_topic))
         // Topic tags
         .route("/api/topics/{id}/tags", get(handlers::list_topic_tags))
         .route("/api/topics/{id}/tags", post(handlers::link_topic_tag))

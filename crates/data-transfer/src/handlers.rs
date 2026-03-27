@@ -139,6 +139,8 @@ pub struct ExportThoughtTag {
 pub struct ExportTopic {
     pub id: TopicId,
     pub name: String,
+    #[serde(default)]
+    pub parent_id: Option<TopicId>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -339,7 +341,7 @@ async fn fetch_export_learning(
     data: &mut ExportData,
 ) -> Result<(), DataTransferError> {
     data.topics = sqlx::query_as::<_, ExportTopic>(
-        "SELECT id, name, created_at, updated_at FROM topics WHERE user_id = $1 ORDER BY name",
+        "SELECT id, name, parent_id, created_at, updated_at FROM topics WHERE user_id = $1 ORDER BY name",
     )
     .bind(user_id)
     .fetch_all(pool)
@@ -632,12 +634,13 @@ async fn import_learning(
 ) -> Result<(), DataTransferError> {
     'topics: for tp in &data.topics {
         sqlx::query(
-            "INSERT INTO topics (id, user_id, name, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, $5)",
+            "INSERT INTO topics (id, user_id, name, parent_id, created_at, updated_at) \
+             VALUES ($1, $2, $3, $4, $5, $6)",
         )
         .bind(tp.id)
         .bind(user_id)
         .bind(&tp.name)
+        .bind(tp.parent_id)
         .bind(tp.created_at)
         .bind(tp.updated_at)
         .execute(&mut **tx)

@@ -79,11 +79,24 @@ export default function LearningFeature() {
 
   const handleCreateTopic = async (name: string, tagIds: string[]) => {
     try {
-      await learningApi.createTopic({ name, tag_ids: tagIds });
+      await learningApi.createTopic({
+        name,
+        tag_ids: tagIds,
+        parent_id: selectedTopicId ?? null,
+      });
       await loadTopics();
       setTopicModalOpen(false);
     } catch (err) {
       console.error('Failed to create topic:', err);
+    }
+  };
+
+  const handleMoveTopic = async (id: string, parentId: string | null) => {
+    try {
+      await learningApi.moveTopic(id, { parent_id: parentId });
+      await loadTopics();
+    } catch (err) {
+      console.error('Failed to move topic:', err);
     }
   };
 
@@ -164,6 +177,7 @@ export default function LearningFeature() {
               selectedId={selectedTopicId ?? null}
               onSelect={setSelectedTopicId}
               onCreate={() => setTopicModalOpen(true)}
+              onMove={handleMoveTopic}
               onDelete={handleDeleteTopic}
             />
             <main className="main-content">

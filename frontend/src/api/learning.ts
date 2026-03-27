@@ -8,6 +8,7 @@ export interface Topic {
   id: string;
   user_id: string;
   name: string;
+  parent_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -51,7 +52,11 @@ export async function listTopics(): Promise<Topic[]> {
   return apiFetch<Topic[]>('/topics');
 }
 
-export async function createTopic(data: { name: string; tag_ids: string[] }): Promise<Topic> {
+export async function createTopic(data: {
+  name: string;
+  tag_ids: string[];
+  parent_id?: string | null;
+}): Promise<Topic> {
   return apiFetch<Topic>('/topics', {
     method: 'POST',
     body: JSON.stringify(data),
@@ -60,6 +65,16 @@ export async function createTopic(data: { name: string; tag_ids: string[] }): Pr
 
 export async function deleteTopic(id: string): Promise<void> {
   return apiFetch<void>(`/topics/${id}`, { method: 'DELETE' });
+}
+
+export async function moveTopic(
+  id: string,
+  data: { parent_id: string | null },
+): Promise<Topic> {
+  return apiFetch<Topic>(`/topics/${id}/move`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 }
 
 // Tags (shared)

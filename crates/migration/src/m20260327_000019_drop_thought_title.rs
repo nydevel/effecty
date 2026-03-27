@@ -21,7 +21,12 @@ impl MigrationTrait for Migration {
             .alter_table(
                 Table::alter()
                     .table(Thoughts::Table)
-                    .add_column(ColumnDef::new(Thoughts::Title).text().not_null().default(""))
+                    .add_column(
+                        ColumnDef::new(Thoughts::Title)
+                            .text()
+                            .not_null()
+                            .default(""),
+                    )
                     .to_owned(),
             )
             .await

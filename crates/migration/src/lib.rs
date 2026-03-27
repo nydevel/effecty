@@ -20,6 +20,7 @@ mod m20260326_000017_material_comments_status;
 mod m20260326_000018_create_projects;
 mod m20260327_000019_drop_thought_title;
 mod m20260327_000020_drop_legacy_medical_image_paths;
+mod m20260327_000021_topic_tree;
 
 pub struct Migrator;
 
@@ -45,6 +46,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260326_000018_create_projects::Migration),
             Box::new(m20260327_000019_drop_thought_title::Migration),
             Box::new(m20260327_000020_drop_legacy_medical_image_paths::Migration),
+            Box::new(m20260327_000021_topic_tree::Migration),
         ]
     }
 }
