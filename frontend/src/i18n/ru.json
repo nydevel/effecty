@@ -237,6 +237,8 @@
     "linkParent": "Родительская",
     "linkRelated": "Связано",
     "linkBlocker": "Блокер",
+    "filterStatus": "Сортировка по статусу",
+    "filterAll": "Все",
     "statusTodo": "К выполнению",
     "statusInProgress": "В работе",
     "statusDone": "Сделано",

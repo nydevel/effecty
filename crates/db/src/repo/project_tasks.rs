@@ -37,11 +37,11 @@ pub async fn list(
     user_id: UserId,
 ) -> Result<Vec<ProjectTask>> {
     let tasks = sqlx::query_as::<_, ProjectTask>(
-        "SELECT id, project_id, user_id, title, description, status, position, \
+         "SELECT id, project_id, user_id, title, description, status, position, \
                 created_at, updated_at \
          FROM project_tasks \
          WHERE project_id = ?1 AND user_id = ?2 \
-         ORDER BY position DESC, created_at DESC",
+         ORDER BY CASE WHEN status = 'done' THEN 1 ELSE 0 END, position DESC, created_at DESC",
     )
     .bind(project_id)
     .bind(user_id)

@@ -1297,6 +1297,31 @@ html {
   border-bottom: 1px solid #e8e8ec;
 }
 
+.project-task-toolbar {
+  padding: 10px 16px;
+  border-bottom: 1px solid #eceef1;
+  background: #fafbfc;
+}
+
+.project-task-toolbar-title {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8d9299;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.project-task-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.project-task-filter-btn.ui-btn.ant-btn {
+  min-height: 28px;
+}
+
 .project-task-items {
   flex: 1;
   overflow-y: auto;

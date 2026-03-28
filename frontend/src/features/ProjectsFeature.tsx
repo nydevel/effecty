@@ -1,15 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import AppButton from '../components/ui/AppButton';
 import { Input, Modal } from 'antd';
 import { PlusOutlined } from '../components/ui/icons';
 import { useTranslation } from 'react-i18next';
 import * as projectsApi from '../api/projects';
-import type { Project, ProjectTask } from '../api/projects';
+import type { Project, ProjectTask, ProjectTaskStatus } from '../api/projects';
 import ProjectTaskList from '../components/ProjectTaskList';
 import ProjectTaskDetail from '../components/ProjectTaskDetail';
 
 function sortProjectTasks(tasks: ProjectTask[]): ProjectTask[] {
   return [...tasks].sort((a, b) => {
+    const aDone = a.status === 'done';
+    const bDone = b.status === 'done';
+    if (aDone !== bDone) return aDone ? 1 : -1;
     if (a.position !== b.position) return b.position - a.position;
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
@@ -21,11 +24,16 @@ export default function ProjectsFeature() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<ProjectTask[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<ProjectTaskStatus | 'all'>('all');
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
 
   const selectedProject = projects.find((p) => p.id === selectedProjectId) ?? null;
   const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? null;
+  const visibleTasks = useMemo(
+    () => (statusFilter === 'all' ? tasks : tasks.filter((task) => task.status === statusFilter)),
+    [tasks, statusFilter],
+  );
 
   const loadProjects = useCallback(async () => {
     try {
@@ -56,6 +64,14 @@ export default function ProjectsFeature() {
     loadTasks();
     setSelectedTaskId(null);
   }, [loadTasks]);
+
+  useEffect(() => {
+    if (!selectedTaskId || statusFilter === 'all') return;
+    const selected = tasks.find((task) => task.id === selectedTaskId);
+    if (selected && selected.status !== statusFilter) {
+      setSelectedTaskId(null);
+    }
+  }, [selectedTaskId, statusFilter, tasks]);
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) return;
@@ -160,13 +176,15 @@ export default function ProjectsFeature() {
       <main className="main-content">
         {selectedProject ? (
           <ProjectTaskList
-            tasks={tasks}
+            tasks={visibleTasks}
             selectedId={selectedTaskId}
             onSelect={setSelectedTaskId}
             onCreate={handleCreateTask}
             onDelete={handleDeleteTask}
             onStatusChange={(id, status) => handleUpdateTask(id, { status })}
             onReorder={handleReorderTask}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
           />
         ) : (
           <div className="empty-state">{t('projects.selectProject')}</div>

@@ -13,6 +13,8 @@ interface Props {
   onDelete: (id: string) => Promise<void>;
   onStatusChange: (id: string, status: ProjectTaskStatus) => void;
   onReorder: (taskId: string, position: number) => Promise<void>;
+  statusFilter: ProjectTaskStatus | 'all';
+  onStatusFilterChange: (status: ProjectTaskStatus | 'all') => void;
 }
 
 const STATUS_CYCLE: ProjectTaskStatus[] = ['todo', 'in_progress', 'done'];
@@ -25,11 +27,14 @@ export default function ProjectTaskList({
   onDelete,
   onStatusChange,
   onReorder,
+  statusFilter,
+  onStatusFilterChange,
 }: Props) {
   const { t } = useTranslation();
   const [newTitle, setNewTitle] = useState('');
   const dragIdx = useRef<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const canDrag = statusFilter === 'all';
 
   const handleCreate = async () => {
     if (!newTitle.trim()) return;
@@ -56,6 +61,7 @@ export default function ProjectTaskList({
   };
 
   const handleDrop = async (e: React.DragEvent, targetIdx: number) => {
+    if (!canDrag) return;
     e.preventDefault();
     const fromIdx = dragIdx.current;
     dragIdx.current = null;
@@ -103,21 +109,60 @@ export default function ProjectTaskList({
           }
         />
       </div>
+      <div className="project-task-toolbar">
+        <div className="project-task-toolbar-title">{t('projects.filterStatus')}</div>
+        <div className="project-task-filters">
+          <AppButton
+            size="small"
+            type={statusFilter === 'all' ? 'primary' : 'default'}
+            className="project-task-filter-btn"
+            onClick={() => onStatusFilterChange('all')}
+          >
+            {t('projects.filterAll')}
+          </AppButton>
+          <AppButton
+            size="small"
+            type={statusFilter === 'todo' ? 'primary' : 'default'}
+            className="project-task-filter-btn"
+            onClick={() => onStatusFilterChange('todo')}
+          >
+            {t('projects.statusTodo')}
+          </AppButton>
+          <AppButton
+            size="small"
+            type={statusFilter === 'in_progress' ? 'primary' : 'default'}
+            className="project-task-filter-btn"
+            onClick={() => onStatusFilterChange('in_progress')}
+          >
+            {t('projects.statusInProgress')}
+          </AppButton>
+          <AppButton
+            size="small"
+            type={statusFilter === 'done' ? 'primary' : 'default'}
+            className="project-task-filter-btn"
+            onClick={() => onStatusFilterChange('done')}
+          >
+            {t('projects.statusDone')}
+          </AppButton>
+        </div>
+      </div>
       <div className="project-task-items">
         {tasks.map((task, idx) => (
           <div
             key={task.id}
             className={`project-task-item ${selectedId === task.id ? 'selected' : ''} ${task.status === 'done' ? 'done' : ''} ${dragOverIdx === idx ? 'drag-over' : ''}`}
-            draggable
-            onDragStart={(e) => handleDragStart(e, idx)}
-            onDragOver={(e) => handleDragOver(e, idx)}
-            onDrop={(e) => handleDrop(e, idx)}
+            draggable={canDrag}
+            onDragStart={canDrag ? (e) => handleDragStart(e, idx) : undefined}
+            onDragOver={canDrag ? (e) => handleDragOver(e, idx) : undefined}
+            onDrop={canDrag ? (e) => handleDrop(e, idx) : undefined}
             onDragEnd={handleDragEnd}
             onClick={() => onSelect(task.id)}
           >
-            <span className="project-task-drag-handle">
-              <HolderOutlined />
-            </span>
+            {canDrag && (
+              <span className="project-task-drag-handle">
+                <HolderOutlined />
+              </span>
+            )}
             <span
               className={`status-badge status-badge-project-${task.status} status-badge-clickable`}
               onClick={(e) => {
