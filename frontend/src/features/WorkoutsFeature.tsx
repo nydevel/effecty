@@ -7,6 +7,14 @@ import WorkoutSidebar from '../components/WorkoutSidebar';
 import WorkoutForm from '../components/WorkoutForm';
 import ExerciseCatalog from '../components/ExerciseCatalog';
 
+function getTodayDateString(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export default function WorkoutsFeature() {
   const { t } = useTranslation();
   const { id: selectedId } = useParams<{ id: string }>();
@@ -66,8 +74,14 @@ export default function WorkoutsFeature() {
   }, [selectedId, loadWorkoutExercises]);
 
   const handleCreate = async () => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getTodayDateString();
     const workout = await workoutsApi.createWorkout({ workout_date: today });
+    await loadWorkouts();
+    setSelectedId(workout.id);
+  };
+
+  const handleDuplicate = async (id: string) => {
+    const workout = await workoutsApi.duplicateWorkout(id, { workout_date: getTodayDateString() });
     await loadWorkouts();
     setSelectedId(workout.id);
   };
@@ -132,6 +146,7 @@ export default function WorkoutsFeature() {
         selectedId={selectedId ?? null}
         onSelect={setSelectedId}
         onCreate={handleCreate}
+        onDuplicate={handleDuplicate}
         onDelete={handleDelete}
       />
       <main className="main-content">

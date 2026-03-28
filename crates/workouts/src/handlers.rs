@@ -6,8 +6,8 @@ use sqlx::SqlitePool;
 use crate::error::WorkoutsError;
 use db::repo::exercises::{self, CreateExercise, UpdateExercise};
 use db::repo::workouts::{
-    self, AddExercise, CreateWorkout, MoveWorkout, MoveWorkoutExercise, UpdateWorkout,
-    UpdateWorkoutExercise,
+    self, AddExercise, CreateWorkout, DuplicateWorkout, MoveWorkout, MoveWorkoutExercise,
+    UpdateWorkout, UpdateWorkoutExercise,
 };
 
 // --- Workouts ---
@@ -36,6 +36,18 @@ pub async fn move_workout(
     Json(input): Json<MoveWorkout>,
 ) -> Result<Json<workouts::Workout>, WorkoutsError> {
     let workout = workouts::move_workout(&pool, id, user_id, &input)
+        .await?
+        .ok_or(WorkoutsError::NotFound)?;
+    Ok(Json(workout))
+}
+
+pub async fn duplicate_workout(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Path(id): Path<WorkoutId>,
+    Json(input): Json<DuplicateWorkout>,
+) -> Result<Json<workouts::Workout>, WorkoutsError> {
+    let workout = workouts::duplicate_workout(&pool, id, user_id, &input)
         .await?
         .ok_or(WorkoutsError::NotFound)?;
     Ok(Json(workout))

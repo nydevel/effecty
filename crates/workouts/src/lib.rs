@@ -12,6 +12,10 @@ pub fn router() -> Router<SqlitePool> {
         // Workouts
         .route("/api/workouts", get(handlers::list_workouts))
         .route("/api/workouts", post(handlers::create_workout))
+        .route(
+            "/api/workouts/{id}/duplicate",
+            post(handlers::duplicate_workout),
+        )
         .route("/api/workouts/{id}", put(handlers::update_workout))
         .route("/api/workouts/{id}/move", patch(handlers::move_workout))
         .route("/api/workouts/{id}", delete(handlers::delete_workout))

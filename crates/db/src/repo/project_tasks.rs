@@ -37,7 +37,7 @@ pub async fn list(
     user_id: UserId,
 ) -> Result<Vec<ProjectTask>> {
     let tasks = sqlx::query_as::<_, ProjectTask>(
-         "SELECT id, project_id, user_id, title, description, status, position, \
+        "SELECT id, project_id, user_id, title, description, status, position, \
                 created_at, updated_at \
          FROM project_tasks \
          WHERE project_id = ?1 AND user_id = ?2 \

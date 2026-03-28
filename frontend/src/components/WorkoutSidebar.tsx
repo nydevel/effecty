@@ -1,6 +1,6 @@
 import AppButton from './ui/AppButton';
 import { Dropdown } from 'antd';
-import { PlusOutlined, DeleteOutlined } from './ui/icons';
+import { PlusOutlined, DeleteOutlined, CopyOutlined } from './ui/icons';
 import { useTranslation } from 'react-i18next';
 import type { Workout } from '../api/workouts';
 
@@ -9,6 +9,7 @@ interface Props {
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onCreate: () => void;
+  onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -27,6 +28,7 @@ export default function WorkoutSidebar({
   selectedId,
   onSelect,
   onCreate,
+  onDuplicate,
   onDelete,
 }: Props) {
   const { t, i18n } = useTranslation();
@@ -51,6 +53,12 @@ export default function WorkoutSidebar({
             key={workout.id}
             menu={{
               items: [
+                {
+                  key: 'duplicate',
+                  label: t('workouts.duplicate'),
+                  icon: <CopyOutlined />,
+                  onClick: () => onDuplicate(workout.id),
+                },
                 {
                   key: 'delete',
                   label: t('workouts.delete'),

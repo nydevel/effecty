@@ -35,6 +35,11 @@ pub struct CreateWorkout {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct DuplicateWorkout {
+    pub workout_date: NaiveDate,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct UpdateWorkout {
     pub workout_date: Option<NaiveDate>,
 }
@@ -59,6 +64,15 @@ pub struct UpdateWorkoutExercise {
 #[derive(Debug, Deserialize)]
 pub struct MoveWorkoutExercise {
     pub position: f64,
+}
+
+#[derive(Debug, sqlx::FromRow)]
+struct WorkoutExerciseCopy {
+    exercise_id: ExerciseId,
+    sets: String,
+    reps: String,
+    weight: String,
+    position: f64,
 }
 
 pub async fn list_workouts(pool: &SqlitePool, user_id: UserId) -> Result<Vec<Workout>> {
@@ -140,6 +154,85 @@ pub async fn move_workout(
     .await?;
 
     Ok(workout)
+}
+
+pub async fn duplicate_workout(
+    pool: &SqlitePool,
+    id: WorkoutId,
+    user_id: UserId,
+    input: &DuplicateWorkout,
+) -> Result<Option<Workout>> {
+    let mut tx = pool.begin().await?;
+
+    let source_exists = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(1) FROM workouts WHERE id = ?1 AND user_id = ?2",
+    )
+    .bind(id)
+    .bind(user_id)
+    .fetch_one(&mut *tx)
+    .await?;
+
+    if source_exists == 0 {
+        return Ok(None);
+    }
+
+    let max_pos = sqlx::query_scalar::<_, Option<f64>>(
+        "SELECT MAX(position) FROM workouts WHERE user_id = ?1",
+    )
+    .bind(user_id)
+    .fetch_one(&mut *tx)
+    .await?;
+
+    let position = max_pos.unwrap_or(0.0) + 1.0;
+    let new_workout_id = Uuid::new_v4();
+
+    let workout = sqlx::query_as::<_, Workout>(
+        r#"
+        INSERT INTO workouts (id, user_id, workout_date, position)
+        VALUES (?1, ?2, ?3, ?4)
+        RETURNING *
+        "#,
+    )
+    .bind(new_workout_id)
+    .bind(user_id)
+    .bind(input.workout_date)
+    .bind(position)
+    .fetch_one(&mut *tx)
+    .await?;
+
+    let exercises = sqlx::query_as::<_, WorkoutExerciseCopy>(
+        r#"
+        SELECT exercise_id, sets, reps, weight, position
+        FROM workout_exercises
+        WHERE workout_id = ?1
+        ORDER BY position
+        "#,
+    )
+    .bind(id)
+    .fetch_all(&mut *tx)
+    .await?;
+
+    for exercise in exercises {
+        sqlx::query(
+            r#"
+            INSERT INTO workout_exercises (id, workout_id, exercise_id, sets, reps, weight, position)
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+            "#,
+        )
+        .bind(Uuid::new_v4())
+        .bind(new_workout_id)
+        .bind(exercise.exercise_id)
+        .bind(exercise.sets)
+        .bind(exercise.reps)
+        .bind(exercise.weight)
+        .bind(exercise.position)
+        .execute(&mut *tx)
+        .await?;
+    }
+
+    tx.commit().await?;
+
+    Ok(Some(workout))
 }
 
 pub async fn update_workout(

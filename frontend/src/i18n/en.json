@@ -120,6 +120,7 @@
   },
   "workouts": {
     "newWorkout": "Workout",
+    "duplicate": "Duplicate",
     "delete": "Delete",
     "emptyState": "Select a workout or create a new one",
     "exercises": "Exercises",

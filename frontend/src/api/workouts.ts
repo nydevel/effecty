@@ -48,6 +48,13 @@ export async function createWorkout(data: { workout_date: string }): Promise<Wor
   });
 }
 
+export async function duplicateWorkout(id: string, data: { workout_date: string }): Promise<Workout> {
+  return apiFetch<Workout>(`/workouts/${id}/duplicate`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
 export async function updateWorkout(id: string, data: { workout_date?: string }): Promise<Workout> {
   return apiFetch<Workout>(`/workouts/${id}`, {
     method: 'PUT',
