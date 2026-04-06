@@ -41,7 +41,8 @@
     "memoContent": "Content",
     "addMemo": "Add memo",
     "cancel": "Cancel",
-    "copiedToClipboard": "Copied to clipboard"
+    "copiedToClipboard": "Copied to clipboard",
+    "copyFailed": "Failed to copy"
   },
   "tasks": {
     "editTask": "Edit Task",
@@ -136,6 +137,7 @@
     "back": "Back",
     "legs": "Legs",
     "shoulders": "Shoulders",
+    "arms": "Arms",
     "noGroup": "No group",
     "editExercise": "Edit",
     "deleteExercise": "Delete"

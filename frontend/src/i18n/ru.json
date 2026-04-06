@@ -41,7 +41,8 @@
     "memoContent": "Содержание",
     "addMemo": "Добавить мемо",
     "cancel": "Отмена",
-    "copiedToClipboard": "Скопировано в буфер обмена"
+    "copiedToClipboard": "Скопировано в буфер обмена",
+    "copyFailed": "Не удалось скопировать"
   },
   "tasks": {
     "editTask": "Редактировать задачу",
@@ -136,6 +137,7 @@
     "back": "Спина",
     "legs": "Ноги",
     "shoulders": "Плечи",
+    "arms": "Руки",
     "noGroup": "Без группы",
     "editExercise": "Редактировать",
     "deleteExercise": "Удалить"

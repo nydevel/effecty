@@ -28,7 +28,7 @@ pub async fn list(
         FROM material_comments mc
         JOIN materials m ON m.id = mc.material_id
         WHERE mc.material_id = ?1 AND m.user_id = ?2
-        ORDER BY mc.created_at ASC
+        ORDER BY mc.created_at DESC, mc.id DESC
         "#,
     )
     .bind(material_id)

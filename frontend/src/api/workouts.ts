@@ -9,9 +9,9 @@ export interface Workout {
   updated_at: string;
 }
 
-export type MuscleGroup = 'chest' | 'back' | 'legs' | 'shoulders';
+export type MuscleGroup = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms';
 
-export const MUSCLE_GROUPS: MuscleGroup[] = ['chest', 'back', 'legs', 'shoulders'];
+export const MUSCLE_GROUPS: MuscleGroup[] = ['chest', 'back', 'legs', 'shoulders', 'arms'];
 
 export interface Exercise {
   id: string;

@@ -67,6 +67,10 @@ effecty-cli --config /path/to/config <command>     # use custom config file
 effecty-dev    # build frontend (npm ci + npm run build) and start server
 ```
 
+## Releases
+
+Pushing a tag like `v0.1.0` triggers the GitHub Actions release workflow. It builds the frontend, compiles the `server` and `effecty-cli` binaries, creates `.deb` and `.rpm` packages, and attaches them to the GitHub Release.
+
 ## Deploy
 
 Requires Docker. The deploy command auto-detects the remote server architecture (`amd64`/`arm64`) and cross-compiles via Docker.

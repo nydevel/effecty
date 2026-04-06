@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,7 +30,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install packaging tools
-        run: cargo install cargo-deb cargo-generate-rpm
+        run: cargo install --locked cargo-deb cargo-generate-rpm
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
@@ -40,7 +44,7 @@ jobs:
       - name: Build release binaries
         env:
           SQLX_OFFLINE: "true"
-        run: cargo build --release
+        run: cargo build --release -p server -p cli
 
       - name: Build .deb package
         run: cargo deb -p server --no-build
@@ -48,20 +52,20 @@ jobs:
       - name: Build .rpm package
         run: cargo generate-rpm -p crates/server
 
-      - name: Gather artifacts
-        id: artifacts
+      - name: Collect release packages
         run: |
-          DEB=$(ls target/debian/*.deb)
-          RPM=$(ls target/generate-rpm/*.rpm)
-          echo "deb=$DEB" >> "$GITHUB_OUTPUT"
-          echo "rpm=$RPM" >> "$GITHUB_OUTPUT"
-          echo "deb_name=$(basename $DEB)" >> "$GITHUB_OUTPUT"
-          echo "rpm_name=$(basename $RPM)" >> "$GITHUB_OUTPUT"
+          mkdir -p target/packages
+          cp target/debian/*.deb target/packages/
+          cp target/generate-rpm/*.rpm target/packages/
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-packages
+          path: target/packages/*
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: |
-            ${{ steps.artifacts.outputs.deb }}
-            ${{ steps.artifacts.outputs.rpm }}
+          files: target/packages/*

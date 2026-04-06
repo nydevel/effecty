@@ -56,14 +56,14 @@ pub async fn get(pool: &SqlitePool, id: ThoughtId, user_id: UserId) -> Result<Op
 }
 
 pub async fn create(pool: &SqlitePool, user_id: UserId, input: &CreateThought) -> Result<Thought> {
-    let max_pos = sqlx::query_scalar::<_, Option<f64>>(
-        "SELECT MAX(position) FROM thoughts WHERE user_id = ?1",
+    let min_pos = sqlx::query_scalar::<_, Option<f64>>(
+        "SELECT MIN(position) FROM thoughts WHERE user_id = ?1",
     )
     .bind(user_id)
     .fetch_one(pool)
     .await?;
 
-    let position = max_pos.unwrap_or(0.0) + 1.0;
+    let position = min_pos.map_or(0.0, |pos| pos - 1.0);
 
     let id = Uuid::new_v4();
     let thought = sqlx::query_as::<_, Thought>(

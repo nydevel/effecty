@@ -14,6 +14,31 @@ interface Props {
   readOnly?: boolean;
 }
 
+async function copyTextToClipboard(text: string): Promise<void> {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+
+  try {
+    const copied = document.execCommand('copy');
+    if (!copied) {
+      throw new Error('document.execCommand("copy") returned false');
+    }
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
 function linkify(text: string) {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const parts = text.split(urlRegex);
@@ -123,6 +148,19 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
     setDragOverIdx(null);
   };
 
+  const handleCopyMemo = async (memo: Memo) => {
+    const text = memo.content || memo.title;
+    if (!text) return;
+
+    try {
+      await copyTextToClipboard(text);
+      message.success(t('notes.copiedToClipboard'));
+    } catch (err) {
+      console.error('Failed to copy memo to clipboard:', err);
+      message.error(t('notes.copyFailed'));
+    }
+  };
+
   return (
     <div className="memo-list-editor">
       <Input
@@ -183,13 +221,7 @@ export default function MemoListEditor({ noteId, title, onTitleChange, readOnly 
             ) : (
               <div
                 className="memo-item-body memo-item-body-clickable"
-                onClick={() => {
-                  const text = memo.content || memo.title;
-                  if (text) {
-                    navigator.clipboard.writeText(text);
-                    message.success(t('notes.copiedToClipboard'));
-                  }
-                }}
+                onClick={() => void handleCopyMemo(memo)}
               >
                 {memo.title && <div className="memo-item-title">{memo.title}</div>}
                 {memo.content && (
