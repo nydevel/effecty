@@ -1809,7 +1809,11 @@ html {
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  padding: 6px 0;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e6e9ed;
+  border-radius: 10px;
+  background: #f8fafb;
 }
 
 .material-comment-content {
@@ -1817,6 +1821,7 @@ html {
   min-width: 0;
   white-space: pre-wrap;
   word-break: break-word;
+  line-height: 1.5;
   color: #33373c;
 }
 
