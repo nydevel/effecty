@@ -1,4 +1,5 @@
 import { Tooltip } from 'antd';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   LayoutDashboard,
   FileText,
@@ -24,10 +25,25 @@ interface Props {
 export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Props) {
   const { t } = useTranslation();
   const iconProps = { size: 22, strokeWidth: 2 } as const;
+  const [tooltipsEnabled, setTooltipsEnabled] = useState(true);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const update = () => setTooltipsEnabled(mediaQuery.matches);
+
+    update();
+    mediaQuery.addEventListener('change', update);
+    return () => mediaQuery.removeEventListener('change', update);
+  }, []);
+
+  const withTooltip = (title: string, child: ReactNode) => {
+    if (!tooltipsEnabled) return child;
+    return <Tooltip title={title} placement="right">{child}</Tooltip>;
+  };
 
   return (
     <div className="icon-bar">
-      <Tooltip title={t('iconBar.dashboard')} placement="right">
+      {withTooltip(t('iconBar.dashboard'),
         <button
           type="button"
           className={`icon-btn ${activeFeature === 'dashboard' ? 'active' : ''}`}
@@ -35,9 +51,9 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
         >
           <LayoutDashboard {...iconProps} />
         </button>
-      </Tooltip>
+      )}
       <div className="icon-bar-divider" />
-      <Tooltip title={t('iconBar.notes')} placement="right">
+      {withTooltip(t('iconBar.notes'),
         <button
           type="button"
           className={`icon-btn ${activeFeature === 'notes' ? 'active' : ''}`}
@@ -45,8 +61,8 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
         >
           <FileText {...iconProps} />
         </button>
-      </Tooltip>
-      <Tooltip title={t('iconBar.calendar')} placement="right">
+      )}
+      {withTooltip(t('iconBar.calendar'),
         <button
           type="button"
           className={`icon-btn ${activeFeature === 'calendar' ? 'active' : ''}`}
@@ -54,8 +70,8 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
         >
           <CalendarDays {...iconProps} />
         </button>
-      </Tooltip>
-      <Tooltip title={t('iconBar.workouts')} placement="right">
+      )}
+      {withTooltip(t('iconBar.workouts'),
         <button
           type="button"
           className={`icon-btn ${activeFeature === 'workouts' ? 'active' : ''}`}
@@ -63,8 +79,8 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
         >
           <Dumbbell {...iconProps} />
         </button>
-      </Tooltip>
-      <Tooltip title={t('iconBar.thoughts')} placement="right">
+      )}
+      {withTooltip(t('iconBar.thoughts'),
         <button
           type="button"
           className={`icon-btn ${activeFeature === 'thoughts' ? 'active' : ''}`}
@@ -72,8 +88,8 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
         >
           <Lightbulb {...iconProps} />
         </button>
-      </Tooltip>
-      <Tooltip title={t('iconBar.learning')} placement="right">
+      )}
+      {withTooltip(t('iconBar.learning'),
         <button
           type="button"
           className={`icon-btn ${activeFeature === 'learning' ? 'active' : ''}`}
@@ -81,8 +97,8 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
         >
           <BookOpen {...iconProps} />
         </button>
-      </Tooltip>
-      <Tooltip title={t('iconBar.medical')} placement="right">
+      )}
+      {withTooltip(t('iconBar.medical'),
         <button
           type="button"
           className={`icon-btn ${activeFeature === 'medical' ? 'active' : ''}`}
@@ -90,8 +106,8 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
         >
           <HeartPulse {...iconProps} />
         </button>
-      </Tooltip>
-      <Tooltip title={t('iconBar.projects')} placement="right">
+      )}
+      {withTooltip(t('iconBar.projects'),
         <button
           type="button"
           className={`icon-btn ${activeFeature === 'projects' ? 'active' : ''}`}
@@ -99,9 +115,9 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
         >
           <KanbanSquare {...iconProps} />
         </button>
-      </Tooltip>
+      )}
       <div className="icon-bar-spacer" />
-      <Tooltip title={t('iconBar.settings')} placement="right">
+      {withTooltip(t('iconBar.settings'),
         <button
           type="button"
           className={`icon-btn ${activeFeature === 'settings' ? 'active' : ''}`}
@@ -109,8 +125,8 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
         >
           <Settings {...iconProps} />
         </button>
-      </Tooltip>
-      <Tooltip title={t('iconBar.logout')} placement="right">
+      )}
+      {withTooltip(t('iconBar.logout'),
         <button
           type="button"
           className="icon-btn"
@@ -118,7 +134,7 @@ export default function IconBar({ activeFeature, onSelectFeature, onLogout }: Pr
         >
           <LogOut {...iconProps} />
         </button>
-      </Tooltip>
+      )}
     </div>
   );
 }

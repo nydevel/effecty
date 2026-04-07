@@ -62,32 +62,35 @@ export default function ExerciseCatalog({
     <div className="exercise-catalog">
       <div className="exercise-catalog-header">
         <Typography.Text strong>{t('workouts.exercises')}</Typography.Text>
-        <Input
-          className="exercise-catalog-new-input"
-          size="small"
-          placeholder={t('workouts.newExercise')}
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          onPressEnter={handleAdd}
-          suffix={
-            <AppButton
-              type="text"
-              size="small"
-              icon={<PlusOutlined />}
-              onClick={handleAdd}
-              className="exercise-catalog-add-btn"
-            />
-          }
-        />
-        <Select
-          className="exercise-catalog-group-select"
-          size="small"
-          placeholder={t('workouts.muscleGroup')}
-          value={newGroup}
-          onChange={setNewGroup}
-          allowClear
-          options={muscleGroupOptions}
-        />
+        <div className="exercise-catalog-create-form">
+          <Input
+            className="exercise-catalog-new-input"
+            size="small"
+            placeholder={t('workouts.newExercise')}
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onPressEnter={handleAdd}
+          />
+          <Select
+            className="exercise-catalog-group-select"
+            size="small"
+            placeholder={t('workouts.muscleGroup')}
+            value={newGroup}
+            onChange={setNewGroup}
+            allowClear
+            options={muscleGroupOptions}
+          />
+          <AppButton
+            type="primary"
+            size="small"
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+            className="exercise-catalog-create-btn"
+            block
+          >
+            {t('workouts.newExercise')}
+          </AppButton>
+        </div>
       </div>
       <div className="exercise-catalog-list">
         {exercises.map((ex) => (

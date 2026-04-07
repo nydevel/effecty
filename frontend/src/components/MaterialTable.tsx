@@ -147,6 +147,7 @@ export default function MaterialTable({
         rowKey="id"
         size="small"
         pagination={false}
+        scroll={{ x: showTopics ? 760 : 620 }}
         rowClassName={(record) => (record.id === selectedId ? 'ant-table-row-selected' : '')}
         onRow={(record) => ({
           draggable: true,
