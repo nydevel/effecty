@@ -22,6 +22,7 @@ mod m20260327_000019_drop_thought_title;
 mod m20260327_000020_drop_legacy_medical_image_paths;
 mod m20260327_000021_topic_tree;
 mod m20260327_000022_drop_roadmap_nodes;
+mod m20260407_000023_material_comment_attachments;
 
 pub struct Migrator;
 
@@ -49,6 +50,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260327_000020_drop_legacy_medical_image_paths::Migration),
             Box::new(m20260327_000021_topic_tree::Migration),
             Box::new(m20260327_000022_drop_roadmap_nodes::Migration),
+            Box::new(m20260407_000023_material_comment_attachments::Migration),
         ]
     }
 }

@@ -69,6 +69,10 @@ pub fn router() -> Router<SqlitePool> {
             post(handlers::create_material_comment),
         )
         .route(
+            "/api/materials/{id}/comments/upload",
+            post(handlers::upload_material_comment),
+        )
+        .route(
             "/api/materials/{id}/comments/{comment_id}",
             delete(handlers::delete_material_comment),
         )

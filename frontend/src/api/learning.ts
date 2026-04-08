@@ -34,6 +34,9 @@ export interface MaterialComment {
   user_id: string;
   comment_type: string;
   content: string;
+  file_path: string | null;
+  file_name: string | null;
+  file_mime: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -127,6 +130,20 @@ export async function createMaterial(data: {
   });
 }
 
+export async function updateMaterial(
+  id: string,
+  data: {
+    title?: string;
+    url?: string;
+    content?: string;
+  },
+): Promise<Material> {
+  return apiFetch<Material>(`/materials/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
 export async function setMaterialStatus(id: string, status: MaterialStatus): Promise<Material> {
   return apiFetch<Material>(`/materials/${id}/status`, {
     method: 'PATCH',
@@ -200,13 +217,33 @@ export async function listMaterialComments(materialId: string): Promise<Material
 
 export async function createMaterialComment(
   materialId: string,
-  content: string,
-  commentType?: string,
+  data: { content?: string; commentType?: string; file?: File },
 ): Promise<MaterialComment> {
-  return apiFetch<MaterialComment>(`/materials/${materialId}/comments`, {
+  const token = localStorage.getItem('token');
+  const formData = new FormData();
+
+  if (data.content) {
+    formData.append('content', data.content);
+  }
+  if (data.commentType) {
+    formData.append('comment_type', data.commentType);
+  }
+  if (data.file) {
+    formData.append('file', data.file);
+  }
+
+  const res = await fetch(`/api/materials/${materialId}/comments/upload`, {
     method: 'POST',
-    body: JSON.stringify({ content, comment_type: commentType }),
+    headers: { Authorization: `Bearer ${token ?? ''}` },
+    body: formData,
   });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Upload failed: ${res.status}`);
+  }
+
+  return res.json();
 }
 
 export async function deleteMaterialComment(

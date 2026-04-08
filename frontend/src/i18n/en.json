@@ -195,6 +195,11 @@
     "noComments": "No comments",
     "commentPlaceholder": "Write a comment...",
     "addComment": "Send",
+    "materialPreview": "Content",
+    "openOriginal": "Open source",
+    "openFile": "Open file",
+    "noPreview": "No preview available",
+    "dropCommentFile": "Drop an image or PDF here for the comment",
     "linkedMaterials": "Linked materials",
     "searchMaterials": "Search materials to link..."
   },

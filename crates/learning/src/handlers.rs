@@ -416,19 +416,167 @@ pub async fn create_material_comment(
         return Err(LearningError::BadRequest("content cannot be empty".into()));
     }
     let comment_type = input.comment_type.as_deref().unwrap_or("text");
-    let comment =
-        material_comments::create(&pool, material_id, user_id, comment_type, &input.content)
-            .await?;
+    let comment = material_comments::create(
+        &pool,
+        material_id,
+        user_id,
+        comment_type,
+        input.content.trim(),
+        None,
+        None,
+        None,
+    )
+    .await?;
+    Ok(Json(comment))
+}
+
+pub async fn upload_material_comment(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    axum::Extension(upload_dir): axum::Extension<PathBuf>,
+    Path(material_id): Path<MaterialId>,
+    mut multipart: Multipart,
+) -> Result<Json<material_comments::MaterialComment>, LearningError> {
+    materials::get(&pool, material_id, user_id)
+        .await?
+        .ok_or(LearningError::NotFound)?;
+
+    let mut content = String::new();
+    let mut comment_type: Option<String> = None;
+    let mut attachment: Option<(String, String, String, Vec<u8>)> = None;
+
+    while let Some(field) = multipart
+        .next_field()
+        .await
+        .map_err(|e| LearningError::BadRequest(format!("multipart error: {e}")))?
+    {
+        match field.name().unwrap_or_default() {
+            "content" => {
+                content = field
+                    .text()
+                    .await
+                    .map_err(|e| LearningError::BadRequest(format!("failed to read content: {e}")))?;
+            }
+            "comment_type" => {
+                comment_type = Some(field.text().await.map_err(|e| {
+                    LearningError::BadRequest(format!("failed to read comment type: {e}"))
+                })?);
+            }
+            "file" => {
+                let file_name = field.file_name().unwrap_or("attachment").to_owned();
+                let file_mime = field
+                    .content_type()
+                    .map(str::to_owned)
+                    .unwrap_or_else(|| "application/octet-stream".to_string());
+
+                if !file_mime.starts_with("image/") && file_mime != "application/pdf" {
+                    return Err(LearningError::BadRequest(
+                        "only images and PDF files are allowed".into(),
+                    ));
+                }
+
+                let data = field.bytes().await.map_err(|e| {
+                    LearningError::BadRequest(format!("failed to read attachment: {e}"))
+                })?;
+                attachment = Some((
+                    file_name,
+                    file_mime,
+                    uuid::Uuid::new_v4().to_string(),
+                    data.to_vec(),
+                ));
+            }
+            _ => {}
+        }
+    }
+
+    let trimmed_content = content.trim().to_string();
+    if trimmed_content.is_empty() && attachment.is_none() {
+        return Err(LearningError::BadRequest(
+            "comment must contain text or an attachment".into(),
+        ));
+    }
+
+    let (stored_path, stored_name, stored_mime, effective_comment_type): (
+        Option<String>,
+        Option<String>,
+        Option<String>,
+        String,
+    ) =
+        if let Some((original_name, mime, generated_id, data)) = attachment {
+            let dir = upload_dir
+                .join(user_id.to_string())
+                .join("material-comments")
+                .join(material_id.to_string());
+            tokio::fs::create_dir_all(&dir).await?;
+
+            let safe_name = sanitize_filename(&original_name);
+            let stored_name = format!("{generated_id}_{safe_name}");
+            let full_path = dir.join(&stored_name);
+            tokio::fs::write(&full_path, &data).await?;
+
+            let relative = format!(
+                "{}/material-comments/{}/{}",
+                user_id, material_id, stored_name
+            );
+            let derived_type = if mime.starts_with("image/") {
+                "image"
+            } else {
+                "document"
+            };
+
+            (
+                Some(relative),
+                Some(original_name),
+                Some(mime),
+                derived_type.to_string(),
+            )
+        } else {
+            (
+                None,
+                None,
+                None,
+                comment_type.unwrap_or_else(|| "text".to_string()),
+            )
+        };
+
+    let comment = material_comments::create(
+        &pool,
+        material_id,
+        user_id,
+        &effective_comment_type,
+        &trimmed_content,
+        stored_path.as_deref(),
+        stored_name.as_deref(),
+        stored_mime.as_deref(),
+    )
+    .await?;
+
     Ok(Json(comment))
 }
 
 pub async fn delete_material_comment(
     State(pool): State<SqlitePool>,
     axum::Extension(user_id): axum::Extension<UserId>,
-    Path((_material_id, comment_id)): Path<(MaterialId, MaterialCommentId)>,
+    axum::Extension(upload_dir): axum::Extension<PathBuf>,
+    Path((material_id, comment_id)): Path<(MaterialId, MaterialCommentId)>,
 ) -> Result<axum::http::StatusCode, LearningError> {
+    let comment = material_comments::get(&pool, comment_id, user_id)
+        .await?
+        .ok_or(LearningError::NotFound)?;
+    if comment.material_id != material_id {
+        return Err(LearningError::NotFound);
+    }
+
     let deleted = material_comments::delete(&pool, comment_id, user_id).await?;
     if deleted {
+        if let Some(file_path) = &comment.file_path {
+            let full_path = upload_dir.join(file_path);
+            if let Err(err) = tokio::fs::remove_file(&full_path).await {
+                if err.kind() != std::io::ErrorKind::NotFound {
+                    tracing::warn!("failed to remove material comment attachment: {err:#}");
+                }
+            }
+        }
         Ok(axum::http::StatusCode::NO_CONTENT)
     } else {
         Err(LearningError::NotFound)
@@ -516,6 +664,23 @@ pub struct CreateTopicRequest {
     pub name: String,
     pub parent_id: Option<TopicId>,
     pub tag_ids: Vec<TagId>,
+}
+
+fn sanitize_filename(name: &str) -> String {
+    let sanitized: String = name
+        .chars()
+        .map(|ch| match ch {
+            'a'..='z' | 'A'..='Z' | '0'..='9' | '.' | '-' | '_' => ch,
+            _ => '_',
+        })
+        .collect();
+
+    let trimmed = sanitized.trim_matches('_');
+    if trimmed.is_empty() {
+        "attachment".to_string()
+    } else {
+        trimmed.to_string()
+    }
 }
 
 #[derive(Debug, serde::Deserialize)]

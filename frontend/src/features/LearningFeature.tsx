@@ -164,6 +164,10 @@ export default function LearningFeature() {
     }
   };
 
+  const handleMaterialUpdate = (updated: Material) => {
+    setMaterials((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+  };
+
   const handleReassignMaterialTopic = async (materialId: string, topicId: string) => {
     try {
       await learningApi.setMaterialTopic(materialId, topicId);
@@ -218,6 +222,7 @@ export default function LearningFeature() {
           <div className="medical-detail">
             <MaterialDetail
               material={selectedMaterial}
+              onMaterialUpdated={handleMaterialUpdate}
               onSelectMaterial={setSelectedMaterialId}
             />
           </div>

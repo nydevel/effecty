@@ -195,6 +195,11 @@
     "noComments": "Нет комментариев",
     "commentPlaceholder": "Написать комментарий...",
     "addComment": "Отправить",
+    "materialPreview": "Содержимое",
+    "openOriginal": "Открыть источник",
+    "openFile": "Открыть файл",
+    "noPreview": "Нет предпросмотра",
+    "dropCommentFile": "Перетащите сюда изображение или PDF для комментария",
     "linkedMaterials": "Связанные материалы",
     "searchMaterials": "Найти материал для привязки..."
   },
