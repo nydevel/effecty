@@ -945,23 +945,6 @@ html {
   color: #ff4d4f;
 }
 
-.workout-drop-zone {
-  min-height: 60px;
-  border: 2px dashed #d9d9d9;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #999;
-  font-size: 14px;
-  margin-top: 16px;
-}
-
-.workout-drop-zone.active {
-  border-color: #4a90d9;
-  background: #f0f4ff;
-}
-
 /* Exercise Catalog (right sidebar) */
 .exercise-catalog {
   width: 360px;
@@ -1011,8 +994,9 @@ html {
 .exercise-catalog-item {
   display: flex;
   align-items: center;
+  gap: 8px;
   padding: 6px 12px;
-  cursor: grab;
+  cursor: default;
   font-size: 14px;
   color: #333;
   border-radius: 4px;
@@ -1044,8 +1028,17 @@ html {
 .exercise-catalog-item-group {
   font-size: 11px;
   color: #888;
-  margin-left: 8px;
   flex-shrink: 0;
+}
+
+.exercise-catalog-add-btn.ui-btn.ant-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  opacity: 0.56;
+}
+
+.exercise-catalog-add-btn.ui-btn.ant-btn:not(:disabled):hover {
+  opacity: 1;
 }
 
 .exercise-catalog-edit-actions {

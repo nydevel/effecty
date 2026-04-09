@@ -12,7 +12,6 @@ interface Props {
   onDateChange: (date: string) => void;
   onUpdateStats: (weId: string, data: { sets?: string; reps?: string; weight?: string }) => void;
   onRemoveExercise: (weId: string) => void;
-  onDropExercise: (exerciseName: string) => void;
 }
 
 export default function WorkoutForm({
@@ -21,28 +20,11 @@ export default function WorkoutForm({
   onDateChange,
   onUpdateStats,
   onRemoveExercise,
-  onDropExercise,
 }: Props) {
   const { t } = useTranslation();
-  const [dragOver, setDragOver] = useState(false);
 
   return (
-    <div
-      className="workout-form"
-      onDragOver={(e) => {
-        if (e.dataTransfer.types.includes('application/exercise-name')) {
-          e.preventDefault();
-          setDragOver(true);
-        }
-      }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={(e) => {
-        e.preventDefault();
-        setDragOver(false);
-        const name = e.dataTransfer.getData('application/exercise-name');
-        if (name) onDropExercise(name);
-      }}
-    >
+    <div className="workout-form">
       <div className="workout-date-row">
         <Typography.Text strong>{t('workouts.date')}</Typography.Text>
         <DatePicker
@@ -74,10 +56,6 @@ export default function WorkoutForm({
           onRemove={() => onRemoveExercise(we.id)}
         />
       ))}
-
-      <div className={`workout-drop-zone ${dragOver ? 'active' : ''}`}>
-        {t('workouts.dragHint')}
-      </div>
     </div>
   );
 }

@@ -111,7 +111,7 @@ export default function WorkoutsFeature() {
     await loadWorkoutExercises(selectedId);
   };
 
-  const handleDropExercise = async (exerciseName: string) => {
+  const handleAddExerciseToWorkout = async (exerciseName: string) => {
     if (!selectedId) return;
     try {
       await workoutsApi.addExerciseToWorkout(selectedId, { exercise_name: exerciseName });
@@ -157,7 +157,6 @@ export default function WorkoutsFeature() {
             onDateChange={handleDateChange}
             onUpdateStats={handleUpdateStats}
             onRemoveExercise={handleRemoveExercise}
-            onDropExercise={handleDropExercise}
           />
         ) : (
           <div className="empty-state">{t('workouts.emptyState')}</div>
@@ -168,6 +167,8 @@ export default function WorkoutsFeature() {
         onCreateExercise={handleCreateExercise}
         onUpdateExercise={handleUpdateExercise}
         onDeleteExercise={handleDeleteExercise}
+        canAddToWorkout={Boolean(selectedWorkout)}
+        onAddToWorkout={handleAddExerciseToWorkout}
       />
     </div>
   );

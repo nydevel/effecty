@@ -11,6 +11,8 @@ interface Props {
   onCreateExercise: (name: string, muscleGroup?: string) => void;
   onUpdateExercise: (id: string, data: { name?: string; muscle_group?: string }) => void;
   onDeleteExercise: (id: string) => void;
+  canAddToWorkout: boolean;
+  onAddToWorkout: (exerciseName: string) => void;
 }
 
 export default function ExerciseCatalog({
@@ -18,6 +20,8 @@ export default function ExerciseCatalog({
   onCreateExercise,
   onUpdateExercise,
   onDeleteExercise,
+  canAddToWorkout,
+  onAddToWorkout,
 }: Props) {
   const { t } = useTranslation();
   const [newName, setNewName] = useState('');
@@ -139,20 +143,29 @@ export default function ExerciseCatalog({
                 </div>
               </div>
             ) : (
-              <div
-                className="exercise-catalog-item"
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData('application/exercise-name', ex.name);
-                  e.dataTransfer.effectAllowed = 'copy';
-                }}
-              >
+              <div className="exercise-catalog-item">
                 <span className="exercise-catalog-item-name">{ex.name}</span>
                 {ex.muscle_group && (
                   <span className="exercise-catalog-item-group">
                     {t(`workouts.${ex.muscle_group}`)}
                   </span>
                 )}
+                <AppButton
+                  type="text"
+                  size="small"
+                  icon={<PlusOutlined />}
+                  className="exercise-catalog-add-btn"
+                  disabled={!canAddToWorkout}
+                  title={
+                    canAddToWorkout
+                      ? t('workouts.addExerciseToWorkout')
+                      : t('workouts.selectWorkoutFirst')
+                  }
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onAddToWorkout(ex.name);
+                  }}
+                />
               </div>
             )}
           </Dropdown>
