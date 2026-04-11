@@ -1,10 +1,13 @@
 use axum::extract::{Path, State};
 use axum::Json;
-use effecty_core::types::{ExerciseId, UserId, WorkoutExerciseId, WorkoutId};
+use effecty_core::types::{
+    ExerciseId, MuscleRecoveryHours, UserId, WorkoutExerciseId, WorkoutId, WorkoutsSettings,
+};
 use sqlx::SqlitePool;
 
 use crate::error::WorkoutsError;
 use db::repo::exercises::{self, CreateExercise, UpdateExercise};
+use db::repo::feature_settings;
 use db::repo::workouts::{
     self, AddExercise, CreateWorkout, DuplicateWorkout, MoveWorkout, MoveWorkoutExercise,
     UpdateWorkout, UpdateWorkoutExercise,
@@ -186,4 +189,43 @@ pub async fn delete_exercise(
     } else {
         Err(WorkoutsError::NotFound)
     }
+}
+
+// --- Workouts Settings ---
+
+pub async fn get_workouts_settings(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+) -> Result<Json<WorkoutsSettings>, WorkoutsError> {
+    let settings = feature_settings::get_workouts_settings(&pool, user_id).await?;
+    Ok(Json(settings))
+}
+
+pub async fn update_workouts_settings(
+    State(pool): State<SqlitePool>,
+    axum::Extension(user_id): axum::Extension<UserId>,
+    Json(input): Json<WorkoutsSettings>,
+) -> Result<Json<WorkoutsSettings>, WorkoutsError> {
+    validate_recovery_hours(&input.recovery_hours)?;
+
+    let settings = feature_settings::update_workouts_settings(&pool, user_id, &input).await?;
+    Ok(Json(settings))
+}
+
+fn validate_recovery_hours(hours: &MuscleRecoveryHours) -> Result<(), WorkoutsError> {
+    for (group, value) in [
+        ("chest", hours.chest),
+        ("back", hours.back),
+        ("legs", hours.legs),
+        ("shoulders", hours.shoulders),
+        ("arms", hours.arms),
+    ] {
+        if !(1..=240).contains(&value) {
+            return Err(WorkoutsError::BadRequest(format!(
+                "{group} recovery hours must be between 1 and 240"
+            )));
+        }
+    }
+
+    Ok(())
 }

@@ -13,7 +13,16 @@
     "emptyState": "Dashboard coming soon",
     "todayTasks": "Today's tasks",
     "noTasksToday": "No tasks for today",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "muscleRecovery": "Muscle recovery",
+    "recoveryReady": "Ready",
+    "recoveryRecovering": "Recovering",
+    "readyNow": "Ready to train now",
+    "hoursToRecovery": "{{count}} h left until ready",
+    "readyAt": "Ready at: {{time}}",
+    "noWorkoutData": "No workout history yet",
+    "frontView": "Front",
+    "backView": "Back"
   },
   "iconBar": {
     "dashboard": "Dashboard",
@@ -272,6 +281,10 @@
     "passwordChanged": "Password changed successfully",
     "passwordChangeFailed": "Failed to change password",
     "fontScale": "Font scale",
+    "workoutsRecoveryTitle": "Muscle recovery",
+    "workoutsRecoveryDescription": "Recovery window after the last workout for each muscle group. Default is {{hours}} h.",
+    "resetDefaults": "Reset defaults",
+    "hoursShort": "h",
     "dataTransfer": "Data export / import",
     "exportData": "Export data",
     "exportDescription": "Download all your data as a JSON file.",

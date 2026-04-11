@@ -480,8 +480,8 @@ html {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(320px, 560px);
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 14px;
   align-content: start;
 }
 
@@ -529,6 +529,179 @@ html {
   flex-direction: column;
   padding: 10px 14px;
   gap: 8px;
+}
+
+.dashboard-recovery-body {
+  padding: 14px;
+}
+
+.muscle-recovery-widget {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.muscle-recovery-visual-card {
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(109, 177, 139, 0.12), transparent 40%),
+    linear-gradient(180deg, #fbfcfb 0%, #f2f6f3 100%);
+  border: 1px solid #e4ebe7;
+  padding: 10px;
+}
+
+.muscle-recovery-body-map-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.muscle-recovery-figure-card {
+  border-radius: 16px;
+  border: 1px solid #e5ece8;
+  background:
+    radial-gradient(circle at top, rgba(109, 177, 139, 0.08), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(245, 249, 246, 0.98) 100%);
+  padding: 10px 4px 8px;
+}
+
+.muscle-recovery-view-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #7d8b83;
+  margin-bottom: 6px;
+}
+
+.muscle-recovery-figure {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 256px;
+  pointer-events: none;
+}
+
+.muscle-recovery-figure svg {
+  display: block;
+}
+
+.muscle-recovery-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.muscle-recovery-row {
+  padding: 12px;
+  border: 1px solid #e8ece9;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #fafcfb 100%);
+}
+
+.muscle-recovery-row-ready {
+  box-shadow: inset 0 0 0 1px rgba(76, 175, 122, 0.08);
+}
+
+.muscle-recovery-row-recovering {
+  box-shadow: inset 0 0 0 1px rgba(240, 164, 59, 0.08);
+}
+
+.muscle-recovery-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.muscle-recovery-row-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #28312d;
+}
+
+.muscle-recovery-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.muscle-recovery-chip {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.muscle-recovery-chip-ready {
+  background: #ecf7ef;
+  color: #23724a;
+}
+
+.muscle-recovery-chip-recovering {
+  background: #fff4e4;
+  color: #ab6706;
+}
+
+.muscle-recovery-row-meta {
+  font-size: 13px;
+  font-weight: 600;
+  color: #33403a;
+}
+
+.muscle-recovery-row-subtle {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #7b8882;
+}
+
+.muscle-recovery-progress {
+  height: 7px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: #edf1ee;
+  overflow: hidden;
+}
+
+.muscle-recovery-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8fd3ab 0%, #52ad78 100%);
+}
+
+.settings-recovery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.settings-recovery-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-recovery-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2f2f31;
+}
+
+.settings-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
 }
 
 /* Login */
@@ -2367,6 +2540,19 @@ html {
 
   .dashboard-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .muscle-recovery-widget {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings-recovery-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings-actions-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .calendar-toolbar {

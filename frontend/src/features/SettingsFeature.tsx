@@ -1,11 +1,18 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import AppButton from '../components/ui/AppButton';
-import { Form, Select, Slider, Input, message, Typography, Divider, Modal } from 'antd';
+import { Form, Select, Slider, Input, InputNumber, message, Typography, Divider, Modal } from 'antd';
 import { DownloadOutlined, UploadOutlined } from '../components/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { updateProfile, changePassword, DEFAULT_UI_SETTINGS } from '../api/profile';
 import type { UserProfile } from '../api/profile';
 import { exportData, importData } from '../api/data-transfer';
+import {
+  DEFAULT_WORKOUTS_SETTINGS,
+  MUSCLE_GROUPS,
+  getWorkoutsSettings,
+  updateWorkoutsSettings,
+} from '../api/workouts';
+import type { MuscleGroup, WorkoutsSettings } from '../api/workouts';
 
 interface Props {
   profile: UserProfile | null;
@@ -18,11 +25,28 @@ export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
   const [pwLoading, setPwLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
+  const [workoutsSettings, setWorkoutsSettings] = useState<WorkoutsSettings>(DEFAULT_WORKOUTS_SETTINGS);
+  const [workoutsSettingsLoading, setWorkoutsSettingsLoading] = useState(false);
+  const [workoutsSettingsSaving, setWorkoutsSettingsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [form] = Form.useForm();
   const [pwForm] = Form.useForm();
 
   const uiSettings = profile?.ui_settings ?? DEFAULT_UI_SETTINGS;
+
+  useEffect(() => {
+    setWorkoutsSettingsLoading(true);
+    getWorkoutsSettings()
+      .then((settings) => {
+        setWorkoutsSettings(settings);
+      })
+      .catch((err) => {
+        console.error('Failed to load workouts settings:', err);
+      })
+      .finally(() => {
+        setWorkoutsSettingsLoading(false);
+      });
+  }, []);
 
   const handleFinish = async (values: { locale: string }) => {
     setLoading(true);
@@ -49,6 +73,33 @@ export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
     } catch (err) {
       console.error('Failed to save font scale:', err);
     }
+  };
+
+  const handleRecoveryHoursChange = (group: MuscleGroup, value: number | null) => {
+    if (value == null) return;
+    setWorkoutsSettings((prev) => ({
+      recovery_hours: {
+        ...prev.recovery_hours,
+        [group]: value,
+      },
+    }));
+  };
+
+  const handleSaveWorkoutsSettings = async () => {
+    setWorkoutsSettingsSaving(true);
+    try {
+      const saved = await updateWorkoutsSettings(workoutsSettings);
+      setWorkoutsSettings(saved);
+      message.success(t('settings.saved'));
+    } catch (err) {
+      console.error('Failed to save workouts settings:', err);
+    } finally {
+      setWorkoutsSettingsSaving(false);
+    }
+  };
+
+  const handleResetWorkoutsSettings = () => {
+    setWorkoutsSettings(DEFAULT_WORKOUTS_SETTINGS);
   };
 
   const handlePasswordChange = async (values: {
@@ -152,6 +203,47 @@ export default function SettingsFeature({ profile, onProfileUpdate }: Props) {
           className="settings-slider-control"
           marks={{ 0.8: '×0.8', 1.0: '×1.0', 1.2: '×1.2', 1.5: '×1.5' }}
         />
+      </div>
+
+      <Divider />
+
+      <Typography.Title level={4}>{t('settings.workoutsRecoveryTitle')}</Typography.Title>
+      <Typography.Text className="settings-section-note">
+        {t('settings.workoutsRecoveryDescription', {
+          hours: DEFAULT_WORKOUTS_SETTINGS.recovery_hours.chest,
+        })}
+      </Typography.Text>
+      <div className="settings-recovery-grid">
+        {MUSCLE_GROUPS.map((group) => (
+          <div key={group} className="settings-recovery-row">
+            <div className="settings-recovery-label">{t(`workouts.${group}`)}</div>
+            <InputNumber
+              min={1}
+              max={240}
+              step={1}
+              value={workoutsSettings.recovery_hours[group]}
+              disabled={workoutsSettingsLoading}
+              addonAfter={t('settings.hoursShort')}
+              onChange={(value) => handleRecoveryHoursChange(group, value)}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="settings-actions-row">
+        <AppButton
+          type="primary"
+          onClick={handleSaveWorkoutsSettings}
+          loading={workoutsSettingsSaving}
+          disabled={workoutsSettingsLoading}
+        >
+          {t('settings.save')}
+        </AppButton>
+        <AppButton
+          onClick={handleResetWorkoutsSettings}
+          disabled={workoutsSettingsLoading || workoutsSettingsSaving}
+        >
+          {t('settings.resetDefaults')}
+        </AppButton>
       </div>
 
       <Divider />

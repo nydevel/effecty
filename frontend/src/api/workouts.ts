@@ -13,6 +13,28 @@ export type MuscleGroup = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms';
 
 export const MUSCLE_GROUPS: MuscleGroup[] = ['chest', 'back', 'legs', 'shoulders', 'arms'];
 
+export interface MuscleRecoveryHours {
+  chest: number;
+  back: number;
+  legs: number;
+  shoulders: number;
+  arms: number;
+}
+
+export interface WorkoutsSettings {
+  recovery_hours: MuscleRecoveryHours;
+}
+
+export const DEFAULT_WORKOUTS_SETTINGS: WorkoutsSettings = {
+  recovery_hours: {
+    chest: 48,
+    back: 48,
+    legs: 48,
+    shoulders: 48,
+    arms: 48,
+  },
+};
+
 export interface Exercise {
   id: string;
   user_id: string;
@@ -123,4 +145,18 @@ export async function updateExercise(
 
 export async function deleteExercise(id: string): Promise<void> {
   return apiFetch<void>(`/exercises/${id}`, { method: 'DELETE' });
+}
+
+// Workouts settings
+export async function getWorkoutsSettings(): Promise<WorkoutsSettings> {
+  return apiFetch<WorkoutsSettings>('/workout-settings');
+}
+
+export async function updateWorkoutsSettings(
+  data: WorkoutsSettings,
+): Promise<WorkoutsSettings> {
+  return apiFetch<WorkoutsSettings>('/workout-settings', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
 }

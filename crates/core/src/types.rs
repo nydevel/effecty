@@ -14,6 +14,42 @@ fn default_font_scale() -> f64 {
     1.0
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct MuscleRecoveryHours {
+    #[serde(default = "default_recovery_hours")]
+    pub chest: u16,
+    #[serde(default = "default_recovery_hours")]
+    pub back: u16,
+    #[serde(default = "default_recovery_hours")]
+    pub legs: u16,
+    #[serde(default = "default_recovery_hours")]
+    pub shoulders: u16,
+    #[serde(default = "default_recovery_hours")]
+    pub arms: u16,
+}
+
+impl Default for MuscleRecoveryHours {
+    fn default() -> Self {
+        Self {
+            chest: default_recovery_hours(),
+            back: default_recovery_hours(),
+            legs: default_recovery_hours(),
+            shoulders: default_recovery_hours(),
+            arms: default_recovery_hours(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
+pub struct WorkoutsSettings {
+    #[serde(default)]
+    pub recovery_hours: MuscleRecoveryHours,
+}
+
+fn default_recovery_hours() -> u16 {
+    48
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Type)]
 #[serde(transparent)]
 #[sqlx(transparent)]

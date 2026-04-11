@@ -13,7 +13,16 @@
     "emptyState": "Дашборд скоро появится",
     "todayTasks": "Сегодняшние задачи",
     "noTasksToday": "На сегодня задач нет",
-    "loading": "Загрузка..."
+    "loading": "Загрузка...",
+    "muscleRecovery": "Восстановление мышц",
+    "recoveryReady": "Готово",
+    "recoveryRecovering": "Восстановление",
+    "readyNow": "Можно тренировать сейчас",
+    "hoursToRecovery": "Ещё {{count}} ч до готовности",
+    "readyAt": "Будет готово: {{time}}",
+    "noWorkoutData": "Нет тренировок в истории",
+    "frontView": "Перед",
+    "backView": "Спина"
   },
   "iconBar": {
     "dashboard": "Дашборд",
@@ -272,6 +281,10 @@
     "passwordChanged": "Пароль успешно изменён",
     "passwordChangeFailed": "Не удалось изменить пароль",
     "fontScale": "Масштаб шрифта",
+    "workoutsRecoveryTitle": "Восстановление мышц",
+    "workoutsRecoveryDescription": "Период восстановления после последней тренировки по каждой группе мышц. По умолчанию — {{hours}} ч.",
+    "resetDefaults": "Сбросить по умолчанию",
+    "hoursShort": "ч",
     "dataTransfer": "Экспорт / импорт данных",
     "exportData": "Экспортировать данные",
     "exportDescription": "Скачать все ваши данные в формате JSON.",
